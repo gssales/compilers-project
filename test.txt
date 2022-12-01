@@ -1,0 +1,28 @@
+int float bool char if then else while input output return for
+
+, ; : ( ) { } + -*/ % ^ < > = !
+
+identificador teste TESTE TeStE
+
+123 -1234 +0000 00100
+
+1.0000001 -12.312 +00.23424 79837.423423
+
+false
+
+true
+
+'c' '7' ' '
+
+// comentário
+
+/*
+multiplas
+linhas
+comentadas
+*/
+
+; ;
+ ; erro
+
+
