@@ -2,6 +2,8 @@ int float bool char if then else while input output return for
 
 , ; : ( ) { } + -*/ % ^ < > = !
 
+>= <= == != && ||
+
 identificador teste TESTE TeStE
 
 123 -1234 +0000 00100
@@ -12,13 +14,17 @@ false true
 
 'c' '7' '+' ' '
 
-// comentário
+// comentario
 
 /*
 multiplas
 linhas
 comentadas
 */
+
+/** comentario
+ * /* comentario
+ */
 
 ; ;
  ; erro
@@ -31,3 +37,4 @@ comentadas
 +10.2E34
 -10.2E34
 10.2e34
+10.222222e34
