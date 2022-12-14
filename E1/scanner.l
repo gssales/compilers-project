@@ -11,39 +11,53 @@
 
 %%
 
-[ \t\n\r] { /* Ignora espaco, tab, e new line */ }
-"int" { return TK_PR_INT; }
-"float" { return TK_PR_FLOAT; }
-"bool" { return TK_PR_BOOL; }
-"char" { return TK_PR_CHAR; }
-"if" { return TK_PR_IF; }
-"then" { return TK_PR_THEN; }
-"else" { return TK_PR_ELSE; }
-"while" { return TK_PR_WHILE; }
-"input" { return TK_PR_INPUT; }
-"output" { return TK_PR_OUTPUT; }
-"return" { return TK_PR_RETURN; }
-"for" { return TK_PR_FOR; }
+[ \t\n\r]               { /* Ignora espaco, tab, e new line */ }
+"int"                   { return TK_PR_INT; }
+"float"                 { return TK_PR_FLOAT; }
+"bool"                  { return TK_PR_BOOL; }
+"char"                  { return TK_PR_CHAR; }
+"if"                    { return TK_PR_IF; }
+"then"                  { return TK_PR_THEN; }
+"else"                  { return TK_PR_ELSE; }
+"while"                 { return TK_PR_WHILE; }
+"input"                 { return TK_PR_INPUT; }
+"output"                { return TK_PR_OUTPUT; }
+"return"                { return TK_PR_RETURN; }
+"for"                   { return TK_PR_FOR; }
 
-[,;:(){}\+\-*/%^<>=!] { return yytext[0]; }
+[,;:(){}\+\-*/%^<>=!]   { return yytext[0]; }
 
-"<=" { return TK_OC_LE; }
-">=" { return TK_OC_GE; }
-"!=" { return TK_OC_NE; }
-"==" { return TK_OC_EQ; }
-"&&" { return TK_OC_AND; }
-"||" { return TK_OC_OR; }
+"<="                    { return TK_OC_LE; }
+">="                    { return TK_OC_GE; }
+"!="                    { return TK_OC_NE; }
+"=="                    { return TK_OC_EQ; }
+"&&"                    { return TK_OC_AND; }
+"||"                    { return TK_OC_OR; }
 
-"false" { return TK_LIT_FALSE; }
-"true" { return TK_LIT_TRUE; }
+"false"                 { return TK_LIT_FALSE; }
+"true"                  { return TK_LIT_TRUE; }
 
-[a-zA-Z]+ { return TK_IDENTIFICADOR; }
+[a-zA-Z]+               { return TK_IDENTIFICADOR; }
+[\-+]?[0-9]+            { return TK_LIT_INT; }
+[\-+]?[0-9]+\.[0-9]+    { return TK_LIT_FLOAT; }
+'.'                     { return TK_LIT_CHAR; }
 
-[\-+]?[0-9]+ { return TK_LIT_INT; }
-[\-+]?[0-9]+\.[0-9]+ { return TK_LIT_FLOAT; }
+(\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)   { /* Ignora comentarios multi linha */ }
+(\/\/.*)                { /* Ignora comentarios de linhas simples */ }
 
-'.' { return TK_LIT_CHAR; }
+''                      { /* Char vazio */
+                            return TOKEN_ERRO; 
+                        }
+'[^'\n][^'\n][^'\n]*'   { /* Char com mais de 1 caractere */
+                            return TOKEN_ERRO; 
+                        }
+'[^'\n]*                { /* Char que nao fecha aspas simples */ 
+                            return TOKEN_ERRO; 
+                        }
+[0-9]+[a-zA-Z_]+[0-9]+  { /* Digitos e caracteres */
+                            return TOKEN_ERRO;
+                        }
 
-. { return TK_ERRO; }
+.                       { return TK_ERRO; }
 
 %%
