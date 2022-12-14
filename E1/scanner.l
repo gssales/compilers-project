@@ -40,21 +40,23 @@
 [a-zA-Z]+               { return TK_IDENTIFICADOR; }
 [\-+]?[0-9]+            { return TK_LIT_INT; }
 [\-+]?[0-9]+\.[0-9]+    { return TK_LIT_FLOAT; }
+
+[\-+]?[0-9]+.[0-9][eE][0-9]+  { /* Notacao cientifica */
+                            return TK_LIT_FLOAT;
+                        }
+
 '.'                     { return TK_LIT_CHAR; }
 
 (\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)   { /* Ignora comentarios multi linha */ }
 (\/\/.*)                { /* Ignora comentarios de linhas simples */ }
 
 ''                      { /* Char vazio */
-                            return TK_ERRO; 
+                            return TK_ERRO;
                         }
 '[^'\n][^'\n][^'\n]*'   { /* Char com mais de 1 caractere */
-                            return TK_ERRO; 
+                            return TK_ERRO;
                         }
 '[^'\n]*                { /* Char que nao fecha aspas simples */ 
-                            return TK_ERRO; 
-                        }
-[0-9]+[a-zA-Z_]+[0-9]+  { /* Digitos e caracteres */
                             return TK_ERRO;
                         }
 
