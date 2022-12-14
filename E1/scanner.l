@@ -46,16 +46,16 @@
 (\/\/.*)                { /* Ignora comentarios de linhas simples */ }
 
 ''                      { /* Char vazio */
-                            return TOKEN_ERRO; 
+                            return TK_ERRO; 
                         }
 '[^'\n][^'\n][^'\n]*'   { /* Char com mais de 1 caractere */
-                            return TOKEN_ERRO; 
+                            return TK_ERRO; 
                         }
 '[^'\n]*                { /* Char que nao fecha aspas simples */ 
-                            return TOKEN_ERRO; 
+                            return TK_ERRO; 
                         }
 [0-9]+[a-zA-Z_]+[0-9]+  { /* Digitos e caracteres */
-                            return TOKEN_ERRO;
+                            return TK_ERRO;
                         }
 
 .                       { return TK_ERRO; }
