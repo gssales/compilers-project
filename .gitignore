@@ -1,4 +1,6 @@
 *.o
 *.out
 
+lex.yy.c
+
 etapa1

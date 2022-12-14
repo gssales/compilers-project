@@ -8,11 +8,9 @@ identificador teste TESTE TeStE
 
 1.0000001 -12.312 +00.23424 79837.423423
 
-false
+false true
 
-true
-
-'c' '7' ' '
+'c' '7' '+' ' '
 
 // comentário
 
