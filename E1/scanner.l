@@ -47,8 +47,12 @@
 
 '.'                     { return TK_LIT_CHAR; }
 
-(\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)   { /* Ignora comentarios multi linha */ }
-(\/\/.*)                { /* Ignora comentarios de linhas simples */ }
+\/\*([^*]|\*+[^*/])*\*+\/ { /* Ignora comentarios multi linha 
+                            ([^*]|\*+[^*\/])*  -> reconhece qualquer sequencia que não contenha um * seguido de /
+                                [^*] -> reconhece qqr char que não seja um *
+                                \*+[^*\/] -> reconhece uma sequencia de * contanto que não seja seguido de /
+                        */}
+\/\/.*                  { /* Ignora comentarios de linhas simples */ }
 
 ''                      { /* Char vazio */
                             return TK_ERRO;

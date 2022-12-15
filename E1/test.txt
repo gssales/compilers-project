@@ -22,9 +22,17 @@ linhas
 comentadas
 */
 
+/**/
+/* */
+/*
+
+* */
+
+identiEntreComentarios
+
 /** comentario
  * /* comentario
- */
+ ***/
 
 ; ;
  ; erro
