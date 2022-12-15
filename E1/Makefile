@@ -9,3 +9,7 @@ scanner: scanner.l
 
 all: main scanner
 	gcc lex.yy.o main.o util.o -o etapa1
+
+clean: 
+	rm etapa1 lex.yy.c
+	rm *.o

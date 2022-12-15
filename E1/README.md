@@ -1,7 +1,7 @@
 # compilers-project
 
-flex scanner.l
+make all
 
-gcc lex.yy.c -lfl
+cat test.txt | etapa1
 
-./a.out
+make clean
