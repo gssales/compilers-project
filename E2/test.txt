@@ -1,0 +1,5 @@
+int variavel, array:2^3^4, outraVariavel;
+
+bool variavelBool;
+
+irreconhecivel
