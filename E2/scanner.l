@@ -25,7 +25,7 @@
 "return"                { return TK_PR_RETURN; }
 "for"                   { return TK_PR_FOR; }
 
-[,;:(){}\+\-*/%^<>=!]   { return yytext[0]; }
+[\[\],;:(){}\+\-*/%^<>=!]   { return yytext[0]; }
 
 "<="                    { return TK_OC_LE; }
 ">="                    { return TK_OC_GE; }

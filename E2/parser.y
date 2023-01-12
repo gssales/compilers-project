@@ -1,6 +1,8 @@
 %{
 #include <stdio.h>
 
+extern int yylineno;
+
 int yylex(void);
 void yyerror(char const *s);
 
@@ -48,7 +50,7 @@ tipo: TK_PR_INT |  TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR;
 
 lista_ident_var: lista_ident_var ',' ident_var | ident_var;
 
-ident_var: ident | ident':'lista_arranjo;
+ident_var: ident | ident'['lista_arranjo']';
 
 ident: TK_IDENTIFICADOR;
 
@@ -61,7 +63,7 @@ funcao: '%';
 
 void yyerror(char const *s) {
 
-  printf("Erro Sintático [%s] na linha %d\n", s, 0);
+  printf("Erro Sintático [%s] na linha %d\n", s, yylineno);
   return; 
 
 }

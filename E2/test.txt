@@ -1,4 +1,4 @@
-int variavel, array:2^3^4, outraVariavel;
+int variavel, array[2^3^4], outraVariavel;
 
 bool variavelBool;
 
