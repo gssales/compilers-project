@@ -2,4 +2,12 @@ int variavel, array[2^3^4], outraVariavel;
 
 bool variavelBool;
 
-irreconhecivel
+int novaFuncao() {}
+bool foo (int param) {
+
+}
+char bar(bool flag, int qtd) {
+{}{}{}
+}
+
+

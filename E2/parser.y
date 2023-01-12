@@ -38,12 +38,15 @@ void yyerror(char const *s);
 
 %%
 
+/* Programa */
 programa: lista_elementos | ;
 
 lista_elementos: lista_elementos elemento | elemento;
 
 elemento: var_global | funcao;
 
+
+/* Variável Global */
 var_global: tipo lista_ident_var ';';
 
 tipo: TK_PR_INT |  TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR;
@@ -56,7 +59,23 @@ ident: TK_IDENTIFICADOR;
 
 lista_arranjo: lista_arranjo'^'TK_LIT_INT | TK_LIT_INT;
 
-funcao: '%';
+
+/* Função */
+funcao: tipo TK_IDENTIFICADOR '(' func_params ')' command_block;
+
+func_params: lista_params | ;
+
+lista_params: lista_params ',' param | param;
+
+param: tipo TK_IDENTIFICADOR;
+
+
+/* Bloco de Comandos */
+command_block: '{'lista_commands'}';
+
+lista_commands: lista_commands command | ;
+
+command: command_block;
 
 %%
 
