@@ -53,9 +53,7 @@ tipo: TK_PR_INT |  TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR;
 
 lista_ident_var: lista_ident_var ',' ident_var | ident_var;
 
-ident_var: ident | ident'['lista_arranjo']';
-
-ident: TK_IDENTIFICADOR;
+ident_var: TK_IDENTIFICADOR | TK_IDENTIFICADOR'['lista_arranjo']';
 
 lista_arranjo: lista_arranjo'^'TK_LIT_INT | TK_LIT_INT;
 
@@ -75,7 +73,7 @@ command_block: '{'lista_commands'}';
 
 lista_commands: lista_commands command | ;
 
-command: command_block | declara_var;
+command: command_block | declara_var | atrib;
 
 /* Declaração de Variável */
 
@@ -83,9 +81,19 @@ declara_var: tipo lista_local_var';';
 
 lista_local_var: lista_local_var ',' local_var | local_var;
 
-local_var: TK_IDENTIFICADOR | TK_IDENTIFICADOR TK_OC_LE init_literal;
+local_var: TK_IDENTIFICADOR | TK_IDENTIFICADOR TK_OC_LE literal;
 
-init_literal: TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR;
+literal: TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR;
+
+/* Atribuição */
+
+atrib: ident_atrib '=' expr';';
+
+ident_atrib: TK_IDENTIFICADOR | TK_IDENTIFICADOR'['lista_arranjo_atrib']';
+
+lista_arranjo_atrib: lista_arranjo_atrib'^'expr | expr;
+
+expr: literal | '%';
 
 %%
 

@@ -12,6 +12,11 @@ bool foo (int param) {
 }
 char bar(bool flag, int qtd) {
 {}{}{}
+
+  atrib = true;
+  array[1] = 12.103;
+  array[1^'c'^true] = 'c';
+
 }
 
 
