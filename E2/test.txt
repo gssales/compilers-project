@@ -28,6 +28,13 @@ char bar(bool flag, int qtd) {
 
   if (%) then {}
 
+  while (%) {}
+  while (%) {
+    if (%) then {
+      foo(%);
+    }
+  }
+
 }
 
 
