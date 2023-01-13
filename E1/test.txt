@@ -7,8 +7,17 @@ int float bool char if then else while input output return for
 identificador teste TESTE TeStE
 
 123 -1234 +0000 00100
+-12 12
+1 +2
+-10 -1
+
+1 + 2
+1 - 2
 
 1.0000001 -12.312 +00.23424 79837.423423
+-12.312 12.123
+1.0 +2.0
+-10.11 -1.11
 
 false true
 

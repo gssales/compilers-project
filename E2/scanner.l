@@ -38,10 +38,10 @@
 "true"                  { return TK_LIT_TRUE; }
 
 [a-zA-Z]+               { return TK_IDENTIFICADOR; }
-[\-+]?[0-9]+            { return TK_LIT_INT; }       /* Precisa reconhecer LIT_INT '+' LIT_INT */
-[\-+]?[0-9]+\.[0-9]+    { return TK_LIT_FLOAT; }
+[0-9]+            { return TK_LIT_INT; }
+[0-9]+\.[0-9]+    { return TK_LIT_FLOAT; }
 
-[\-+]?[0-9]+\.[0-9]+[eE][\-+]?[0-9]+  { /* Notacao cientifica */
+[0-9]+\.[0-9]+[eE][\-+]?[0-9]+  { /* Notacao cientifica */
                             return TK_LIT_FLOAT;
                         }
 

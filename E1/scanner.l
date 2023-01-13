@@ -25,7 +25,7 @@
 "return"                { return TK_PR_RETURN; }
 "for"                   { return TK_PR_FOR; }
 
-[,;:(){}\+\-*/%^<>=!]   { return yytext[0]; }
+[\[\],;:(){}\+\-*/%^<>=!]   { return yytext[0]; }
 
 "<="                    { return TK_OC_LE; }
 ">="                    { return TK_OC_GE; }
@@ -38,10 +38,10 @@
 "true"                  { return TK_LIT_TRUE; }
 
 [a-zA-Z]+               { return TK_IDENTIFICADOR; }
-[\-+]?[0-9]+            { return TK_LIT_INT; }
-[\-+]?[0-9]+\.[0-9]+    { return TK_LIT_FLOAT; }
+[0-9]+            { return TK_LIT_INT; }       /* Precisa reconhecer LIT_INT '+' LIT_INT */
+[0-9]+\.[0-9]+    { return TK_LIT_FLOAT; }
 
-[\-+]?[0-9]+\.[0-9]+[eE][0-9]+  { /* Notacao cientifica */
+[0-9]+\.[0-9]+[eE][\-+]?[0-9]+  { /* Notacao cientifica */
                             return TK_LIT_FLOAT;
                         }
 
