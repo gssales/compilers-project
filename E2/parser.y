@@ -73,7 +73,7 @@ command_block: '{'lista_commands'}';
 
 lista_commands: lista_commands command | ;
 
-command: command_block | declara_var | atrib;
+command: command_block | declara_var | atrib | chamada_func;
 
 /* Declaração de Variável */
 
@@ -93,7 +93,15 @@ ident_atrib: TK_IDENTIFICADOR | TK_IDENTIFICADOR'['lista_arranjo_atrib']';
 
 lista_arranjo_atrib: lista_arranjo_atrib'^'expr | expr;
 
-expr: literal | '%';
+/* Chamada de Função */
+
+chamada_func: TK_IDENTIFICADOR'('chamada_params')'';';
+
+chamada_params: chamada_lista_params | ;
+
+chamada_lista_params: chamada_lista_params ',' expr | expr;
+
+expr: '%';
 
 %%
 
