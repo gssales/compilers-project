@@ -73,7 +73,7 @@ command_block: '{'lista_commands'}';
 
 lista_commands: lista_commands command | ;
 
-command: command_block | declara_var | atrib | chamada_func | retorno;
+command: command_block | declara_var | atrib | chamada_func | retorno | condicional;
 
 /* Declaração de Variável */
 
@@ -104,6 +104,11 @@ chamada_lista_params: chamada_lista_params ',' expr | expr;
 /* Comando de Retorno */
 
 retorno: TK_PR_RETURN expr';';
+
+/* Condicional */
+
+condicional: TK_PR_IF '('expr')' TK_PR_THEN command_block |
+             TK_PR_IF '('expr')' TK_PR_THEN command_block TK_PR_ELSE command_block;
 
 expr: '%';
 

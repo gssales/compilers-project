@@ -22,6 +22,12 @@ char bar(bool flag, int qtd) {
 
   foo(%, %,%);
 
+  if (%) then {
+    atrib = %;
+  } else {}
+
+  if (%) then {}
+
 }
 
 
