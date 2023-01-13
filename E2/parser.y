@@ -73,7 +73,7 @@ command_block: '{'lista_commands'}';
 
 lista_commands: lista_commands command | ;
 
-command: command_block | declara_var | atrib | chamada_func;
+command: command_block | declara_var | atrib | chamada_func | retorno;
 
 /* Declaração de Variável */
 
@@ -100,6 +100,10 @@ chamada_func: TK_IDENTIFICADOR'('chamada_params')'';';
 chamada_params: chamada_lista_params | ;
 
 chamada_lista_params: chamada_lista_params ',' expr | expr;
+
+/* Comando de Retorno */
+
+retorno: TK_PR_RETURN expr';';
 
 expr: '%';
 

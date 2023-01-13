@@ -11,6 +11,7 @@ bool foo (int param) {
 
     chamaFunc();
   }
+  return %;
 }
 char bar(bool flag, int qtd) {
 {}{}{}
