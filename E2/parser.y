@@ -75,7 +75,17 @@ command_block: '{'lista_commands'}';
 
 lista_commands: lista_commands command | ;
 
-command: command_block;
+command: command_block | declara_var;
+
+/* Declaração de Variável */
+
+declara_var: tipo lista_local_var';';
+
+lista_local_var: lista_local_var ',' local_var | local_var;
+
+local_var: TK_IDENTIFICADOR | TK_IDENTIFICADOR TK_OC_LE init_literal;
+
+init_literal: TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR;
 
 %%
 

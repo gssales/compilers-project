@@ -4,7 +4,11 @@ bool variavelBool;
 
 int novaFuncao() {}
 bool foo (int param) {
-
+  int varUm, varDois;
+  int initVar <= 123;
+  {
+    bool novaVar, maisVar <= 'c', teste;
+  }
 }
 char bar(bool flag, int qtd) {
 {}{}{}
