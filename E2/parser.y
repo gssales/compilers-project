@@ -9,6 +9,7 @@ void yyerror(char const *s);
 %}
 
 %define parse.error verbose
+%define parse.trace true
 
 %token TK_PR_INT
 %token TK_PR_FLOAT
