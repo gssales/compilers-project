@@ -114,7 +114,30 @@ condicional: TK_PR_IF '('expr')' TK_PR_THEN command_block |
 
 iteracao: TK_PR_WHILE '('expr')' command_block;
 
-expr: '%';
+/* Expressão */
+
+lista_expr: lista_expr '^' expr | expr;
+
+expr: TK_IDENTIFICADOR |
+      TK_IDENTIFICADOR '[' lista_expr ']' |
+      literal |
+      chamada_func |
+      '-' expr |
+      '!' expr |
+      expr '*' expr |
+      expr '/' expr |
+      expr '%' expr |
+      expr '+' expr |
+      expr '-' expr |
+      expr '<' expr |
+      expr '>' expr |
+      expr TK_OC_LE expr |
+      expr TK_OC_GE expr |
+      expr TK_OC_EQ expr |
+      expr TK_OC_NE expr |
+      expr TK_OC_AND expr |
+      expr TK_OC_OR expr |
+      '(' expr ')';
 
 %%
 

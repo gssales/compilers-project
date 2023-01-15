@@ -3,7 +3,7 @@ int variavel, array[2^3^4], outraVariavel;
 bool variavelBool;
 
 int novaFuncao() {}
-bool foo (int param) {
+bool foo (int param,bool paramdois) {
   int varUm, varDois;
   int initVar <= 123;
   {
@@ -11,27 +11,27 @@ bool foo (int param) {
 
     chamaFunc();
   }
-  return %;
+  return -5;
 }
 char bar(bool flag, int qtd) {
 {}{}{}
 
-  atrib = %;
-  array[%] = %;
-  array[%^%^%] = %;
+  atrib = 10 * 5;
+  array[1] = (5 >= 1);
+  array[1] = ((10 % 5) && true);
 
-  foo(%, %,%);
+  foo(10 > 5, 5 < 10, 1 >= 1, 2 <= 2);
 
-  if (%) then {
-    atrib = %;
+  if (true && false) then {
+    atrib = true;
   } else {}
 
-  if (%) then {}
+  if (true || false) then {}
 
-  while (%) {}
-  while (%) {
-    if (%) then {
-      foo(%);
+  while (true == true) {}
+  while (true != false) {
+    if (!true) then {
+      foo(true,false);
     }
   }
 
