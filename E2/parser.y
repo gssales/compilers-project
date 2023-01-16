@@ -72,13 +72,13 @@ param: tipo TK_IDENTIFICADOR;
 /* Bloco de Comandos */
 command_block: '{'lista_commands'}';
 
-lista_commands: lista_commands command | ;
+lista_commands: lista_commands command ';' | ;
 
 command: command_block | declara_var | atrib | chamada_func | retorno | condicional | iteracao;
 
 /* Declaração de Variável */
 
-declara_var: tipo lista_local_var';';
+declara_var: tipo lista_local_var;
 
 lista_local_var: lista_local_var ',' local_var | local_var;
 
@@ -88,7 +88,7 @@ literal: TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR;
 
 /* Atribuição */
 
-atrib: ident_atrib '=' expr';';
+atrib: ident_atrib '=' expr;
 
 ident_atrib: TK_IDENTIFICADOR | TK_IDENTIFICADOR'['lista_arranjo_atrib']';
 
@@ -96,7 +96,7 @@ lista_arranjo_atrib: lista_arranjo_atrib'^'expr | expr;
 
 /* Chamada de Função */
 
-chamada_func: TK_IDENTIFICADOR'('chamada_params')'';';
+chamada_func: TK_IDENTIFICADOR'('chamada_params')';
 
 chamada_params: chamada_lista_params | ;
 
@@ -104,7 +104,7 @@ chamada_lista_params: chamada_lista_params ',' expr | expr;
 
 /* Comando de Retorno */
 
-retorno: TK_PR_RETURN expr';';
+retorno: TK_PR_RETURN expr;
 
 /* Condicional */
 

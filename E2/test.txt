@@ -10,11 +10,11 @@ bool foo (int param,bool paramdois) {
     bool novaVar, maisVar <= 'c', teste;
 
     chamaFunc();
-  }
+  };
   return -5;
 }
 char bar(bool flag, int qtd) {
-{}{}{}
+{};{};{};
 
   atrib = 10 * 5;
   array[1] = (5 >= 1);
@@ -24,16 +24,16 @@ char bar(bool flag, int qtd) {
 
   if (true && false) then {
     atrib = true;
-  } else {}
+  } else {};
 
-  if (true || false) then {}
+  if (true || false) then {};
 
-  while (true == true) {}
+  while (true == true) {};
   while (true != false) {
     if (!true) then {
       foo(true,false);
-    }
-  }
+    };
+  };
 
 }
 
