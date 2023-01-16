@@ -119,26 +119,38 @@ iteracao: TK_PR_WHILE '('expr')' command_block;
 
 lista_expr: lista_expr '^' expr | expr;
 
-expr: TK_IDENTIFICADOR |
-      TK_IDENTIFICADOR '[' lista_expr ']' |
-      literal |
-      chamada_func |
-      '-' expr |
-      '!' expr |
-      expr '*' expr |
-      expr '/' expr |
-      expr '%' expr |
-      expr '+' expr |
-      expr '-' expr |
-      expr '<' expr |
-      expr '>' expr |
-      expr TK_OC_LE expr |
-      expr TK_OC_GE expr |
-      expr TK_OC_EQ expr |
-      expr TK_OC_NE expr |
-      expr TK_OC_AND expr |
-      expr TK_OC_OR expr |
-      '(' expr ')';
+expr: expr '*' expr_preced1 |
+      expr '/' expr_preced1 |
+      expr '%' expr_preced1 |
+      expr_preced1;
+
+expr_preced1: expr_preced1 '+' expr_preced2 |
+              expr_preced1 '-' expr_preced2 |
+              expr_preced2;
+
+expr_preced2: expr_preced2 '<' expr_preced3 |
+              expr_preced2 '>' expr_preced3 |
+              expr_preced2 TK_OC_LE expr_preced3 |
+              expr_preced2 TK_OC_GE expr_preced3 |
+              expr_preced3;
+
+expr_preced3: expr_preced3 TK_OC_EQ expr_preced4 |
+              expr_preced3 TK_OC_NE expr_preced4 |
+              expr_preced4;
+
+expr_preced4: expr_preced4 TK_OC_AND expr_preced5
+              expr_preced5;
+
+expr_preced5: expr_preced5 TK_OC_OR expr_terminais |
+              expr_terminais;
+
+expr_terminais: TK_IDENTIFICADOR |
+                TK_IDENTIFICADOR '[' lista_expr ']' |
+                literal |
+                '-' expr |
+                '!' expr |
+                '(' expr ')' |
+                chamada_func;
 
 %%
 
