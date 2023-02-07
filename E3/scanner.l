@@ -66,12 +66,30 @@
     return yytext[0];
 }
 
-"<="                    { return TK_OC_LE; }
-">="                    { return TK_OC_GE; }
-"!="                    { return TK_OC_NE; }
-"=="                    { return TK_OC_EQ; }
-"&&"                    { return TK_OC_AND; }
-"||"                    { return TK_OC_OR; }
+"<="                    { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_LE, strdup(yytext));
+    return TK_OC_LE;
+}
+">="                    { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_GE, strdup(yytext));
+    return TK_OC_GE; 
+}
+"!="                    { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_NE, strdup(yytext));
+    return TK_OC_NE;
+}
+"=="                    { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_EQ, strdup(yytext));
+    return TK_OC_EQ;
+}
+"&&"                    { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_AND, strdup(yytext));
+    return TK_OC_AND;
+}
+"||"                    { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_OR, strdup(yytext));
+    return TK_OC_OR;
+}
 
 "false"                 { 
     yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FALSE, strdup(yytext));
@@ -82,15 +100,15 @@
     return TK_LIT_TRUE;
 }
 
-[a-zA-Z]+ { 
+[a-zA-Z]+               { 
   yylval.valor_lexico = create_lexvalue(yylineno, TK_IDENTIFICADOR, strdup(yytext));
   return TK_IDENTIFICADOR;
 }
-[0-9]+            { 
+[0-9]+                  { 
     yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_INT, strdup(yytext));
     return TK_LIT_INT;
 }
-[0-9]+\.[0-9]+    { 
+[0-9]+\.[0-9]+          { 
     yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FLOAT, strdup(yytext));
     return TK_LIT_FLOAT;
 }
