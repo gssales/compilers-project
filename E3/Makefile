@@ -1,9 +1,10 @@
 all: parser scanner main
-	gcc parser.tab.o lex.yy.o main.o util.o -o etapa3
+	gcc parser.tab.o lex.yy.o main.o util.o utils.o -o etapa3
 
 main: main.c
 	gcc main.c -c  # gera main.o
 	gcc util.c -c  # gera util.o
+	gcc utils.c -c # gera utils.o
 
 parser: parser.y
 	bison -d parser.y

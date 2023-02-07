@@ -3,7 +3,7 @@
 %{
 
 #include "parser.tab.h"
-#include "main.h"
+#include "utils.h"
 
 %}
 
