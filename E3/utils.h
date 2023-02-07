@@ -1,15 +1,28 @@
+#ifndef UTILS_H
+#define UTILS_h
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+//enum tipoToken {RESERVADA, ESPECIAL, OPCOMPOSTO, IDENTIFICADOR, LITERAL};
+//enum tipoLiteral {INT, CHAR, FLOAT, STRING, BOOL, NAOLITERAL};
+
 typedef union TokenValue {
   int i;
   float f;
   char c;
+  char* s; // usar string yytext caso nao seja literal?
 } token_value_t;
 
-typedef struct LexValue {
+typedef struct valor_lexico valor_lexico;
+struct valor_lexico {
   int line_number;
-  token_value_t tk_value;
   int tk_type;
-} value_t;
+  token_value_t tk_value;
+};
 
-value_t* create_lexvalue(int lineno, int token, char* lexema);
+valor_lexico* create_lexvalue(int lineno, int token, char* lexema);
 
-void print_lexvalue(value_t* lexvalue);
+void print_lexvalue(valor_lexico* lexvalue);
+
+#endif

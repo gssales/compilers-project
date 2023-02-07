@@ -36,5 +36,3 @@ char bar(bool flag, int qtd) {
   };
 
 }
-
-

@@ -3,7 +3,6 @@
 %{
 
 #include "parser.tab.h"
-#include "utils.h"
 
 %}
 
@@ -13,7 +12,10 @@
 %%
 
 [ \t\n\r]               { /* Ignora espaco, tab, e new line */ }
-"int"                   { return TK_PR_INT; }
+"int"                   { 
+    // dando erro: yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INT, yytext);
+    return TK_PR_INT;
+}
 "float"                 { return TK_PR_FLOAT; }
 "bool"                  { return TK_PR_BOOL; }
 "char"                  { return TK_PR_CHAR; }
@@ -35,22 +37,36 @@
 "&&"                    { return TK_OC_AND; }
 "||"                    { return TK_OC_OR; }
 
-"false"                 { return TK_LIT_FALSE; }
-"true"                  { return TK_LIT_TRUE; }
+"false"                 { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FALSE, yytext);
+    return TK_LIT_FALSE;
+}
+"true"                  {
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_TRUE, yytext);
+    return TK_LIT_TRUE;
+}
 
 [a-zA-Z]+ { 
-  // yylval.valor_lexico = create_value(...);
-  create_lexvalue(yylineno, TK_IDENTIFICADOR, yytext);
+  yylval.valor_lexico = create_lexvalue(yylineno, TK_IDENTIFICADOR, yytext);
   return TK_IDENTIFICADOR;
 }
-[0-9]+            { return TK_LIT_INT; }
-[0-9]+\.[0-9]+    { return TK_LIT_FLOAT; }
+[0-9]+            { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_INT, yytext);
+    return TK_LIT_INT;
+}
+[0-9]+\.[0-9]+    { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FLOAT, yytext);
+    return TK_LIT_FLOAT;
+}
 
 [0-9]+\.[0-9]+[eE][\-+]?[0-9]+  { /* Notacao cientifica */
+                            yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FLOAT, yytext);
                             return TK_LIT_FLOAT;
                         }
 
-'.'                     { return TK_LIT_CHAR; }
+'.'                     { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_CHAR, yytext);
+    return TK_LIT_CHAR; }
 
 \/\*([^*]|\*+[^*/])*\*+\/ { /* Ignora comentarios multi linha 
                             ([^*]|\*+[^*\/])*  -> reconhece qualquer sequencia que não contenha um * seguido de /

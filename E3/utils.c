@@ -1,12 +1,22 @@
 #include "parser.tab.h"
 
-value_t* create_lexvalue(int lineno, int token, char* lexema) {
-  value_t* new_lexvalue;
+valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
+  valor_lexico* new_lexvalue;
   new_lexvalue->line_number = lineno;
   new_lexvalue->tk_type = token;
   switch (token) {
-  case TK_LIT_INT:
-    new_lexvalue->tk_value.i = atoi(lexema);
+    case TK_LIT_INT:
+      new_lexvalue->tk_value.i = atoi(lexema);
+    case TK_LIT_FLOAT:
+      new_lexvalue->tk_value.f = atof(lexema);
+    case TK_LIT_CHAR:
+      new_lexvalue->tk_value.c = lexema[0];
+    case TK_LIT_TRUE:
+      new_lexvalue->tk_value.i = 1;
+    case TK_LIT_FALSE:
+      new_lexvalue->tk_value.i = 0;
+    //case TK_PR_INT:
+    //  new_lexvalue->tk_value.s = lexema;
   }
   print_lexvalue(new_lexvalue);
 }
@@ -91,6 +101,8 @@ char* tk_type_to_string(int tk_type) {
   }
 }
 
-void print_lexvalue(value_t* lexvalue) {
+void print_lexvalue(valor_lexico* lexvalue) {
   printf("l%d: %s\n", lexvalue->line_number, tk_type_to_string(lexvalue->tk_type));
+
+  // prints do valor dependendo do tipo
 }

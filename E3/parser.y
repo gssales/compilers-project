@@ -1,6 +1,5 @@
 %{
 #include <stdio.h>
-#include "main.h"
 
 extern int yylineno;
 
@@ -15,12 +14,18 @@ void yyerror(char const *s);
 %define parse.error verbose
 //%define parse.trace true
 
-//%union {
-//  node_t *no;
-//  value_t *valor_lexico;
-//}
+%code requires {
+	#include "utils.h"
+  #include "arvore.h"
+  extern void* arvore;
+}
 
-//%type<no> expr_terminais
+%union {
+  asd_tree_t *nodo;
+  valor_lexico *valor_lexico;
+}
+
+//%type<nodo> expr_terminais
 
 %token TK_PR_INT
 %token TK_PR_FLOAT
