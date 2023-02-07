@@ -62,7 +62,7 @@
 }
 
 [\[\],;:(){}\+\-*/%^<>=!]   { 
-    yylval.valor_lexico = create_lexvalue(yylineno, 0, strdup(yytext));
+    //yylval.valor_lexico = create_lexvalue(yylineno, 0, strdup(yytext));
     return yytext[0];
 }
 

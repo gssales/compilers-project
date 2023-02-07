@@ -54,6 +54,26 @@ void yyerror(char const *s);
 %token TK_IDENTIFICADOR
 %token TK_ERRO
 
+%token '['
+%token ']'
+%token ','
+%token ';'
+%token ':'
+%token '('
+%token ')'
+%token '{'
+%token '}'
+%token '+'
+%token '-'
+%token '*'
+%token '/'
+%token '%'
+%token '^'
+%token '<'
+%token '>'
+%token '='
+%token '!'
+
 %%
 
 /* Programa */
