@@ -1,32 +1,10 @@
 #include "parser.tab.h"
 
-valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
-  valor_lexico* new_lexvalue;
-  new_lexvalue->line_number = lineno;
-  new_lexvalue->tk_type = token;
-  switch (token) {
-    //case 0: // CHAR ESPECIAL
-    //  new_lexvalue->tk_value.s = lexema;
-    case TK_IDENTIFICADOR:
-      new_lexvalue->tk_value.s = lexema;
-    case TK_LIT_INT:
-      new_lexvalue->tk_value.i = atoi(lexema);
-    case TK_LIT_FLOAT:
-      new_lexvalue->tk_value.f = atof(lexema);
-    case TK_LIT_CHAR:
-      new_lexvalue->tk_value.c = lexema[0];
-    case TK_LIT_TRUE:
-      new_lexvalue->tk_value.i = 1;
-    case TK_LIT_FALSE:
-      new_lexvalue->tk_value.i = 0;
-    //case TK_PR_INT:
-      //new_lexvalue->tk_value.s = lexema;
-  }
-  print_lexvalue(new_lexvalue);
-}
-
 char* tk_type_to_string(int tk_type) {
   switch(tk_type) {
+    case 0:
+      return "CHAR_ESPECIAL";
+      break;
     case TK_PR_INT:
       return "TK_PR_INT";
       break;
@@ -105,8 +83,58 @@ char* tk_type_to_string(int tk_type) {
   }
 }
 
-void print_lexvalue(valor_lexico* lexvalue) {
-  printf("l%d: %s\n", lexvalue->line_number, tk_type_to_string(lexvalue->tk_type));
+valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
+  valor_lexico* new_lexvalue;
+  new_lexvalue = calloc(1, sizeof(valor_lexico));
+  new_lexvalue->line_number = lineno;
+  new_lexvalue->tk_type = token;
+  switch (token) {
+    case 0: // chars especiais
+    case TK_OC_LE:
+    case TK_OC_GE:
+    case TK_OC_NE:
+    case TK_OC_EQ:
+    case TK_OC_AND:
+    case TK_OC_OR:
+    case TK_IDENTIFICADOR:
+    case TK_PR_INT:
+    case TK_PR_FLOAT:
+    case TK_PR_BOOL:
+    case TK_PR_CHAR:
+    case TK_PR_IF:
+    case TK_PR_THEN:
+    case TK_PR_ELSE:
+    case TK_PR_WHILE:
+    case TK_PR_INPUT:
+    case TK_PR_OUTPUT:
+    case TK_PR_RETURN:
+    case TK_PR_FOR:
+      new_lexvalue->str = calloc(strlen(lexema)+1,sizeof(char));
+      strcpy(new_lexvalue->str,lexema);
+      break;
+    case TK_LIT_INT:
+      new_lexvalue->tk_value.i = atoi(lexema);
+      break;
+    case TK_LIT_FLOAT:
+      new_lexvalue->tk_value.f = atof(lexema);
+      break;
+    case TK_LIT_CHAR:
+      new_lexvalue->tk_value.c = lexema[1];
+      break;
+    case TK_LIT_TRUE:
+      new_lexvalue->tk_value.i = 1;
+      break;
+    case TK_LIT_FALSE:
+      new_lexvalue->tk_value.i = 0;
+      break;
+  }
+  printf("lexema: %s \n", lexema);
+  fflush(stdout);
+  print_lexvalue(new_lexvalue);
+  return new_lexvalue;
+}
 
-  // prints do valor dependendo do tipo
+void print_lexvalue(valor_lexico* lexvalue) {
+  printf("l%d: %s\n\n", lexvalue->line_number, tk_type_to_string(lexvalue->tk_type));
+  fflush(stdout);
 }

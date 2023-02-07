@@ -1,6 +1,7 @@
-int variavel, array[2^3^4], outraVariavel;
-
+int a;
+float b;
 bool variavelBool;
+//variavelBool = true; // DANDO ERRO
 
 int novaFuncao() {}
 bool foo (int param,bool paramdois) {

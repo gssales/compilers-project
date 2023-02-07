@@ -12,7 +12,7 @@ void yyerror(char const *s);
 %}
 
 %define parse.error verbose
-//%define parse.trace true
+%define parse.trace true
 
 %code requires {
 	#include "utils.h"
@@ -50,6 +50,7 @@ void yyerror(char const *s);
 %token TK_LIT_FALSE
 %token TK_LIT_TRUE
 %token TK_LIT_CHAR
+//%token<valor_lexico> TK_IDENTIFICADOR
 %token TK_IDENTIFICADOR
 %token TK_ERRO
 
