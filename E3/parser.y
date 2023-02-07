@@ -21,7 +21,7 @@ void yyerror(char const *s);
 }
 
 %union {
-  asd_tree_t *nodo;
+  node_t *nodo;
   valor_lexico *valor_lexico;
 }
 

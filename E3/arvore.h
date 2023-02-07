@@ -1,17 +1,17 @@
 #ifndef _ARVORE_H_
 #define _ARVORE_H_
 
-#include "main.h"
+#include "utils.h"
 
 typedef struct node node_t;
 struct node {
 	char *label;
-	value_t *value;
+	valor_lexico *value;
 	int count_children;
 	node_t **children;
 };
 
-node_t* create_leaf(char* label, value_t *value);
+node_t* create_leaf(char* label, valor_lexico *value);
 node_t* create_node(char* label);
 void add_child(node_t *node, node_t *child);
 /* função usada na main */

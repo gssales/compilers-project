@@ -2,7 +2,7 @@
 #include <string.h>
 #include "arvore.h"
 
-node_t* create_leaf(char* label, value_t *value) {
+node_t* create_leaf(char* label, valor_lexico *value) {
 	node_t *node = NULL;
 	node = malloc(sizeof(node_t));
 	if (node != NULL) {
