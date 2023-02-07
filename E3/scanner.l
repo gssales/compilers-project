@@ -13,7 +13,7 @@
 
 [ \t\n\r]               { /* Ignora espaco, tab, e new line */ }
 "int"                   { 
-    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INT, yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INT, yytext);
     return TK_PR_INT;
 }
 "float"                 { 

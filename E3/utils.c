@@ -7,8 +7,8 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
   switch (token) {
     //case 0: // CHAR ESPECIAL
     //  new_lexvalue->tk_value.s = lexema;
-    //case TK_IDENTIFICADOR:
-    //  new_lexvalue->tk_value.s = lexema;
+    case TK_IDENTIFICADOR:
+      new_lexvalue->tk_value.s = lexema;
     case TK_LIT_INT:
       new_lexvalue->tk_value.i = atoi(lexema);
     case TK_LIT_FLOAT:

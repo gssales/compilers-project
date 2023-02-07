@@ -11,7 +11,7 @@ typedef union TokenValue {
   int i;
   float f;
   char c;
-  //char* s; // usar string yytext caso nao seja literal?
+  char* s; // usar string yytext caso nao seja literal?
 } token_value_t;
 
 typedef struct valor_lexico valor_lexico;
