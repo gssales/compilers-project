@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "main.h"
 
 extern int yylineno;
 
@@ -9,29 +10,17 @@ void yyerror(char const *s);
 // node_t create_node(x, y)
 // node_t create_node_leaf(x, value_t y)
 
-typedef union TokenValue {
-  int i;
-  float f;
-  char c;
-} token_value_t;
-
-typedef struct LexValue {
-  int line_number;
-  token_value_t tk_value;
-  int tk_type;
-} value_t;
-
 %}
 
 %define parse.error verbose
 //%define parse.trace true
 
-%union {
-  node_t *no;
-  value_t *valor_lexico;
-}
+//%union {
+//  node_t *no;
+//  value_t *valor_lexico;
+//}
 
-%type<no> expr_terminais
+//%type<no> expr_terminais
 
 %token TK_PR_INT
 %token TK_PR_FLOAT
@@ -56,7 +45,8 @@ typedef struct LexValue {
 %token TK_LIT_FALSE
 %token TK_LIT_TRUE
 %token TK_LIT_CHAR
-%token<valor_lexico> TK_IDENTIFICADOR
+//%token<valor_lexico> TK_IDENTIFICADOR
+%token TK_IDENTIFICADOR
 %token TK_ERRO
 
 %%
@@ -168,17 +158,11 @@ expr_preced5: expr_preced5 '*' expr_preced6 |
               expr_preced5 '%' expr_preced6 |
               expr_preced6;
 
-expr_preced6: '-' expr_terminais { 
-					$$ = create_node( MENOS_UNARIO, "-" );
-					add_child( $$, $2 );
-			 	} |
-              '!' expr_terminais { 
-					$$ = create_node( NEGACAO, "!" );
-					add_child( $$, $2 );
-				 } |
+expr_preced6: '-' expr_terminais  |
+              '!' expr_terminais  |
               expr_terminais;
 
-expr_terminais: TK_IDENTIFICADOR { $$ = create_node_leaf(IDENTIFICADOR, $1) }
+expr_terminais: TK_IDENTIFICADOR 
 		| TK_IDENTIFICADOR '[' lista_expr ']' 
 		| literal 
 		| '(' expr ')' 

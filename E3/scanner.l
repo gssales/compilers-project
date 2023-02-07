@@ -3,6 +3,7 @@
 %{
 
 #include "parser.tab.h"
+#include "main.h"
 
 %}
 
@@ -38,7 +39,8 @@
 "true"                  { return TK_LIT_TRUE; }
 
 [a-zA-Z]+ { 
-  yylval.valor_lexico = create_value(...);
+  // yylval.valor_lexico = create_value(...);
+  create_lexvalue(yylineno, TK_IDENTIFICADOR, yytext);
   return TK_IDENTIFICADOR;
 }
 [0-9]+            { return TK_LIT_INT; }

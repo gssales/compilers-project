@@ -1,5 +1,5 @@
 all: parser scanner main
-	gcc parser.tab.o lex.yy.o main.o util.o -o etapa2
+	gcc parser.tab.o lex.yy.o main.o util.o -o etapa3
 
 main: main.c
 	gcc main.c -c  # gera main.o
@@ -14,5 +14,5 @@ scanner: scanner.l
 	gcc lex.yy.c -c
 
 clean: 
-	rm etapa2 lex.yy.c parser.tab.c parser.tab.h
+	rm etapa3 lex.yy.c parser.tab.c parser.tab.h
 	rm *.o
