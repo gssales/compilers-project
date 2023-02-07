@@ -13,22 +13,58 @@
 
 [ \t\n\r]               { /* Ignora espaco, tab, e new line */ }
 "int"                   { 
-    // dando erro: yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INT, yytext);
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INT, yytext);
     return TK_PR_INT;
 }
-"float"                 { return TK_PR_FLOAT; }
-"bool"                  { return TK_PR_BOOL; }
-"char"                  { return TK_PR_CHAR; }
-"if"                    { return TK_PR_IF; }
-"then"                  { return TK_PR_THEN; }
-"else"                  { return TK_PR_ELSE; }
-"while"                 { return TK_PR_WHILE; }
-"input"                 { return TK_PR_INPUT; }
-"output"                { return TK_PR_OUTPUT; }
-"return"                { return TK_PR_RETURN; }
-"for"                   { return TK_PR_FOR; }
+"float"                 { 
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_FLOAT, yytext);
+    return TK_PR_FLOAT;
+}
+"bool"                  {
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_BOOL, yytext);
+    return TK_PR_BOOL;
+}
+"char"                  { 
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_CHAR, yytext);
+    return TK_PR_CHAR;
+}
+"if"                    { 
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_IF, yytext);
+    return TK_PR_IF;
+}
+"then"                  { 
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_THEN, yytext);
+    return TK_PR_THEN;
+}
+"else"                  { 
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_ELSE, yytext);
+    return TK_PR_ELSE;
+}
+"while"                 { 
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_WHILE, yytext);
+    return TK_PR_WHILE;
+}
+"input"                 { 
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INPUT, yytext);
+    return TK_PR_INPUT;
+}
+"output"                { 
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_OUTPUT, yytext);
+    return TK_PR_OUTPUT; \
+}
+"return"                { 
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_RETURN, yytext);
+    return TK_PR_RETURN;
+}
+"for"                   { 
+    //yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_FOR, yytext);
+    return TK_PR_FOR;
+}
 
-[\[\],;:(){}\+\-*/%^<>=!]   { return yytext[0]; }
+[\[\],;:(){}\+\-*/%^<>=!]   { 
+    //yylval.valor_lexico = create_lexvalue(yylineno, 0, yytext);
+    return yytext[0];
+}
 
 "<="                    { return TK_OC_LE; }
 ">="                    { return TK_OC_GE; }

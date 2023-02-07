@@ -5,6 +5,10 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
   new_lexvalue->line_number = lineno;
   new_lexvalue->tk_type = token;
   switch (token) {
+    //case 0: // CHAR ESPECIAL
+    //  new_lexvalue->tk_value.s = lexema;
+    //case TK_IDENTIFICADOR:
+    //  new_lexvalue->tk_value.s = lexema;
     case TK_LIT_INT:
       new_lexvalue->tk_value.i = atoi(lexema);
     case TK_LIT_FLOAT:
@@ -16,7 +20,7 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
     case TK_LIT_FALSE:
       new_lexvalue->tk_value.i = 0;
     //case TK_PR_INT:
-    //  new_lexvalue->tk_value.s = lexema;
+      //new_lexvalue->tk_value.s = lexema;
   }
   print_lexvalue(new_lexvalue);
 }
