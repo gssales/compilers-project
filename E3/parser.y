@@ -15,9 +15,9 @@ void yyerror(char const *s);
 %define parse.trace true
 
 %code requires {
-	#include "utils.h"
-  #include "arvore.h"
-  extern void* arvore;
+    #include "utils.h"
+    #include "arvore.h"
+    extern void* arvore;
 }
 
 %union {
@@ -26,11 +26,14 @@ void yyerror(char const *s);
 }
 
 //%type<nodo> expr_terminais
+//%type<nodo> ident_atrib
+%type<nodo> tipo
+%type<nodo> literal
 
-%token TK_PR_INT
-%token TK_PR_FLOAT
-%token TK_PR_BOOL
-%token TK_PR_CHAR
+%token<valor_lexico> TK_PR_INT
+%token<valor_lexico> TK_PR_FLOAT
+%token<valor_lexico> TK_PR_BOOL
+%token<valor_lexico> TK_PR_CHAR
 %token TK_PR_IF
 %token TK_PR_THEN
 %token TK_PR_ELSE
@@ -45,13 +48,12 @@ void yyerror(char const *s);
 %token TK_OC_NE
 %token TK_OC_AND
 %token TK_OC_OR
-%token TK_LIT_INT
-%token TK_LIT_FLOAT
-%token TK_LIT_FALSE
-%token TK_LIT_TRUE
-%token TK_LIT_CHAR
-//%token<valor_lexico> TK_IDENTIFICADOR
-%token TK_IDENTIFICADOR
+%token<valor_lexico> TK_LIT_INT
+%token<valor_lexico> TK_LIT_FLOAT
+%token<valor_lexico> TK_LIT_FALSE
+%token<valor_lexico> TK_LIT_TRUE
+%token<valor_lexico> TK_LIT_CHAR
+%token<valor_lexico> TK_IDENTIFICADOR
 %token TK_ERRO
 
 %token '['
@@ -87,7 +89,11 @@ elemento: var_global | funcao;
 /* Variável Global */
 var_global: tipo lista_ident_var ';';
 
-tipo: TK_PR_INT |  TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR;
+tipo: 
+    TK_PR_INT       { $$ = create_leaf("TIPO_INT", $1); }
+    | TK_PR_FLOAT   { $$ = create_leaf("TIPO_FLOAT", $1); }
+    | TK_PR_BOOL    { $$ = create_leaf("TIPO_BOOL", $1); }
+    | TK_PR_CHAR    { $$ = create_leaf("TIPO_CHAR", $1); };
 
 lista_ident_var: lista_ident_var ',' ident_var | ident_var;
 
@@ -121,13 +127,24 @@ lista_local_var: lista_local_var ',' local_var | local_var;
 
 local_var: TK_IDENTIFICADOR | TK_IDENTIFICADOR TK_OC_LE literal;
 
-literal: TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR;
+literal: 
+    TK_LIT_INT      { $$ = create_leaf("LIT_INT", $1); }
+    | TK_LIT_FLOAT  { $$ = create_leaf("LIT_FLOAT", $1); }
+    | TK_LIT_FALSE  { $$ = create_leaf("LIT_FALSE", $1); }
+    | TK_LIT_TRUE   { $$ = create_leaf("LIT_TRUE", $1); }
+    | TK_LIT_CHAR   { $$ = create_leaf("LIT_CHAR", $1); };
 
 /* Atribuição */
 
 atrib: ident_atrib '=' expr;
 
-ident_atrib: TK_IDENTIFICADOR | TK_IDENTIFICADOR'['lista_arranjo_atrib']';
+ident_atrib:
+    TK_IDENTIFICADOR { 
+        //$$ = create_leaf("ID_GLOBAL", $1); 
+    }
+    | TK_IDENTIFICADOR'['lista_arranjo_atrib']' {
+        //$$ = create_leaf("ID_GLOBAL", $1); 
+    };
 
 lista_arranjo_atrib: lista_arranjo_atrib'^'expr | expr;
 
@@ -187,11 +204,25 @@ expr_preced6: '-' expr_terminais  |
               '!' expr_terminais  |
               expr_terminais;
 
-expr_terminais: TK_IDENTIFICADOR 
-		| TK_IDENTIFICADOR '[' lista_expr ']' 
-		| literal 
-		| '(' expr ')' 
-		| chamada_func;
+expr_terminais: 
+    TK_IDENTIFICADOR  { 
+        //$$ = create_leaf("ID_EXPR", $1); 
+    }
+	| TK_IDENTIFICADOR '[' lista_expr ']'  { 
+        node_t* indexador = create_node("[]");
+        //add_child(indexador, create_leaf("ID_EXPR", $1));
+        //add_child(indexador, create_leaf("INDEX_EXPR", $2));
+        //$$ = indexador; 
+    }
+	| literal  {
+        //$$ = $1;
+    }
+	| '(' expr ')'  {
+        //$$ = $1;
+    }
+	| chamada_func  {
+        //$$ = $1;
+    };
 
 %%
 

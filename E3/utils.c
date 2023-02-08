@@ -88,7 +88,7 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
   new_lexvalue = calloc(1, sizeof(valor_lexico));
   new_lexvalue->line_number = lineno;
   new_lexvalue->tk_type = token;
-  printf("lexema: %s \n", lexema);
+  // printf("lexema: %s \n", lexema);
   fflush(stdout);
   switch (token) {
     case 0: // chars especiais
@@ -130,7 +130,7 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
       new_lexvalue->tk_value.i = 0;
       break;
   }
-  print_lexvalue(new_lexvalue);
+  // print_lexvalue(new_lexvalue);
   return new_lexvalue;
 }
 
