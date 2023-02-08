@@ -25,6 +25,15 @@ node_t* create_node(char* label) {
 	return node;
 }
 
+node_t* asList_getLeaf(node_t *list) {
+  if (list->count_children == 0)
+    return list;
+  if (list->count_children == 1)
+    return asList_getLeaf(list->children[0]);
+  else
+    printf("ERROR node is not a list: %s\n", list->label);
+}
+
 void add_child(node_t *node, node_t *child) {
   if (node != NULL && child != NULL){
     node->count_children++;
@@ -34,17 +43,21 @@ void add_child(node_t *node, node_t *child) {
 }
 
 void print_node(node_t *node) {
-  printf(":%s ", node->label);
+  printf(":%s", node->label);
+  if (node->value != NULL) {
+    printf(" -> ");
+    print_tk_value(node->value);
+  }
 }
 
 void _print_tree(node_t *tree, int depth) {
   if (tree != NULL) {
     for (int d = 0; d < depth;d++) printf("| ");
     print_node(tree);
+    printf("\n");
     for (int i = 0; i < tree->count_children; i++) {
       _print_tree(tree->children[i], depth + 1);
     }
-    printf("\n");    
   }
 }
 void print_tree(node_t *tree) {

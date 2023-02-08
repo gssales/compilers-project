@@ -27,8 +27,7 @@ void yyerror(char const *s);
 
 //%type<nodo> expr_terminais
 //%type<nodo> ident_atrib
-%type<nodo> tipo
-%type<nodo> literal
+%type<nodo> tipo literal lista_ident_var ident_var lista_arranjo
 
 %token<valor_lexico> TK_PR_INT
 %token<valor_lexico> TK_PR_FLOAT
@@ -87,19 +86,52 @@ elemento: var_global | funcao;
 
 
 /* Variável Global */
-var_global: tipo lista_ident_var ';';
+var_global: 
+    tipo lista_ident_var ';'  {
+        node_t* declara_var_global = create_node("CMD_DECLARA_VAR_GLOBAL");
+        add_child(declara_var_global, $1);
+        add_child(declara_var_global, $2);
+        print_tree(declara_var_global);
+    };
 
 tipo: 
-    TK_PR_INT       { print_tree(create_leaf("TIPO_INT", $1)); $$ = create_leaf("TIPO_INT", $1); }
+    TK_PR_INT       { $$ = create_leaf("TIPO_INT", $1); }
     | TK_PR_FLOAT   { $$ = create_leaf("TIPO_FLOAT", $1); }
     | TK_PR_BOOL    { $$ = create_leaf("TIPO_BOOL", $1); }
     | TK_PR_CHAR    { $$ = create_leaf("TIPO_CHAR", $1); };
 
-lista_ident_var: lista_ident_var ',' ident_var | ident_var;
+lista_ident_var: 
+    lista_ident_var ',' ident_var   { 
+        node_t* lastLeaf = asList_getLeaf($1);  // mantem ordem esquerda - direita da lista
+        add_child(lastLeaf, $3);
+        $$ = $1;
+    }
+    | ident_var  { 
+        $$ = $1; 
+    };
 
-ident_var: TK_IDENTIFICADOR | TK_IDENTIFICADOR'['lista_arranjo']';
+ident_var: 
+    TK_IDENTIFICADOR  { 
+        $$ = create_leaf("ID_GLOBAL", $1); 
+    }
+    | TK_IDENTIFICADOR'['lista_arranjo']'       {
+        node_t* id = create_leaf("ID_GLOBAL", $1);
+        node_t* declara_arranjo = create_node("[]");
+        add_child(declara_arranjo, id);
+        add_child(declara_arranjo, $3);
+        $$ = declara_arranjo;
+    };
 
-lista_arranjo: lista_arranjo'^'TK_LIT_INT | TK_LIT_INT;
+lista_arranjo: 
+    lista_arranjo'^'TK_LIT_INT  {
+        node_t* lastLeaf = asList_getLeaf($1);  // mantem ordem esquerda - direita da lista
+        node_t* lit = create_leaf("LIT_INT", $3);
+        add_child(lastLeaf, lit);
+        $$ = $1;
+    }
+    | TK_LIT_INT { 
+        $$ = create_leaf("LIT_INT", $1); 
+    };
 
 
 /* Função */

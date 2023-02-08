@@ -11,19 +11,20 @@ typedef union TokenValue {
   int i;
   float f;
   char c;
-  //char* s; // usar string yytext caso nao seja literal?
+  char* s; // usar string yytext caso nao seja literal?
 } token_value_t;
 
 typedef struct valor_lexico valor_lexico;
 struct valor_lexico {
   int line_number;
   int tk_type;
-  char *str;
+  // char *str;
   token_value_t tk_value;
 };
 
 valor_lexico* create_lexvalue(int lineno, int token, char* lexema);
 
 void print_lexvalue(valor_lexico* lexvalue);
+void print_tk_value(valor_lexico* lexvalue);
 
 #endif

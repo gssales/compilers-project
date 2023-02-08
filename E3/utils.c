@@ -111,8 +111,8 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
     case TK_PR_OUTPUT:
     case TK_PR_RETURN:
     case TK_PR_FOR:
-      new_lexvalue->str = calloc(strlen(lexema)+1,sizeof(char));
-      strcpy(new_lexvalue->str,lexema);
+      new_lexvalue->tk_value.s = calloc(strlen(lexema)+1,sizeof(char));
+      strcpy(new_lexvalue->tk_value.s,lexema);
       break;
     case TK_LIT_INT:
       new_lexvalue->tk_value.i = atoi(lexema);
@@ -135,6 +135,46 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
 }
 
 void print_lexvalue(valor_lexico* lexvalue) {
-  printf("l%d: %s\n\n", lexvalue->line_number, tk_type_to_string(lexvalue->tk_type));
+  printf("l%d: %s ", lexvalue->line_number, tk_type_to_string(lexvalue->tk_type));
+  print_tk_value(lexvalue);
+  printf("\n\n");
   fflush(stdout);
+}
+
+void print_tk_value(valor_lexico* lexvalue) {
+  switch (lexvalue->tk_type) {
+    case 0: // chars especiais
+    case TK_OC_LE:
+    case TK_OC_GE:
+    case TK_OC_NE:
+    case TK_OC_EQ:
+    case TK_OC_AND:
+    case TK_OC_OR:
+    case TK_IDENTIFICADOR:
+    case TK_PR_INT:
+    case TK_PR_FLOAT:
+    case TK_PR_BOOL:
+    case TK_PR_CHAR:
+    case TK_PR_IF:
+    case TK_PR_THEN:
+    case TK_PR_ELSE:
+    case TK_PR_WHILE:
+    case TK_PR_INPUT:
+    case TK_PR_OUTPUT:
+    case TK_PR_RETURN:
+    case TK_PR_FOR:
+      printf("%s", lexvalue->tk_value.s);
+      break;
+    case TK_LIT_TRUE:
+    case TK_LIT_FALSE:
+    case TK_LIT_INT:
+      printf("%d", lexvalue->tk_value.i);
+      break;
+    case TK_LIT_FLOAT:
+      printf("%f", lexvalue->tk_value.f);
+      break;
+    case TK_LIT_CHAR:
+      printf("%c", lexvalue->tk_value.c);
+      break;
+  }
 }
