@@ -1,0 +1,11 @@
+int funcCond () {
+
+	if (true) then {
+        atrib = true;
+    };
+
+	if (true && false) then {
+        atrib = true;
+    } else {};
+
+}

@@ -1,0 +1,8 @@
+int funcWhile () {
+	
+	while (true) {};
+    while (5 * 10) {};
+    while (1) {
+        int i;
+    };
+}

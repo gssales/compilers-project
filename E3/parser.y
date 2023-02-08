@@ -30,19 +30,20 @@ void yyerror(char const *s);
 %type<nodo> tipo literal lista_ident_var ident_var lista_arranjo
 %type<nodo> lista_expr expr
 %type<nodo> expr_preced0 expr_preced1 expr_preced2 expr_preced3 expr_preced4 expr_preced5 expr_preced6
-%type<nodo> lista_arranjo_atrib
+%type<nodo> atrib lista_arranjo_atrib chamada_func chamada_params chamada_lista_params
+%type<nodo> command lista_commands command_block declara_var retorno condicional iteracao
 
 %token<valor_lexico> TK_PR_INT
 %token<valor_lexico> TK_PR_FLOAT
 %token<valor_lexico> TK_PR_BOOL
 %token<valor_lexico> TK_PR_CHAR
-%token TK_PR_IF
-%token TK_PR_THEN
-%token TK_PR_ELSE
-%token TK_PR_WHILE
+%token<valor_lexico> TK_PR_IF
+%token<valor_lexico> TK_PR_THEN
+%token<valor_lexico> TK_PR_ELSE
+%token<valor_lexico> TK_PR_WHILE
 %token TK_PR_INPUT
 %token TK_PR_OUTPUT
-%token TK_PR_RETURN
+%token<valor_lexico> TK_PR_RETURN
 %token TK_PR_FOR
 %token TK_OC_LE
 %token TK_OC_GE
@@ -148,11 +149,41 @@ param: tipo TK_IDENTIFICADOR;
 
 
 /* Bloco de Comandos */
-command_block: '{'lista_commands'}';
+command_block: '{'lista_commands'}' { 
+                  $$ = $2;
+                };
 
-lista_commands: lista_commands command ';' | ;
+lista_commands: lista_commands command ';'  { 
+                  //node_t* lastLeaf = asList_getLeaf($1);
+                  //add_child(lastLeaf, $2);
+                  //$$ = $1;
+                  //print_tree($$); // FALTA TESTAR
+                } | 
+                { 
+                  //$$ = NULL; 
+                };
 
-command: command_block | declara_var | atrib | chamada_func | retorno | condicional | iteracao;
+command:  command_block { 
+            //$$ = $1; 
+          } |
+          declara_var  { 
+            //$$ = $1;
+          } | 
+          atrib { 
+            //$$ = $1;  // FUNCIONANDO OK
+          } | 
+          chamada_func  { 
+            //$$ = $1;
+          } | 
+          retorno  { 
+            // $$ = $1; // FUNCIONANDO OK
+          } | 
+          condicional  { 
+            //$$ = $1; // TESTAR
+          } | 
+          iteracao { 
+            //$$ = $1; // TESTAR
+          }; 
 
 /* Declaração de Variável */
 
@@ -175,7 +206,8 @@ atrib: ident_atrib '=' expr {
   node_t* atribuicao = create_node("ATRIBUICAO");
         add_child(atribuicao, $1);
         add_child(atribuicao, $3);
-        print_tree(atribuicao);
+        $$ = atribuicao;
+        print_tree($$);
 };
 
 ident_atrib:
@@ -199,7 +231,13 @@ lista_arranjo_atrib:  lista_arranjo_atrib'^'expr {
 
 /* Chamada de Função */
 
-chamada_func: TK_IDENTIFICADOR'('chamada_params')';
+chamada_func: TK_IDENTIFICADOR'('chamada_params')'  {
+                    node_t* funcao = create_node("()");
+                    add_child(funcao, create_leaf("ID_FUNCAO", $1));
+                    if (funcao != NULL)
+                        add_child(funcao, $3); // MUDAR PRA PRIMEIRO PARAMETRO DA LISTA EM $3?
+                    $$ = funcao;
+                };
 
 chamada_params: chamada_lista_params | ;
 
@@ -207,16 +245,41 @@ chamada_lista_params: chamada_lista_params ',' expr | expr;
 
 /* Comando de Retorno */
 
-retorno: TK_PR_RETURN expr;
+retorno:  TK_PR_RETURN expr {
+            //node_t* cmd_ret = create_node("CMD_RETURN");
+            //add_child(cmd_ret, $2);
+            //$$ = cmd_ret;
+            //print_tree($$); // RETORNO OK!
+          };
 
 /* Condicional */
 
-condicional: TK_PR_IF '('expr')' TK_PR_THEN command_block |
-             TK_PR_IF '('expr')' TK_PR_THEN command_block TK_PR_ELSE command_block;
+condicional:  TK_PR_IF '('expr')' TK_PR_THEN command_block {
+                //node_t* cmd_if = create_node("CMD_IF");
+                //pri_comando = ??? // PEGAR PRIMEIRO COMANDO DO BLOCO EM $6
+                //add_child(cmd_if, $3); // expr
+                //add_child(cmd_if, pri_comando);
+                //$$ = cmd_if;
+              } |
+             TK_PR_IF '('expr')' TK_PR_THEN command_block TK_PR_ELSE command_block {
+                //node_t* cmd_if = create_node("CMD_IF");
+                //pri_comando_then = ??? // PEGAR PRIMEIRO COMANDO DO BLOCO EM $6
+                //pri_comando_else = ??? // PEGAR PRIMEIRO COMANDO DO BLOCO EM $8
+                //add_child(cmd_if, $3); // expr
+                //add_child(cmd_if, pri_comando_then);
+                //add_child(cmd_if, pri_comando_else);
+                //$$ = cmd_if;
+             };
 
 /* Iteração */
 
-iteracao: TK_PR_WHILE '('expr')' command_block;
+iteracao: TK_PR_WHILE '('expr')' command_block {
+            //node_t* cmd_while = create_node("CMD_WHILE");
+            //pri_comando_then = ??? // PEGAR PRIMEIRO COMANDO DO BLOCO EM $5
+            //add_child(cmd_while, $3);
+            //add_child(cmd_while, pri_comando_then); // PRIMEIRO COMANDO DO BLOCO?
+            //$$ = cmd_while;
+          };
 
 /* Expressão */
 
