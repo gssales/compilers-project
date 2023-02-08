@@ -95,7 +95,7 @@ var_global:
         node_t* declara_var_global = create_node("CMD_DECLARA_VAR_GLOBAL");
         add_child(declara_var_global, $1);
         add_child(declara_var_global, $2);
-        print_tree(declara_var_global);
+        //print_tree(declara_var_global);
     };
 
 tipo: 
@@ -157,10 +157,10 @@ lista_commands: lista_commands command ';'  {
                   //node_t* lastLeaf = asList_getLeaf($1);
                   //add_child(lastLeaf, $2);
                   //$$ = $1;
-                  //print_tree($$); // FALTA TESTAR
+                  //print_tree($$);
                 } | 
                 { 
-                  //$$ = NULL; 
+                  $$ = NULL; 
                 };
 
 command:  command_block { 
@@ -176,7 +176,7 @@ command:  command_block {
             //$$ = $1;
           } | 
           retorno  { 
-            // $$ = $1; // FUNCIONANDO OK
+            //$$ = $1; // FUNCIONANDO OK
           } | 
           condicional  { 
             //$$ = $1; // TESTAR
@@ -206,8 +206,7 @@ atrib: ident_atrib '=' expr {
   node_t* atribuicao = create_node("ATRIBUICAO");
         add_child(atribuicao, $1);
         add_child(atribuicao, $3);
-        $$ = atribuicao;
-        print_tree($$);
+        print_tree(atribuicao);
 };
 
 ident_atrib:
@@ -223,11 +222,14 @@ ident_atrib:
     };
 
 lista_arranjo_atrib:  lista_arranjo_atrib'^'expr {
-                      node_t* lastLeaf = asList_getLeaf($1);  // mantem ordem esquerda - direita da lista
-                      add_child(lastLeaf, $3);
-                      $$ = $1;
-                      } |
-                      expr;
+                      node_t* lista = create_node("^");
+                      add_child(lista, $1);
+                      add_child(lista, $3);
+                      $$ = lista;
+                  } |
+                  expr  { 
+                    $$ = $1;
+                  };
 
 /* Chamada de Função */
 
@@ -237,11 +239,27 @@ chamada_func: TK_IDENTIFICADOR'('chamada_params')'  {
                     if (funcao != NULL)
                         add_child(funcao, $3); // MUDAR PRA PRIMEIRO PARAMETRO DA LISTA EM $3?
                     $$ = funcao;
+                    //print_tree($$);
                 };
 
-chamada_params: chamada_lista_params | ;
+chamada_params: 
+    chamada_lista_params  {
+        $$ = $1;
+    } | 
+    {
+        $$ = NULL;
+    };
 
-chamada_lista_params: chamada_lista_params ',' expr | expr;
+chamada_lista_params: 
+    chamada_lista_params ',' expr  {
+        node_t* lista = create_node(",");
+        add_child(lista, $1);
+        add_child(lista, $3);
+        $$ = lista;
+    } | 
+    expr  {
+        $$ = $1;
+    };
 
 /* Comando de Retorno */
 
@@ -284,102 +302,116 @@ iteracao: TK_PR_WHILE '('expr')' command_block {
 /* Expressão */
 
 lista_expr: lista_expr '^' expr {
-                node_t* lastLeaf = asList_getLeaf($1);  // mantem ordem esquerda - direita da lista
-                add_child(lastLeaf, $3);
-                $$ = $1;
-                print_tree($$);
+                node_t* lista = create_node("^");
+                add_child(lista, $1);
+                add_child(lista, $3);
+                $$ = lista;
               } |
               expr  { 
                 $$ = $1;
               } ;
 
-expr: expr_preced0 ;
+expr: expr_preced0  {
+            $$ = $1; 
+          };
 
 expr_preced0: expr_preced0 TK_OC_OR expr_preced1 { 
                 $$ = create_node("||");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
-              expr_preced1;
+              expr_preced1  { 
+                $$ = $1; 
+              };
 
 expr_preced1: expr_preced1 TK_OC_AND expr_preced2 { 
                 $$ = create_node("&&");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
-              expr_preced2;
+              expr_preced2  { 
+                $$ = $1; 
+              };
 
 expr_preced2: expr_preced2 TK_OC_EQ expr_preced3 { 
                 $$ = create_node("==");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
               expr_preced2 TK_OC_NE expr_preced3 { 
                 $$ = create_node("!=");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
-              expr_preced3;
+              expr_preced3  { 
+                $$ = $1; 
+              };
 
 expr_preced3: expr_preced3 '<' expr_preced4 { 
                 $$ = create_node("<");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
               expr_preced3 '>' expr_preced4 { 
                 $$ = create_node(">");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
               expr_preced3 TK_OC_LE expr_preced4 { 
                 $$ = create_node("<=");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
               expr_preced3 TK_OC_GE expr_preced4 { 
                 $$ = create_node(">=");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
-              expr_preced4;
+              expr_preced4  { 
+                $$ = $1; 
+              };
 
 expr_preced4: expr_preced4 '+' expr_preced5 { 
                 $$ = create_node("+");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
               expr_preced4 '-' expr_preced5 { 
                 $$ = create_node("-");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
-              expr_preced5;
+              expr_preced5  { 
+                $$ = $1; 
+              };
 
 expr_preced5: expr_preced5 '*' expr_preced6 { 
                 $$ = create_node("*");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
               expr_preced5 '/' expr_preced6 { 
                 $$ = create_node("/");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
               expr_preced5 '%' expr_preced6 { 
                 $$ = create_node("%");
-					      add_child($$, $1);
+                add_child($$, $1);
                 add_child($$, $3);
               } |
-              expr_preced6;
+              expr_preced6  { 
+                $$ = $1; 
+              };
 
 expr_preced6: '-' expr_terminais  { 
                 $$ = create_node("INV");
-					      add_child($$, $2);
-				      } |
+                add_child($$, $2);
+              } |
               '!' expr_terminais  { 
                 $$ = create_node("NEG");
-					      add_child($$, $2);
-				      } |
+                add_child($$, $2);
+              } |
               expr_terminais { 
                 $$ = $1; 
               };

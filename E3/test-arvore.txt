@@ -1,0 +1,7 @@
+int funcUm () {
+	
+	//teste = 1;
+	//teste[1^(id/2)^false||var] = 1+1 / (5*3 / 2);
+	teste = foo() * 12/2 + foo(var, teste[1^2%3]);
+
+}
