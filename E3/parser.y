@@ -90,7 +90,7 @@ elemento: var_global | funcao;
 var_global: tipo lista_ident_var ';';
 
 tipo: 
-    TK_PR_INT       { $$ = create_leaf("TIPO_INT", $1); }
+    TK_PR_INT       { print_tree(create_leaf("TIPO_INT", $1)); $$ = create_leaf("TIPO_INT", $1); }
     | TK_PR_FLOAT   { $$ = create_leaf("TIPO_FLOAT", $1); }
     | TK_PR_BOOL    { $$ = create_leaf("TIPO_BOOL", $1); }
     | TK_PR_CHAR    { $$ = create_leaf("TIPO_CHAR", $1); };

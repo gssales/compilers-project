@@ -33,6 +33,24 @@ void add_child(node_t *node, node_t *child) {
   }
 }
 
+void print_node(node_t *node) {
+  printf(":%s ", node->label);
+}
+
+void _print_tree(node_t *tree, int depth) {
+  if (tree != NULL) {
+    for (int d = 0; d < depth;d++) printf("| ");
+    print_node(tree);
+    for (int i = 0; i < tree->count_children; i++) {
+      _print_tree(tree->children[i], depth + 1);
+    }
+    printf("\n");    
+  }
+}
+void print_tree(node_t *tree) {
+  _print_tree(tree, 0);
+}
+
 void libera(void* root) {
 	node_t* node = (node_t *)root;
 	if (node != NULL) {

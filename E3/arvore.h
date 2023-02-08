@@ -14,6 +14,7 @@ struct node {
 node_t* create_leaf(char* label, valor_lexico *value);
 node_t* create_node(char* label);
 void add_child(node_t *node, node_t *child);
+void print_tree(node_t *tree);
 /* função usada na main */
 void libera(void* root);
 /* função usada na main */
