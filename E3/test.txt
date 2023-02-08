@@ -1,9 +1,13 @@
 int a;
 float b;
 bool variavelBool;
-//variavelBool = true; // DANDO ERRO
+int c,d;
+//bool e[5^10]; DANDO ERRO
+//float f[5^10],g; DANDO ERRO
 
-int novaFuncao() {}
+int novaFuncao() {
+  teste = 5 * 6; // ATRIBUICAO OK
+}
 bool foo (int param,bool paramdois) {
   int varUm, varDois;
   int initVar <= 123;
@@ -17,9 +21,8 @@ bool foo (int param,bool paramdois) {
 char bar(bool flag, int qtd) {
 {};{};{};
 
-  atrib = 10 * 5;
-  array[1] = (5 >= 1);
-  array[1] = ((10 % 5) && true);
+  atrib[5^4^3^2^1] = 10 * 5;
+  array[1^(2*2)^(3+3)^(4/4)] = 1;
 
   foo(10 > 5, 5 < 10, 1 >= 1, 2 <= 2);
 

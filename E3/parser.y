@@ -25,9 +25,12 @@ void yyerror(char const *s);
   valor_lexico *valor_lexico;
 }
 
-//%type<nodo> expr_terminais
-//%type<nodo> ident_atrib
+%type<nodo> expr_terminais
+%type<nodo> ident_atrib
 %type<nodo> tipo literal lista_ident_var ident_var lista_arranjo
+%type<nodo> lista_expr expr
+%type<nodo> expr_preced0 expr_preced1 expr_preced2 expr_preced3 expr_preced4 expr_preced5 expr_preced6
+%type<nodo> lista_arranjo_atrib
 
 %token<valor_lexico> TK_PR_INT
 %token<valor_lexico> TK_PR_FLOAT
@@ -112,7 +115,7 @@ lista_ident_var:
 
 ident_var: 
     TK_IDENTIFICADOR  { 
-        $$ = create_leaf("ID_GLOBAL", $1); 
+        $$ = create_leaf("ID_GLOBAL", $1);
     }
     | TK_IDENTIFICADOR'['lista_arranjo']'       {
         node_t* id = create_leaf("ID_GLOBAL", $1);
@@ -168,17 +171,31 @@ literal:
 
 /* Atribuição */
 
-atrib: ident_atrib '=' expr;
+atrib: ident_atrib '=' expr {
+  node_t* atribuicao = create_node("ATRIBUICAO");
+        add_child(atribuicao, $1);
+        add_child(atribuicao, $3);
+        print_tree(atribuicao);
+};
 
 ident_atrib:
-    TK_IDENTIFICADOR { 
-        //$$ = create_leaf("ID_GLOBAL", $1); 
-    }
-    | TK_IDENTIFICADOR'['lista_arranjo_atrib']' {
-        //$$ = create_leaf("ID_GLOBAL", $1); 
+    TK_IDENTIFICADOR {
+      $$ = create_leaf("ID_ATRIB", $1);
+    } |
+    TK_IDENTIFICADOR'['lista_arranjo_atrib']' {
+      node_t* id_lista_atrib = create_leaf("ID_LISTA_ATRIB", $1);
+      node_t* indexador = create_node("[]");
+      add_child(indexador, id_lista_atrib);
+      add_child(indexador, $3);
+      $$ = indexador;
     };
 
-lista_arranjo_atrib: lista_arranjo_atrib'^'expr | expr;
+lista_arranjo_atrib:  lista_arranjo_atrib'^'expr {
+                      node_t* lastLeaf = asList_getLeaf($1);  // mantem ordem esquerda - direita da lista
+                      add_child(lastLeaf, $3);
+                      $$ = $1;
+                      } |
+                      expr;
 
 /* Chamada de Função */
 
@@ -203,56 +220,125 @@ iteracao: TK_PR_WHILE '('expr')' command_block;
 
 /* Expressão */
 
-lista_expr: lista_expr '^' expr | expr;
+lista_expr: lista_expr '^' expr {
+                node_t* lastLeaf = asList_getLeaf($1);  // mantem ordem esquerda - direita da lista
+                add_child(lastLeaf, $3);
+                $$ = $1;
+                print_tree($$);
+              } |
+              expr  { 
+                $$ = $1;
+              } ;
 
-expr: expr_preced0;
+expr: expr_preced0 ;
 
-expr_preced0: expr_preced0 TK_OC_OR expr_preced1 |
+expr_preced0: expr_preced0 TK_OC_OR expr_preced1 { 
+                $$ = create_node("||");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
               expr_preced1;
 
-expr_preced1: expr_preced1 TK_OC_AND expr_preced2 |
+expr_preced1: expr_preced1 TK_OC_AND expr_preced2 { 
+                $$ = create_node("&&");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
               expr_preced2;
 
-expr_preced2: expr_preced2 TK_OC_EQ expr_preced3 |
-              expr_preced2 TK_OC_NE expr_preced3 |
+expr_preced2: expr_preced2 TK_OC_EQ expr_preced3 { 
+                $$ = create_node("==");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
+              expr_preced2 TK_OC_NE expr_preced3 { 
+                $$ = create_node("!=");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
               expr_preced3;
 
-expr_preced3: expr_preced3 '<' expr_preced4 |
-              expr_preced3 '>' expr_preced4 |
-              expr_preced3 TK_OC_LE expr_preced4 |
-              expr_preced3 TK_OC_GE expr_preced4 |
+expr_preced3: expr_preced3 '<' expr_preced4 { 
+                $$ = create_node("<");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
+              expr_preced3 '>' expr_preced4 { 
+                $$ = create_node(">");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
+              expr_preced3 TK_OC_LE expr_preced4 { 
+                $$ = create_node("<=");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
+              expr_preced3 TK_OC_GE expr_preced4 { 
+                $$ = create_node(">=");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
               expr_preced4;
 
-expr_preced4: expr_preced4 '+' expr_preced5 |
-              expr_preced4 '-' expr_preced5 |
+expr_preced4: expr_preced4 '+' expr_preced5 { 
+                $$ = create_node("+");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
+              expr_preced4 '-' expr_preced5 { 
+                $$ = create_node("-");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
               expr_preced5;
 
-expr_preced5: expr_preced5 '*' expr_preced6 |
-              expr_preced5 '/' expr_preced6 |
-              expr_preced5 '%' expr_preced6 |
+expr_preced5: expr_preced5 '*' expr_preced6 { 
+                $$ = create_node("*");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
+              expr_preced5 '/' expr_preced6 { 
+                $$ = create_node("/");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
+              expr_preced5 '%' expr_preced6 { 
+                $$ = create_node("%");
+					      add_child($$, $1);
+                add_child($$, $3);
+              } |
               expr_preced6;
 
-expr_preced6: '-' expr_terminais  |
-              '!' expr_terminais  |
-              expr_terminais;
+expr_preced6: '-' expr_terminais  { 
+                $$ = create_node("INV");
+					      add_child($$, $2);
+				      } |
+              '!' expr_terminais  { 
+                $$ = create_node("NEG");
+					      add_child($$, $2);
+				      } |
+              expr_terminais { 
+                $$ = $1; 
+              };
 
 expr_terminais: 
     TK_IDENTIFICADOR  { 
-        //$$ = create_leaf("ID_EXPR", $1); 
-    }
-	| TK_IDENTIFICADOR '[' lista_expr ']'  { 
+        $$ = create_leaf("ID_EXPR", $1);
+    } | 
+    TK_IDENTIFICADOR '[' lista_expr ']'  {
+        node_t* id_lista_expr = create_leaf("ID_LISTA_EXPR", $1);
         node_t* indexador = create_node("[]");
-        //add_child(indexador, create_leaf("ID_EXPR", $1));
-        //add_child(indexador, create_leaf("INDEX_EXPR", $2));
-        //$$ = indexador; 
-    }
-	| literal  {
-        //$$ = $1;
-    }
-	| '(' expr ')'  {
-        //$$ = $1;
-    }
-	| chamada_func  {
+        add_child(indexador, id_lista_expr);
+        add_child(indexador, $3);
+        $$ = indexador;
+    } |
+    literal  {
+        $$ = $1;
+    } |
+    '(' expr ')'  {
+        $$ = $2;
+    }	|
+    chamada_func  {
         //$$ = $1;
     };
 
