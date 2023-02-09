@@ -156,6 +156,7 @@ param: tipo TK_IDENTIFICADOR;
 /* Bloco de Comandos */
 command_block: '{'lista_commands'}' { 
                   $$ = $2;
+                  //print_tree($$);
                 };
 
 lista_commands: lista_commands command ';'  { 
@@ -326,7 +327,6 @@ retorno:  TK_PR_RETURN expr {
             node_t* cmd_ret = create_node("return");
             add_child(cmd_ret, $2);
             $$ = cmd_ret;
-            
           };
 
 /* Condicional */
@@ -370,6 +370,7 @@ lista_expr: lista_expr '^' expr {
 
 expr: expr_preced0  {
             $$ = $1; 
+            exporta($$); // TESTANDO EXPORTA
           };
 
 expr_preced0: expr_preced0 TK_OC_OR expr_preced1 { 

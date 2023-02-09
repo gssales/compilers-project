@@ -23,5 +23,8 @@ void print_tree(node_t *tree);
 /* função usada na main */
 void libera(void* root);
 /* função usada na main */
-// void exporta(void* root);
+void exporta(void* root);
+void exportTree(node_t *root, node_t *parent, FILE* e3csv);
+int isLiteral(node_t* node);
+int isNullNode(node_t* node);
 #endif //_ARVORE_H_

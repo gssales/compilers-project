@@ -1,3 +1,9 @@
+int i;
+bool b;
+char c;
+float f;
+int g;
+
 int funcUm () {
 	
 	teste = 1;

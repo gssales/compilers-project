@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "arvore.h"
+#include "parser.tab.h"
 
 node_t* create_leaf(char* label, valor_lexico *value) {
 	node_t *node = NULL;
@@ -108,4 +109,62 @@ void libera(void* root) {
 		free(node->children);
 		free(node);
 	}
+}
+
+void printTree(node_t *root, node_t *parent)
+{
+	if(root != NULL)
+	{
+		if(parent != NULL) { // imprime aresta pai-filho
+			printf("%p, %p\n", parent, root);
+			fflush(stdout);
+		}
+
+		if(isLiteral(root)) // literais e id (imprime valor)
+		{
+			switch(root->value->tk_type)
+			{
+				case TK_LIT_INT:
+				case TK_LIT_FALSE:
+				case TK_LIT_TRUE:
+					printf("%p [label=\"%d\"];\n", root, root->value->tk_value.i);
+					fflush(stdout);
+					break;
+				case TK_LIT_CHAR:
+					printf("%p [label=\"%c\"];\n", root, root->value->tk_value.c);
+					fflush(stdout);
+					break;
+				case TK_LIT_FLOAT:
+					printf("%p [label=\"%f\"];\n", root, root->value->tk_value.f);
+					fflush(stdout);
+					break;
+				case TK_IDENTIFICADOR:
+					printf("%p [label=\"%s\"];\n", root, root->value->tk_value.s);
+					fflush(stdout);
+			}
+		}
+		else // outros (imprime label)
+		{
+			printf("%p [label=\"%s\"];\n", root, root->label);
+			fflush(stdout);
+		}
+
+		if(root->count_children != 0) { // recursao
+			for (int i = 0; i < root->count_children; i++) {
+				printTree(root->children[i], root);
+			}
+		}
+	}
+}
+
+void exporta(void* root) {
+	//node_t* arvore = arvore; ONDE ACESSAR A RAIZ?
+	
+	node_t* node = (node_t *)root;
+	printTree(node, NULL);
+}
+
+int isLiteral(node_t* node)
+{
+	return (node->value != NULL);
 }
