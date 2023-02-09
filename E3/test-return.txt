@@ -1,3 +1,6 @@
 int funcRet () { 
-	i = 1;
+	//i[2+id^2] = foo();
+	if (foo()) then {
+		int i <= 1;
+	};
 }

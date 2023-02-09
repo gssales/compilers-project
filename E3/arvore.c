@@ -4,12 +4,20 @@
 #include "utils.h"
 #include "parser.tab.h"
 
+void print_node(node_t *node) {
+  printf(":%s", node->label);
+  if (node->value != NULL) {
+    printf(" -> ");
+    print_tk_value(node->value);
+  }
+}
+
 node_t* create_leaf(char* label, valor_lexico *value) {
 	node_t *node = NULL;
 	node = malloc(sizeof(node_t));
 	if (node != NULL) {
-		node->label = strdup(label);
-		node->value = value;
+    node->label = strdup(label);
+    node->value = value;
     node->count_children = 0;
     node->children = NULL;
     node->flag = 0; // FUNCAO/COMANDO/EXPRESSAO
@@ -50,28 +58,12 @@ node_t* getLastChildOfSameLabel(node_t *list) {
   }
 }
 
-node_t* getLastOf(node_t *list) {
-  if (list->flag == FUNCAO) {
+node_t* getLastOf(node_t *list, int tipo) {
+  if (list->flag == tipo) {
     for (int i = 0; i < list->count_children; i++) {
       node_t* funct = getLastOf(list->children[i]);
       if (funct != NULL)
         return funct;
-    }
-    return list;
-  }
-  if (list->flag == COMANDO) {
-    for (int i = 0; i < list->count_children; i++) {
-      node_t* cmd = getLastOf(list->children[i]);
-      if (cmd != NULL)
-        return cmd;
-    }
-    return list;
-  }
-  if (list->flag == EXPRESSAO) {
-    for (int i = 0; i < list->count_children; i++) {
-      node_t* expr = getLastOf(list->children[i]);
-      if (expr != NULL)
-        return expr;
     }
     return list;
   }
@@ -96,14 +88,6 @@ void unshift_child(node_t *node, node_t *child) {
   }
 }
 
-void print_node(node_t *node) {
-  printf(":%s", node->label);
-  if (node->value != NULL) {
-    printf(" -> ");
-    print_tk_value(node->value);
-  }
-}
-
 void _print_debug(node_t *tree, int depth) {
   if (tree != NULL) {
     for (int d = 0; d < depth;d++) printf("| ");
@@ -123,8 +107,9 @@ void libera(void* root) {
 	if (node != NULL) {
 		for (int i = 0; i < node->count_children; i++)
 			libera(node->children[i]);
+    if (node->value)
+		  destroy_lexvalue(node->value);
 		free(node->label);
-		free(node->value);
 		free(node->children);
 		free(node);
 	}
