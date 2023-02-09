@@ -12,7 +12,7 @@ void libera (void *arvore);
 
 int main (int argc, char **argv)
 {
-  int ret = yyparse(); 
+  int ret = yyparse();
   exporta (arvore);
   libera(arvore);
   arvore = NULL;

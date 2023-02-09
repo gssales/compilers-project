@@ -84,7 +84,7 @@ void yyerror(char const *s);
 /* Programa */
 programa: lista_elementos  {
         arvore = $1;
-        printf("%p\n", arvore);
+        //printf("%p\n", arvore);
         //print_tree(arvore);
         //print_tree($1);
     } | {
@@ -372,7 +372,6 @@ lista_expr: lista_expr '^' expr {
 
 expr: expr_preced0  {
             $$ = $1; 
-            exporta($$); // TESTANDO EXPORTA
           };
 
 expr_preced0: expr_preced0 TK_OC_OR expr_preced1 { 
