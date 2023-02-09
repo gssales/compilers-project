@@ -84,9 +84,7 @@ void yyerror(char const *s);
 /* Programa */
 programa: lista_elementos  {
         arvore = $1;
-        //printf("%p\n", arvore);
-        print_tree(arvore);
-        //print_tree($1);
+        print_debug(arvore);
     } | {
         arvore = NULL;
     };

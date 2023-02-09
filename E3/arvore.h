@@ -19,7 +19,7 @@ node_t* getLastChildOfSameLabel(node_t *list);
 node_t* getLastOf(node_t *list);
 void add_child(node_t *node, node_t *child); // adiciona um nodo no final da lista
 void unshift_child(node_t *node, node_t *child); // adiciona um nodo no inicio da lista
-void print_tree(node_t *tree);
+void print_debug(node_t *tree);
 /* função usada na main */
 void libera(void* root);
 /* função usada na main */

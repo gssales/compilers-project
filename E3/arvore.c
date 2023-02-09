@@ -104,18 +104,18 @@ void print_node(node_t *node) {
   }
 }
 
-void _print_tree(node_t *tree, int depth) {
+void _print_debug(node_t *tree, int depth) {
   if (tree != NULL) {
     for (int d = 0; d < depth;d++) printf("| ");
     print_node(tree);
     printf("\n");
     for (int i = 0; i < tree->count_children; i++) {
-      _print_tree(tree->children[i], depth + 1);
+      _print_debug(tree->children[i], depth + 1);
     }
   }
 }
-void print_tree(node_t *tree) {
-  _print_tree(tree, 0);
+void print_debug(node_t *tree) {
+  _print_debug(tree, 0);
 }
 
 void libera(void* root) {
@@ -130,7 +130,7 @@ void libera(void* root) {
 	}
 }
 
-void printTree(node_t *root, node_t *parent)
+void print_entrega(node_t *root, node_t *parent)
 {
 	if(root != NULL)
 	{
@@ -144,7 +144,7 @@ void printTree(node_t *root, node_t *parent)
 
 		if(root->count_children != 0) { // recursao
 			for (int i = 0; i < root->count_children; i++) {
-				printTree(root->children[i], root);
+				print_entrega(root->children[i], root);
 			}
 		}
 	}
@@ -154,7 +154,7 @@ void exporta(void* root) {
 	//node_t* arvore = arvore; ONDE ACESSAR A RAIZ?
 	
 	node_t* node = (node_t *)root;
-	printTree(node, NULL);
+	print_entrega(node, NULL);
 }
 
 int isLiteral(node_t* node)
