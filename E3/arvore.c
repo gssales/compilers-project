@@ -21,6 +21,7 @@ node_t* create_node(char* label) {
 		node->label = strdup(label);
     node->count_children = 0;
     node->children = NULL;
+    node->is_function = 0;
 	}
 	return node;
 }
@@ -32,6 +33,29 @@ node_t* asList_getLeaf(node_t *list) {
     return asList_getLeaf(list->children[0]);
   else
     printf("ERROR node is not a list: %s\n", list->label);
+}
+
+node_t* getLastChildOfSameLabel(node_t *list) {
+  if (list->count_children == 0)
+    return list;
+  else {
+    for (int i = 0; i < list->count_children; i++) 
+      if(strcmp(list->label, list->children[i]->label) == 0)
+        return getLastChildOfSameLabel(list->children[i]);
+    return list;
+  }
+}
+
+node_t* getLastFunction(node_t *list) {
+  if (list->is_function) {
+    for (int i = 0; i < list->count_children; i++) {
+      node_t* funct = getLastFunction(list->children[i]);
+      if (funct != NULL)
+        return funct;
+    }
+    return list;
+  }
+  return NULL;
 }
 
 void add_child(node_t *node, node_t *child) {

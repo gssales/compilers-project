@@ -18,7 +18,7 @@ typedef struct valor_lexico valor_lexico;
 struct valor_lexico {
   int line_number;
   int tk_type;
-  // char *str;
+  char *str; // lexema
   token_value_t tk_value;
 };
 

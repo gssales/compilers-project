@@ -25,9 +25,9 @@ void yyerror(char const *s);
   valor_lexico *valor_lexico;
 }
 
-%type<nodo> expr_terminais
-%type<nodo> ident_atrib
-%type<nodo> tipo literal lista_ident_var ident_var lista_arranjo
+%type<nodo> programa lista_elementos elemento funcao expr_terminais
+%type<nodo> lista_local_var local_var
+%type<nodo> tipo literal ident_atrib
 %type<nodo> lista_expr expr
 %type<nodo> expr_preced0 expr_preced1 expr_preced2 expr_preced3 expr_preced4 expr_preced5 expr_preced6
 %type<nodo> atrib lista_arranjo_atrib chamada_func chamada_params chamada_lista_params
@@ -82,21 +82,41 @@ void yyerror(char const *s);
 %%
 
 /* Programa */
-programa: lista_elementos | ;
+programa: lista_elementos  {
+        arvore = $1;
+        //print_tree($1);
+    } | {
+        arvore = NULL;
+    };
 
-lista_elementos: lista_elementos elemento | elemento;
+lista_elementos: 
+    lista_elementos elemento  {
+        if ($2 != NULL) {
+            if ($1 != NULL) {
+                node_t* last_function = getLastFunction($1);
+                add_child(last_function, $2);
+                $$ = $1;
+            } else {
+                $$ = $2;
+            }
+        } else {
+            $$ = $1;
+        }
+    }
+    | elemento  {
+        $$ = $1;
+    };
 
-elemento: var_global | funcao;
+elemento: var_global {
+        $$ = NULL;
+    } | funcao {
+        $$ = $1;
+    } ;
 
 
 /* Variável Global */
 var_global: 
-    tipo lista_ident_var ';'  {
-        node_t* declara_var_global = create_node("CMD_DECLARA_VAR_GLOBAL");
-        add_child(declara_var_global, $1);
-        add_child(declara_var_global, $2);
-        //print_tree(declara_var_global);
-    };
+    tipo lista_ident_var ';';
 
 tipo: 
     TK_PR_INT       { $$ = create_leaf("TIPO_INT", $1); }
@@ -105,41 +125,26 @@ tipo:
     | TK_PR_CHAR    { $$ = create_leaf("TIPO_CHAR", $1); };
 
 lista_ident_var: 
-    lista_ident_var ',' ident_var   { 
-        node_t* lastLeaf = asList_getLeaf($1);  // mantem ordem esquerda - direita da lista
-        add_child(lastLeaf, $3);
-        $$ = $1;
-    }
-    | ident_var  { 
-        $$ = $1; 
-    };
+    lista_ident_var ',' ident_var 
+    | ident_var;
 
 ident_var: 
-    TK_IDENTIFICADOR  { 
-        $$ = create_leaf("ID_GLOBAL", $1);
-    }
-    | TK_IDENTIFICADOR'['lista_arranjo']'       {
-        node_t* id = create_leaf("ID_GLOBAL", $1);
-        node_t* declara_arranjo = create_node("[]");
-        add_child(declara_arranjo, id);
-        add_child(declara_arranjo, $3);
-        $$ = declara_arranjo;
-    };
+    TK_IDENTIFICADOR
+    | TK_IDENTIFICADOR'['lista_arranjo']';
 
 lista_arranjo: 
-    lista_arranjo'^'TK_LIT_INT  {
-        node_t* lastLeaf = asList_getLeaf($1);  // mantem ordem esquerda - direita da lista
-        node_t* lit = create_leaf("LIT_INT", $3);
-        add_child(lastLeaf, lit);
-        $$ = $1;
-    }
-    | TK_LIT_INT { 
-        $$ = create_leaf("LIT_INT", $1); 
-    };
+    lista_arranjo'^'TK_LIT_INT
+    | TK_LIT_INT;
 
 
 /* Função */
-funcao: tipo TK_IDENTIFICADOR '(' func_params ')' command_block;
+funcao: tipo TK_IDENTIFICADOR '(' func_params ')' command_block  {
+    node_t* funcao = create_node($2->tk_value.s);
+    funcao->is_function = 1;
+    if ($6 != NULL)
+        add_child(funcao, $6);
+    $$ = funcao;
+};
 
 func_params: lista_params | ;
 
@@ -154,67 +159,117 @@ command_block: '{'lista_commands'}' {
                 };
 
 lista_commands: lista_commands command ';'  { 
-                  //node_t* lastLeaf = asList_getLeaf($1); // DANDO ERRO AQUI
-                  //add_child(lastLeaf, $2);
-                  //$$ = $1;
-                  //print_tree($$);
+                  if ($2 != NULL) {
+                    //$2 é um comando
+                    if ($1 != NULL) {
+                        node_t* last_cmd = getLastChildOfSameLabel($1);
+                        add_child(last_cmd, $2);
+                        $$ = $1;
+                    } else {
+                        $$ = $2;
+                    }
+                  } else {
+                      $$ = $1;
+                  }
                 } | 
                 { 
                   $$ = NULL; 
                 };
 
 command:  command_block { 
-            //$$ = $1; 
+            $$ = $1; 
           } |
           declara_var  { 
-            //$$ = $1;
+            $$ = $1;
           } | 
           atrib { 
-            //$$ = $1;  // FUNCIONANDO OK
+            node_t* cmd = create_node(";");
+            add_child(cmd, $1);
+            $$ = cmd;
           } | 
           chamada_func  { 
-            //$$ = $1;
+            node_t* cmd = create_node(";");
+            add_child(cmd, $1);
+            $$ = cmd;
           } | 
           retorno  { 
-            //$$ = $1; // FUNCIONANDO OK
+            node_t* cmd = create_node(";");
+            add_child(cmd, $1);
+            $$ = cmd;
           } | 
           condicional  { 
-            //$$ = $1; // TESTAR
+            node_t* cmd = create_node(";");
+            add_child(cmd, $1);
+            $$ = cmd;
           } | 
           iteracao { 
-            //$$ = $1; // TESTAR
+            node_t* cmd = create_node(";");
+            add_child(cmd, $1);
+            $$ = cmd;
           }; 
 
 /* Declaração de Variável */
 
-declara_var: tipo lista_local_var;
+declara_var: tipo lista_local_var {
+        $$ = $2; // lista de comandos de inicialização
+    };
 
-lista_local_var: lista_local_var ',' local_var | local_var;
+lista_local_var: lista_local_var ',' local_var  {
+        if ($3 != NULL) {
+            node_t* cmd_inicializa = create_node(";");
+            add_child(cmd_inicializa, $3);
+            if ($1 != NULL) {
+                node_t* last_of_same_type = getLastChildOfSameLabel($1);
+                add_child(last_of_same_type, cmd_inicializa);
+                $$ = $1;
+            } else {
+                $$ = cmd_inicializa;
+            }
+        } else {
+            $$ = $1;
+        }
+    } | local_var {
+        if ($1 != NULL) {
+            node_t* cmd_inicializa = create_node(";");
+            add_child(cmd_inicializa, $1);
+            $$ = cmd_inicializa;
+        } else {
+            $$ = NULL;
+        }
+    };
 
-local_var: TK_IDENTIFICADOR | TK_IDENTIFICADOR TK_OC_LE literal;
+local_var: TK_IDENTIFICADOR {
+        $$ = NULL;
+    } | 
+    TK_IDENTIFICADOR TK_OC_LE literal {
+      node_t* inicializa = create_node("<=");
+      add_child(inicializa, create_leaf($1->tk_value.s, $1));
+      add_child(inicializa, $3);
+      $$ = inicializa;
+    };
 
 literal: 
-    TK_LIT_INT      { $$ = create_leaf("LIT_INT", $1); }
-    | TK_LIT_FLOAT  { $$ = create_leaf("LIT_FLOAT", $1); }
-    | TK_LIT_FALSE  { $$ = create_leaf("LIT_FALSE", $1); }
-    | TK_LIT_TRUE   { $$ = create_leaf("LIT_TRUE", $1); }
-    | TK_LIT_CHAR   { $$ = create_leaf("LIT_CHAR", $1); };
+    TK_LIT_INT      { $$ = create_leaf(strdup($1->str), $1); }
+    | TK_LIT_FLOAT  { $$ = create_leaf(strdup($1->str), $1); }
+    | TK_LIT_FALSE  { $$ = create_leaf(strdup($1->str), $1); }
+    | TK_LIT_TRUE   { $$ = create_leaf(strdup($1->str), $1); }
+    | TK_LIT_CHAR   { $$ = create_leaf(&$1->tk_value.c, $1); };
 
 /* Atribuição */
 
 atrib: ident_atrib '=' expr {
-  node_t* atribuicao = create_node("ATRIBUICAO");
+        node_t* atribuicao = create_node("=");
         add_child(atribuicao, $1);
         add_child(atribuicao, $3);
-        print_tree(atribuicao);
+        $$ = atribuicao;
 };
 
 ident_atrib:
     TK_IDENTIFICADOR {
-      $$ = create_leaf("ID_ATRIB", $1);
+      $$ = create_leaf($1->tk_value.s, $1);
     } |
     TK_IDENTIFICADOR'['lista_arranjo_atrib']' {
-      node_t* id_lista_atrib = create_leaf("ID_LISTA_ATRIB", $1);
+      node_t* id_lista_atrib = create_leaf($1->tk_value.s, $1);
       node_t* indexador = create_node("[]");
       add_child(indexador, id_lista_atrib);
       add_child(indexador, $3);
@@ -228,18 +283,19 @@ lista_arranjo_atrib:  lista_arranjo_atrib'^'expr {
                       $$ = lista;
                   } |
                   expr  { 
-                    $$ = $1;
+                      node_t* lista = create_node("^");
+                      add_child(lista, $1);
+                      $$ = lista;
                   };
 
 /* Chamada de Função */
 
 chamada_func: TK_IDENTIFICADOR'('chamada_params')'  {
-                    node_t* funcao = create_node("()");
-                    add_child(funcao, create_leaf("ID_FUNCAO", $1));
-                    if (funcao != NULL)
-                        add_child(funcao, $3); // MUDAR PRA PRIMEIRO PARAMETRO DA LISTA EM $3?
+                    node_t* funcao = create_node("call ");
+                    strcat(funcao->label, $1->tk_value.s);
+                    if ($3 != NULL)
+                        add_child(funcao, $3);
                     $$ = funcao;
-                    //print_tree($$);
                 };
 
 chamada_params: 
@@ -258,45 +314,42 @@ chamada_lista_params:
         $$ = lista;
     } | 
     expr  {
-        $$ = $1;
+        node_t* expr = create_node("i");
+        add_child(expr, $1);
+        $$ = expr;
     };
 
 /* Comando de Retorno */
 
 retorno:  TK_PR_RETURN expr {
-            //node_t* cmd_ret = create_node("CMD_RETURN");
-            //add_child(cmd_ret, $2);
-            //$$ = cmd_ret;
-            //print_tree($$); // RETORNO OK!
+            node_t* cmd_ret = create_node("return");
+            add_child(cmd_ret, $2);
+            $$ = cmd_ret;
           };
 
 /* Condicional */
 
 condicional:  TK_PR_IF '('expr')' TK_PR_THEN command_block {
-                //node_t* cmd_if = create_node("CMD_IF");
-                //pri_comando = ??? // PEGAR PRIMEIRO COMANDO DO BLOCO EM $6
-                //add_child(cmd_if, $3); // expr
-                //add_child(cmd_if, pri_comando);
-                //$$ = cmd_if;
+                node_t* cmd_if = create_node("if");
+                add_child(cmd_if, $3); // expr
+                add_child(cmd_if, $6);
+                $$ = cmd_if;
               } |
              TK_PR_IF '('expr')' TK_PR_THEN command_block TK_PR_ELSE command_block {
-                //node_t* cmd_if = create_node("CMD_IF");
-                //pri_comando_then = ??? // PEGAR PRIMEIRO COMANDO DO BLOCO EM $6
-                //pri_comando_else = ??? // PEGAR PRIMEIRO COMANDO DO BLOCO EM $8
-                //add_child(cmd_if, $3); // expr
-                //add_child(cmd_if, pri_comando_then);
-                //add_child(cmd_if, pri_comando_else);
-                //$$ = cmd_if;
+                node_t* cmd_if = create_node("if");
+                add_child(cmd_if, $3); // expr
+                add_child(cmd_if, $6);
+                add_child(cmd_if, $8);
+                $$ = cmd_if;
              };
 
 /* Iteração */
 
 iteracao: TK_PR_WHILE '('expr')' command_block {
-            //node_t* cmd_while = create_node("CMD_WHILE");
-            //pri_comando_then = ??? // PEGAR PRIMEIRO COMANDO DO BLOCO EM $5
-            //add_child(cmd_while, $3);
-            //add_child(cmd_while, pri_comando_then); // PRIMEIRO COMANDO DO BLOCO?
-            //$$ = cmd_while;
+            node_t* cmd_while = create_node("while");
+            add_child(cmd_while, $3);
+            add_child(cmd_while, $5);
+            $$ = cmd_while;
           };
 
 /* Expressão */
@@ -308,7 +361,9 @@ lista_expr: lista_expr '^' expr {
                 $$ = lista;
               } |
               expr  { 
-                $$ = $1;
+                node_t* expr = create_node("^");
+                add_child(expr, $1);
+                $$ = expr;
               } ;
 
 expr: expr_preced0  {
@@ -405,11 +460,11 @@ expr_preced5: expr_preced5 '*' expr_preced6 {
               };
 
 expr_preced6: '-' expr_terminais  { 
-                $$ = create_node("INV");
+                $$ = create_node("-");
                 add_child($$, $2);
               } |
               '!' expr_terminais  { 
-                $$ = create_node("NEG");
+                $$ = create_node("!");
                 add_child($$, $2);
               } |
               expr_terminais { 
@@ -418,10 +473,10 @@ expr_preced6: '-' expr_terminais  {
 
 expr_terminais: 
     TK_IDENTIFICADOR  { 
-        $$ = create_leaf("ID_EXPR", $1);
+        $$ = create_leaf($1->tk_value.s, $1);
     } | 
     TK_IDENTIFICADOR '[' lista_expr ']'  {
-        node_t* id_lista_expr = create_leaf("ID_LISTA_EXPR", $1);
+        node_t* id_lista_expr = create_leaf($1->tk_value.s, $1);
         node_t* indexador = create_node("[]");
         add_child(indexador, id_lista_expr);
         add_child(indexador, $3);
@@ -434,7 +489,7 @@ expr_terminais:
         $$ = $2;
     }	|
     chamada_func  {
-        //$$ = $1;
+        $$ = $1;
     };
 
 %%
