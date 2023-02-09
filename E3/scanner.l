@@ -13,113 +13,165 @@
 
 [ \t\n\r]               { /* Ignora espaco, tab, e new line */ }
 "int"                   { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INT, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INT, dup);
+    free(dup);
     return TK_PR_INT;
 }
 "float"                 { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_FLOAT, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_FLOAT, dup);
+    free(dup);
     return TK_PR_FLOAT;
 }
 "bool"                  {
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_BOOL, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_BOOL, dup);
+    free(dup);
     return TK_PR_BOOL;
 }
 "char"                  { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_CHAR, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_CHAR, dup);
+    free(dup);
     return TK_PR_CHAR;
 }
 "if"                    { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_IF, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_IF, dup);
+    free(dup);
     return TK_PR_IF;
 }
 "then"                  { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_THEN, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_THEN, dup);
+    free(dup);
     return TK_PR_THEN;
 }
 "else"                  { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_ELSE, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_ELSE, dup);
+    free(dup);
     return TK_PR_ELSE;
 }
 "while"                 { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_WHILE, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_WHILE, dup);
+    free(dup);
     return TK_PR_WHILE;
 }
 "input"                 { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INPUT, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INPUT, dup);
+    free(dup);
     return TK_PR_INPUT;
 }
 "output"                { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_OUTPUT, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_OUTPUT, dup);
+    free(dup);
     return TK_PR_OUTPUT;
 }
 "return"                { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_RETURN, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_RETURN, dup);
+    free(dup);
     return TK_PR_RETURN;
 }
 "for"                   { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_FOR, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_FOR, dup);
+    free(dup);
     return TK_PR_FOR;
 }
 
 [\[\],;:(){}\+\-*/%^<>=!]   { 
-    //yylval.valor_lexico = create_lexvalue(yylineno, 0, strdup(yytext));
+    char* dup = strdup(yytext);
+    //yylval.valor_lexico = create_lexvalue(yylineno, 0, dup);
+    free(dup);
     return yytext[0];
 }
 
 "<="                    { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_LE, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_LE, dup);
+    free(dup);
     return TK_OC_LE;
 }
 ">="                    { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_GE, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_GE, dup);
+    free(dup);
     return TK_OC_GE; 
 }
 "!="                    { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_NE, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_NE, dup);
+    free(dup);
     return TK_OC_NE;
 }
 "=="                    { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_EQ, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_EQ, dup);
+    free(dup);
     return TK_OC_EQ;
 }
 "&&"                    { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_AND, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_AND, dup);
+    free(dup);
     return TK_OC_AND;
 }
 "||"                    { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_OR, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_OC_OR, dup);
+    free(dup);
     return TK_OC_OR;
 }
 
 "false"                 { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FALSE, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FALSE, dup);
+    free(dup);
     return TK_LIT_FALSE;
 }
 "true"                  {
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_TRUE, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_TRUE, dup);
+    free(dup);
     return TK_LIT_TRUE;
 }
 
 [a-zA-Z]+               { 
-  yylval.valor_lexico = create_lexvalue(yylineno, TK_IDENTIFICADOR, strdup(yytext));
+    char* dup = strdup(yytext);
+  yylval.valor_lexico = create_lexvalue(yylineno, TK_IDENTIFICADOR, dup);
+    free(dup);
   return TK_IDENTIFICADOR;
 }
 [0-9]+                  { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_INT, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_INT, dup);
+    free(dup);
     return TK_LIT_INT;
 }
 [0-9]+\.[0-9]+          { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FLOAT, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FLOAT, dup);
+    free(dup);
     return TK_LIT_FLOAT;
 }
 
 [0-9]+\.[0-9]+[eE][\-+]?[0-9]+  { /* Notacao cientifica */
-                            yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FLOAT, strdup(yytext));
+    char* dup = strdup(yytext);
+                            yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FLOAT, dup);
+    free(dup);
                             return TK_LIT_FLOAT;
                         }
 
 '.'                     { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_CHAR, strdup(yytext));
+    char* dup = strdup(yytext);
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_CHAR, dup);
+    free(dup);
     return TK_LIT_CHAR; }
 
 \/\*([^*]|\*+[^*/])*\*+\/ { /* Ignora comentarios multi linha 

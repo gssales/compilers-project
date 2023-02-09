@@ -253,10 +253,26 @@ local_var: TK_IDENTIFICADOR {
     };
 
 literal: 
-    TK_LIT_INT      { $$ = create_leaf(strdup($1->str), $1); }
-    | TK_LIT_FLOAT  { $$ = create_leaf(strdup($1->str), $1); }
-    | TK_LIT_FALSE  { $$ = create_leaf(strdup($1->str), $1); }
-    | TK_LIT_TRUE   { $$ = create_leaf(strdup($1->str), $1); }
+    TK_LIT_INT      { 
+        char* dup = strdup($1->str);
+        $$ = create_leaf(dup, $1); 
+        free(dup);
+    }
+    | TK_LIT_FLOAT  {
+        char* dup = strdup($1->str);
+        $$ = create_leaf(dup, $1); 
+        free(dup);
+    }
+    | TK_LIT_FALSE  {
+        char* dup = strdup($1->str);
+        $$ = create_leaf(dup, $1); 
+        free(dup);
+    }
+    | TK_LIT_TRUE   {
+        char* dup = strdup($1->str);
+        $$ = create_leaf(dup, $1); 
+        free(dup);
+    }
     | TK_LIT_CHAR   { $$ = create_leaf(&$1->tk_value.c, $1); };
 
 /* Atribuição */

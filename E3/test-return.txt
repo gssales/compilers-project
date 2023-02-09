@@ -1,6 +1,1 @@
-int funcRet () {
-    
-	return (10*5);
-    return true;
-
-}
+int funcRet () { }
