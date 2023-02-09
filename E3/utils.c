@@ -89,6 +89,7 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
   new_lexvalue->line_number = lineno;
   new_lexvalue->tk_type = token;
   new_lexvalue->str = malloc(strlen(lexema) * sizeof(char));
+  // printf("%p before\n", new_lexvalue->str);
   strcpy(new_lexvalue->str, lexema);
   switch (token) {
     case 0: // chars especiais
@@ -134,10 +135,18 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
 }
 
 void destroy_lexvalue(valor_lexico* valor_lexico) {
-  if (valor_lexico->str)
-    free(valor_lexico->str);
-  if (valor_lexico->tk_value.s)
-    free(valor_lexico->tk_value.s);
+  free(valor_lexico->str);
+  switch(valor_lexico->tk_type) {
+    case TK_LIT_INT:
+    case TK_LIT_FLOAT:
+    case TK_LIT_CHAR:
+    case TK_LIT_TRUE:
+    case TK_LIT_FALSE:
+      break;
+    default:
+      // printf("%p after\n", valor_lexico->tk_value.s);
+      free(valor_lexico->tk_value.s);
+  }
   free(valor_lexico);
 }
 
