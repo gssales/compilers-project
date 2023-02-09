@@ -177,10 +177,10 @@ lista_commands: lista_commands command ';'  {
                 };
 
 command:  command_block { 
-            $$ = $1; 
+            //$$ = $1; 
           } |
           declara_var  { 
-            $$ = $1;
+            //$$ = $1;
           } | 
           atrib { 
             node_t* cmd = create_node(";");
@@ -206,6 +206,7 @@ command:  command_block {
             node_t* cmd = create_node(";");
             add_child(cmd, $1);
             $$ = cmd;
+            
           }; 
 
 /* Declaração de Variável */
