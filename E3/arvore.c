@@ -120,34 +120,8 @@ void printTree(node_t *root, node_t *parent)
 			fflush(stdout);
 		}
 
-		if(isLiteral(root)) // literais e id (imprime valor)
-		{
-			switch(root->value->tk_type)
-			{
-				case TK_LIT_INT:
-				case TK_LIT_FALSE:
-				case TK_LIT_TRUE:
-					printf("%p [label=\"%d\"];\n", root, root->value->tk_value.i);
-					fflush(stdout);
-					break;
-				case TK_LIT_CHAR:
-					printf("%p [label=\"%c\"];\n", root, root->value->tk_value.c);
-					fflush(stdout);
-					break;
-				case TK_LIT_FLOAT:
-					printf("%p [label=\"%f\"];\n", root, root->value->tk_value.f);
-					fflush(stdout);
-					break;
-				case TK_IDENTIFICADOR:
-					printf("%p [label=\"%s\"];\n", root, root->value->tk_value.s);
-					fflush(stdout);
-			}
-		}
-		else // outros (imprime label)
-		{
-			printf("%p [label=\"%s\"];\n", root, root->label);
-			fflush(stdout);
-		}
+		printf("%p [label=\"%s\"];\n", root, root->label);
+		fflush(stdout);
 
 		if(root->count_children != 0) { // recursao
 			for (int i = 0; i < root->count_children; i++) {
