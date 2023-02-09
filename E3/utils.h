@@ -6,6 +6,7 @@
 
 //enum tipoToken {RESERVADA, ESPECIAL, OPCOMPOSTO, IDENTIFICADOR, LITERAL};
 //enum tipoLiteral {INT, CHAR, FLOAT, STRING, BOOL, NAOLITERAL};
+enum tipoNode { FUNCAO, COMANDO, EXPRESSAO };
 
 typedef union TokenValue {
   int i;

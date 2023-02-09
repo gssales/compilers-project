@@ -12,7 +12,7 @@ node_t* create_leaf(char* label, valor_lexico *value) {
 		node->value = value;
     node->count_children = 0;
     node->children = NULL;
-    node->is_function = 0;
+    node->flag = 0; // FUNCAO/COMANDO/EXPRESSAO
 	}
 	return node;
 }
@@ -25,7 +25,7 @@ node_t* create_node(char* label) {
     node->value = NULL;
     node->count_children = 0;
     node->children = NULL;
-    node->is_function = 0;
+    node->flag = 0;
 	}
 	return node;
 }
@@ -50,12 +50,28 @@ node_t* getLastChildOfSameLabel(node_t *list) {
   }
 }
 
-node_t* getLastFunction(node_t *list) {
-  if (list->is_function) {
+node_t* getLastOf(node_t *list) {
+  if (list->flag == FUNCAO) {
     for (int i = 0; i < list->count_children; i++) {
-      node_t* funct = getLastFunction(list->children[i]);
+      node_t* funct = getLastOf(list->children[i]);
       if (funct != NULL)
         return funct;
+    }
+    return list;
+  }
+  if (list->flag == COMANDO) {
+    for (int i = 0; i < list->count_children; i++) {
+      node_t* cmd = getLastOf(list->children[i]);
+      if (cmd != NULL)
+        return cmd;
+    }
+    return list;
+  }
+  if (list->flag == EXPRESSAO) {
+    for (int i = 0; i < list->count_children; i++) {
+      node_t* expr = getLastOf(list->children[i]);
+      if (expr != NULL)
+        return expr;
     }
     return list;
   }
