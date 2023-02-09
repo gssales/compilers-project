@@ -42,6 +42,16 @@ void add_child(node_t *node, node_t *child) {
   }
 }
 
+void unshift_child(node_t *node, node_t *child) {
+  if (node != NULL && child != NULL){
+    node->count_children++;
+    node->children = realloc(node->children, node->count_children * sizeof(node_t*));
+    for (int i = node->count_children-1; i > 0; i--) 
+      node->children[i] = node->children[i-1];
+    node->children[0] = child;
+  }
+}
+
 void print_node(node_t *node) {
   printf(":%s", node->label);
   if (node->value != NULL) {
