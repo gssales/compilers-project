@@ -88,8 +88,7 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
   new_lexvalue = calloc(1, sizeof(valor_lexico));
   new_lexvalue->line_number = lineno;
   new_lexvalue->tk_type = token;
-  new_lexvalue->str = calloc(strlen(lexema)+1,sizeof(char));
-  strcpy(new_lexvalue->str, lexema);
+  new_lexvalue->str = strdup(lexema);
   // printf("lexema: %s \n", lexema);
   fflush(stdout);
   switch (token) {
@@ -113,8 +112,7 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
     case TK_PR_OUTPUT:
     case TK_PR_RETURN:
     case TK_PR_FOR:
-      new_lexvalue->tk_value.s = calloc(strlen(lexema)+1,sizeof(char));
-      strcpy(new_lexvalue->tk_value.s,lexema);
+      new_lexvalue->tk_value.s = strdup(lexema);
       break;
     case TK_LIT_INT:
       new_lexvalue->tk_value.i = atoi(lexema);
@@ -134,6 +132,14 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
   }
   // print_lexvalue(new_lexvalue);
   return new_lexvalue;
+}
+
+void destroy_lexvalue(valor_lexico* valor_lexico) {
+  if (valor_lexico->str)
+    free(valor_lexico->str);
+  if (valor_lexico->tk_value.s)
+    free(valor_lexico->tk_value.s);
+  free(valor_lexico);
 }
 
 void print_lexvalue(valor_lexico* lexvalue) {

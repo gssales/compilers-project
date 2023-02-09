@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "arvore.h"
+#include "utils.h"
 #include "parser.tab.h"
 
 node_t* create_leaf(char* label, valor_lexico *value) {
@@ -11,6 +12,7 @@ node_t* create_leaf(char* label, valor_lexico *value) {
 		node->value = value;
     node->count_children = 0;
     node->children = NULL;
+    node->is_function = 0;
 	}
 	return node;
 }
@@ -20,6 +22,7 @@ node_t* create_node(char* label) {
 	node = malloc(sizeof(node_t));
 	if (node != NULL) {
 		node->label = strdup(label);
+    node->value = NULL;
     node->count_children = 0;
     node->children = NULL;
     node->is_function = 0;

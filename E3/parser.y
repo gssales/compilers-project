@@ -27,23 +27,23 @@ void yyerror(char const *s);
 
 %type<nodo> programa lista_elementos elemento funcao expr_terminais
 %type<nodo> lista_local_var local_var
-%type<nodo> tipo literal ident_atrib
+%type<nodo> literal ident_atrib
 %type<nodo> lista_expr expr
 %type<nodo> expr_preced0 expr_preced1 expr_preced2 expr_preced3 expr_preced4 expr_preced5 expr_preced6
 %type<nodo> atrib lista_arranjo_atrib chamada_func chamada_params chamada_lista_params
 %type<nodo> command lista_commands command_block declara_var retorno condicional iteracao
 
-%token<valor_lexico> TK_PR_INT
-%token<valor_lexico> TK_PR_FLOAT
-%token<valor_lexico> TK_PR_BOOL
-%token<valor_lexico> TK_PR_CHAR
-%token<valor_lexico> TK_PR_IF
-%token<valor_lexico> TK_PR_THEN
-%token<valor_lexico> TK_PR_ELSE
-%token<valor_lexico> TK_PR_WHILE
+%token TK_PR_INT
+%token TK_PR_FLOAT
+%token TK_PR_BOOL
+%token TK_PR_CHAR
+%token TK_PR_IF
+%token TK_PR_THEN
+%token TK_PR_ELSE
+%token TK_PR_WHILE
 %token TK_PR_INPUT
 %token TK_PR_OUTPUT
-%token<valor_lexico> TK_PR_RETURN
+%token TK_PR_RETURN
 %token TK_PR_FOR
 %token TK_OC_LE
 %token TK_OC_GE
@@ -121,10 +121,10 @@ var_global:
     tipo lista_ident_var ';';
 
 tipo: 
-    TK_PR_INT       { $$ = create_leaf("TIPO_INT", $1); }
-    | TK_PR_FLOAT   { $$ = create_leaf("TIPO_FLOAT", $1); }
-    | TK_PR_BOOL    { $$ = create_leaf("TIPO_BOOL", $1); }
-    | TK_PR_CHAR    { $$ = create_leaf("TIPO_CHAR", $1); };
+    TK_PR_INT
+    | TK_PR_FLOAT
+    | TK_PR_BOOL
+    | TK_PR_CHAR;
 
 lista_ident_var: 
     lista_ident_var ',' ident_var 
@@ -146,6 +146,7 @@ funcao: tipo TK_IDENTIFICADOR '(' func_params ')' command_block  {
     if ($6 != NULL)
         add_child(funcao, $6);
     $$ = funcao;
+    destroy_lexvalue($2);
 };
 
 func_params: lista_params | ;
@@ -185,7 +186,7 @@ command:  command_block {
           declara_var  { 
             //$$ = $1;
           } | 
-          atrib { 
+          atrib {   
             node_t* cmd = create_node(";");
             add_child(cmd, $1);
             $$ = cmd;
@@ -244,6 +245,7 @@ lista_local_var: lista_local_var ',' local_var  {
 
 local_var: TK_IDENTIFICADOR {
         $$ = NULL;
+        destroy_lexvalue($1);
     } | 
     TK_IDENTIFICADOR TK_OC_LE literal {
       node_t* inicializa = create_node("<=");
@@ -316,6 +318,7 @@ chamada_func: TK_IDENTIFICADOR'('chamada_params')'  {
                     if ($3 != NULL)
                         add_child(funcao, $3);
                     $$ = funcao;
+                    destroy_lexvalue($1);
                 };
 
 chamada_params: 

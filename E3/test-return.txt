@@ -1,1 +1,3 @@
-int funcRet () { }
+int funcRet () { 
+	i = 1;
+}

@@ -23,6 +23,7 @@ struct valor_lexico {
 };
 
 valor_lexico* create_lexvalue(int lineno, int token, char* lexema);
+void destroy_lexvalue(valor_lexico* valor_lexico);
 
 void print_lexvalue(valor_lexico* lexvalue);
 void print_tk_value(valor_lexico* lexvalue);
