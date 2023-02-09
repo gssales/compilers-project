@@ -154,7 +154,7 @@ command_block: '{'lista_commands'}' {
                 };
 
 lista_commands: lista_commands command ';'  { 
-                  //node_t* lastLeaf = asList_getLeaf($1);
+                  //node_t* lastLeaf = asList_getLeaf($1); // DANDO ERRO AQUI
                   //add_child(lastLeaf, $2);
                   //$$ = $1;
                   //print_tree($$);
