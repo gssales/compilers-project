@@ -84,9 +84,7 @@ void yyerror(char const *s);
 /* Programa */
 programa: lista_elementos  {
         arvore = $1;
-        //printf("%p\n", arvore);
-        //print_tree(arvore);
-        //print_tree($1);
+        print_debug(arvore);
     } | {
         arvore = NULL;
     };
@@ -95,7 +93,7 @@ lista_elementos:
     lista_elementos elemento  {
         if ($2 != NULL) {
             if ($1 != NULL) {
-                node_t* last_function = getLastFunction($1);
+                node_t* last_function = getLastOf($1);
                 add_child(last_function, $2);
                 $$ = $1;
             } else {
@@ -142,7 +140,7 @@ lista_arranjo:
 /* Função */
 funcao: tipo TK_IDENTIFICADOR '(' func_params ')' command_block  {
     node_t* funcao = create_node($2->tk_value.s);
-    funcao->is_function = 1;
+    funcao->flag = FUNCAO;
     if ($6 != NULL)
         add_child(funcao, $6);
     $$ = funcao;
@@ -159,14 +157,13 @@ param: tipo TK_IDENTIFICADOR;
 /* Bloco de Comandos */
 command_block: '{'lista_commands'}' { 
                   $$ = $2;
-                  //print_tree($$);
                 };
 
 lista_commands: lista_commands command ';'  { 
                   if ($2 != NULL) {
                     //$2 é um comando
                     if ($1 != NULL) {
-                        node_t* last_cmd = getLastChildOfSameLabel($1);
+                        node_t* last_cmd = getLastOf($1);
                         add_child(last_cmd, $2);
                         $$ = $1;
                     } else {
@@ -184,33 +181,28 @@ command:  command_block {
             //$$ = $1; 
           } |
           declara_var  { 
-            //$$ = $1;
+            $1->flag = COMANDO;
+            $$ = $1;
           } | 
           atrib {   
-            node_t* cmd = create_node(";");
-            add_child(cmd, $1);
-            $$ = cmd;
+            $1->flag = COMANDO;
+            $$ = $1;
           } | 
           chamada_func  { 
-            node_t* cmd = create_node(";");
-            add_child(cmd, $1);
-            $$ = cmd;
+            $1->flag = COMANDO;
+            $$ = $1;
           } | 
           retorno  { 
-            node_t* cmd = create_node(";");
-            add_child(cmd, $1);
-            $$ = cmd;
+            $1->flag = COMANDO;
+            $$ = $1;
           } | 
           condicional  { 
-            node_t* cmd = create_node(";");
-            add_child(cmd, $1);
-            $$ = cmd;
+            $1->flag = COMANDO;
+            $$ = $1;
           } | 
           iteracao { 
-            node_t* cmd = create_node(";");
-            add_child(cmd, $1);
-            $$ = cmd;
-            
+            $1->flag = COMANDO;
+            $$ = $1;
           }; 
 
 /* Declaração de Variável */
@@ -331,15 +323,12 @@ chamada_params:
 
 chamada_lista_params: 
     chamada_lista_params ',' expr  {
-        node_t* lista = create_node(",");
-        add_child(lista, $1);
-        add_child(lista, $3);
-        $$ = lista;
+        node_t* last_expr = getLastOf($1);
+        add_child(last_expr, $3);
+        $$ = $1;
     } | 
     expr  {
-        node_t* expr = create_node("i");
-        add_child(expr, $1);
-        $$ = expr;
+        $$ = $1;
     };
 
 /* Comando de Retorno */
@@ -354,13 +343,13 @@ retorno:  TK_PR_RETURN expr {
 
 condicional:  TK_PR_IF '('expr')' TK_PR_THEN command_block {
                 node_t* cmd_if = create_node("if");
-                add_child(cmd_if, $3); // expr
+                add_child(cmd_if, $3);
                 add_child(cmd_if, $6);
                 $$ = cmd_if;
               } |
              TK_PR_IF '('expr')' TK_PR_THEN command_block TK_PR_ELSE command_block {
                 node_t* cmd_if = create_node("if");
-                add_child(cmd_if, $3); // expr
+                add_child(cmd_if, $3);
                 add_child(cmd_if, $6);
                 add_child(cmd_if, $8);
                 $$ = cmd_if;
@@ -390,7 +379,8 @@ lista_expr: lista_expr '^' expr {
               } ;
 
 expr: expr_preced0  {
-            $$ = $1; 
+            $$ = $1;
+            $$->flag = EXPRESSAO;
           };
 
 expr_preced0: expr_preced0 TK_OC_OR expr_preced1 { 
