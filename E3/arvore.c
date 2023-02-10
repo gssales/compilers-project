@@ -61,7 +61,7 @@ node_t* getLastChildOfSameLabel(node_t *list) {
 node_t* getLastOf(node_t *list, int tipo) {
   if (list->flag == tipo) {
     for (int i = 0; i < list->count_children; i++) {
-      node_t* funct = getLastOf(list->children[i]);
+      node_t* funct = getLastOf(list->children[i], tipo);
       if (funct != NULL)
         return funct;
     }
