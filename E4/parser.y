@@ -15,7 +15,7 @@ void yyerror(char const *s);
 %define parse.trace true
 
 %code requires {
-    #include "utils.h"
+    #include "valor_lexico.h"
     #include "arvore.h"
     extern void* arvore;
 }

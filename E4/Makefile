@@ -1,9 +1,9 @@
 all: parser scanner main
-	gcc parser.tab.o lex.yy.o main.o utils.o arvore.o -o etapa4
+	gcc parser.tab.o lex.yy.o main.o valor_lexico.o arvore.o -o etapa4
 
 main: main.c
 	gcc main.c -c  # gera main.o
-	gcc utils.c -c # gera utils.o
+	gcc valor_lexico.c -c # gera valor_lexico.o
 	gcc arvore.c -c # gera arvore.o
 
 parser: parser.y
@@ -15,11 +15,11 @@ scanner: scanner.l
 	gcc lex.yy.c -c
 
 debug: parser-debug scanner-debug main-debug
-	gcc parser.tab.o lex.yy.o main.o utils.o arvore.o -o etapa4-dbg
+	gcc parser.tab.o lex.yy.o main.o valor_lexico.o arvore.o -o etapa4-dbg
 
 main-debug: main.c
 	gcc main.c -c -g # gera main.o
-	gcc utils.c -c -g # gera utils.o
+	gcc valor_lexico.c -c -g # gera valor_lexico.o
 	gcc arvore.c -c -g # gera arvore.o
 
 parser-debug: parser.y

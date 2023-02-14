@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "arvore.h"
-#include "utils.h"
+#include "valor_lexico.h"
 #include "parser.tab.h"
 
 void print_node(node_t *node) {

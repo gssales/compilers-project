@@ -1,7 +1,9 @@
 #ifndef _ARVORE_H_
 #define _ARVORE_H_
 
-#include "utils.h"
+#include "valor_lexico.h"
+
+enum tipoNode { FUNCAO, COMANDO, EXPRESSAO };
 
 typedef struct node node_t;
 struct node {

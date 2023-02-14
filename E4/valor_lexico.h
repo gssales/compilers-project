@@ -1,12 +1,8 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef VALOR_LEXICO_H
+#define VALOR_LEXICO_H
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-//enum tipoToken {RESERVADA, ESPECIAL, OPCOMPOSTO, IDENTIFICADOR, LITERAL};
-//enum tipoLiteral {INT, CHAR, FLOAT, STRING, BOOL, NAOLITERAL};
-enum tipoNode { FUNCAO, COMANDO, EXPRESSAO };
 
 typedef union TokenValue {
   int i;
