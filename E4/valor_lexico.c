@@ -101,7 +101,7 @@ void destroy_lexvalue(valor_lexico* valor_lexico) {
 void print_lexvalue(valor_lexico* lexvalue) {
   printf("l%d: %s ", lexvalue->line_number, tk_type_to_string(lexvalue->tk_type));
   print_tk_value(lexvalue);
-  printf("\n\n");
+  printf("\n");
   fflush(stdout);
 }
 
