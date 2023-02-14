@@ -1,0 +1,14 @@
+int a;
+
+int novaFuncao() {
+  teste = 1;
+}
+bool foo (int param,bool paramdois) {
+  {
+    bool novaVar, maisVar <= 'c', teste;
+  };
+  return -5;
+}
+char bar(bool flag, int qtd) {
+    {};{};{};
+}

@@ -1,0 +1,13 @@
+int funcUm() {}
+
+int funcDois(int param, int paramm, int parammm) {
+    teste = (5 * 5) - 10; // cmd1
+
+    chamaFunc(1 * 2 * 3); // cmd2
+
+    while (true) {}; // cmd 3 e 4?
+
+    if (true) then {} else {}; // cmd 4 e 5?
+
+    return true; // cmd 6 e 7?
+}

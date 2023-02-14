@@ -1,0 +1,30 @@
+int i;
+bool b;
+char c;
+float f;
+int g;
+
+int funcUm () {
+	
+	teste = 1;
+	teste[1^(id/2)^false||var] = 1+1 / (5*3 / 2);
+	teste = foo() * 12/2 + foo(var, teste[1^2%3]);
+	teste = t[e^f^g];
+	foo(1,2,3);
+	teste = 'c';
+
+
+}  
+
+int funcDois() {}
+
+int funcTres() {
+	if (true) then {
+		foo(1,2,3);
+	} else {
+		t = 'c';
+	};
+	while(t - 1) {
+		t = 0;
+	};
+}
