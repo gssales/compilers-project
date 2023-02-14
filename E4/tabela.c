@@ -35,6 +35,7 @@ void print_symbol(simbolo_t* symbol) {
 }
 
 tabela_t* create_symbol_table() {
+/* implementar tabela hash */
   tabela_t* t;
   t = malloc(sizeof(tabela_t));
   if (t != NULL) {
@@ -44,7 +45,8 @@ tabela_t* create_symbol_table() {
   return t;
 }
 
-void symbol_table_push(tabela_t* table, simbolo_t* symbol) {
+void insert_symbol(tabela_t* table, char* key, simbolo_t* symbol) { // usar chave
+/* implementar tabela hash */
   if (table != NULL && symbol != NULL) {
     table->count_symbols++;
     table->list = realloc(table->list, table->count_symbols * sizeof(simbolo_t*));
@@ -52,24 +54,20 @@ void symbol_table_push(tabela_t* table, simbolo_t* symbol) {
   }
 }
 
-simbolo_t* symbol_table_pop(tabela_t* table) {
-  simbolo_t* s = NULL;
-  if (table != NULL) {
-    table->count_symbols--;
-    s = table->list[table->count_symbols];
-    table->list = realloc(table->list, table->count_symbols * sizeof(simbolo_t*));
-  }
-  return s;
+simbolo_t* get_symbol(tabela_t* table, char* key) {
+/* implementar tabela hash */
+  return NULL; // usar chave;
 }
 
 void destroy_table(tabela_t* table) {
   if (table != NULL) {
-    while (table->count_symbols > 0) {
-      simbolo_t* s = symbol_table_pop(table);
-      if (s != NULL) {
-        destroy_symbol(s);
-      }
-    }
+/* implementar tabela hash */
+    //while (table->count_symbols > 0) {
+      //simbolo_t* s = symbol_table_pop(table);
+      //if (s != NULL) {
+      //  destroy_symbol(s);
+      //}
+    //}
     free(table);
   }
 }
@@ -83,3 +81,48 @@ void print_table(tabela_t* table) {
     }
   }
 }
+
+pilha_t* create_pilha() {
+  pilha_t* p;
+  p = malloc(sizeof(pilha_t));
+  if (p != NULL) {
+    p->count = 0;
+    p->tabelas = NULL;
+  }
+  return p;  
+}
+
+void push_table(pilha_t* pilha, tabela_t* table) {
+  if (pilha != NULL && table != NULL) {
+    pilha->count++;
+    pilha->tabelas = realloc(pilha->tabelas, pilha->count * sizeof(tabela_t));
+    pilha->tabelas[pilha->count-1] = table;
+  }
+}
+
+tabela_t* pop_table(pilha_t* pilha) {
+  tabela_t* t = NULL;
+  if (pilha != NULL && pilha->count > 0) {
+    pilha->count--;
+    t = pilha->tabelas[pilha->count];
+    pilha->tabelas = realloc(pilha->tabelas, pilha->count * sizeof(tabela_t));
+  }
+  return t;
+}
+
+void destroy_pilha(pilha_t* pilha) {
+  if (pilha != NULL) {
+    while (pilha->count > 0) {
+      tabela_t* t = pop_table(pilha);
+      if (t != NULL)
+        destroy_table(t);
+    }
+    free(pilha);
+  }
+}
+
+
+
+
+
+
