@@ -4,7 +4,7 @@ bool variavelBool;
 
 int novaFuncao() {}
 bool foo (int param,bool paramdois) {
-  // AQUI DA SEGFAULT: int varUm, varDois;
+  int varUm, varDois;
   int initVar <= 123;
   {
     bool novaVar, maisVar <= 'c', teste;

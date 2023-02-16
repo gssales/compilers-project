@@ -172,8 +172,9 @@ lista_commands:
 command:  
     command_block  { $$ = $1; } // bloco de comando já tem um comando no inicio
     | declara_var  { 
-        $1->flag = COMANDO;
-        $$ = $1;
+	if ($1 != NULL)
+	        $1->flag = COMANDO;
+	$$ = $1;
     } 
     | atrib {   
         $1->flag = COMANDO;
@@ -493,5 +494,6 @@ void yyerror(char const *s) {
 
 
 }
+
 
 
