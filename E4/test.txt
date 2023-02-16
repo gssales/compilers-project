@@ -1,0 +1,38 @@
+int variavel, array[2^3^4], outraVariavel;
+
+bool variavelBool;
+
+int novaFuncao() {}
+bool foo (int param,bool paramdois) {
+  // AQUI DA SEGFAULT: int varUm, varDois;
+  int initVar <= 123;
+  {
+    bool novaVar, maisVar <= 'c', teste;
+
+    chamaFunc();
+  };
+  return -5;
+}
+char bar(bool flag, int qtd) {
+{};{};{};
+
+  atrib = 10 * 5;
+  array[1] = (5 >= 1);
+  array[1] = ((10 % 5) && true);
+
+  foo(10 > 5, 5 < 10, 1 >= 1, 2 <= 2);
+
+  if (true && false) then {
+    atrib = true;
+  } else {};
+
+  if (true || false) then {};
+
+  while (true == true) {};
+  while (true != false) {
+    if (!true) then {
+      foo(true,false);
+    };
+  };
+}
+
