@@ -1,0 +1,30 @@
+-> adaptar a gramática e AST se necessario (ver correção e3)
+
+-> criar função de saida única para erros (usar switch-case) que recebe um erro, informa o usuario, e chama exit(1)
+    -> printar em linguagem humana, com numeros das linhas envolvidas, identificadores e suas naturezas
+
+-> não tem coerção DE e PARA char, na seçao 2.4 da spec explica os erros
+
+-> literal char com aspas simples
+
+-> ao fazer a verificação de compatibilidade entre qualquer tipo contra o tipo char, em expressões de uma maneira geral, o char deverá ser visto como "aquele a ser convertido", não importa se vem antes ou depois, e, por não sofrer coerção, devemos nestes casos lançar o erro ERR_CHAR_TO_INT (caso o outro seja int), ERR_CHAR_TO_FLOAT (caso o outro seja float) e ERR_CHAR_TO_BOOL (caso o outro seja bool)
+    -> ERR_X_TO_CHAR ocorre apenas nos casos que se atribui para um char e o tipo do que se quer atribuir não for um char
+    -> a forma mais fácil de implementar isso tudo está descrito no início da Sec 2.4, através do novo campo "tipo de dado" a ser adicionado na estrutura do nó da AST de cada uma das implementações
+    -> https://moodle.ufrgs.br/mod/forum/discuss.php?d=489266
+
+-> ERR_DECLARED em declarações se o identificador ja está na pilha de tabelas
+
+-> erros na 2.3 são referentes a natureza do identificador ser diferente na tabela do que está sendo avaliado
+
+-> na declaração de função é necessário inserir o símbolo com o nome no escopo/tabela ATUAL antes de empilhar a nova tabela criada
+    -> ele falou pra inserir NÃO-TERMINAL entre o nome da função e lista de argumentos (e criar escopo nessa açao, não antes do abre chaves)
+
+-> A.3 Inferência: inferir o tipo de: operadores(-+*/%!><), atribuicao ("="), while, if, chamada de funcao
+    -> onde tem os "add_child" chamar função de inferência com os tipos dos operandos, que retorna o tipo do operador pelas regras da A.3
+    -> na atribuição "=", o tipo é o mesmo da variavel que está RECEBENDO o valor (conferir compatibilidade)
+    -> em lista de expressoes "^", tratar a inferência para o nó "^" como se ele fosse um operador binário de expressão (https://moodle.ufrgs.br/mod/forum/discuss.php?d=489506)
+-> as funções ocupam tamanho zero
+    -> https://moodle.ufrgs.br/mod/forum/discuss.php?d=489566
+
+-> adicionar literais tabela: se ele já for encontrado em alguma tabela, podemos reutilizar a mesma entrada ao invés de lançar o erro de já declarado (como fazemos corretamente para identificadores de funções, variáveis e arranjos)
+    -> https://moodle.ufrgs.br/mod/forum/discuss.php?d=489529
