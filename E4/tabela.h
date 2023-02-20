@@ -24,10 +24,24 @@ struct simbolo {
 	// ... outros argumentos/função; dimensões/arranjo
 };
 
+#define HASH_TABLE_SIZE 64
+
+#define NOT_INSERTED -3
+#define KEY_ALREADY_INSERTED -2
+#define HASH_TABLE_FULL -1
+
+typedef struct par_insercao par_insercao_t;
+struct par_insercao {
+	char* key;
+	simbolo_t* symbol;
+};
+
 typedef struct tabela_simbolo tabela_t;
 struct tabela_simbolo {
 	int count_symbols;
-	simbolo_t** list;
+	int* hashes;
+	int size;
+	par_insercao_t** list;
 };
 
 typedef struct pilha pilha_t;
@@ -42,9 +56,10 @@ void destroy_symbol(simbolo_t* symbol);
 void print_symbol(simbolo_t* symbol);
 
 tabela_t* create_symbol_table();
-void insert_symbol(tabela_t* table, char* key, simbolo_t* symbol);
-simbolo_t* get_symbol(tabela_t* table, char* key);
+int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol);
+par_insercao_t* get_symbol(tabela_t* table, char* key);
 void destroy_table(tabela_t* table);
+void print_hash(tabela_t* table);
 void print_table(tabela_t* table);
 
 pilha_t* create_pilha();
