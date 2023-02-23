@@ -221,7 +221,6 @@ lista_local_var:
     } 
     | local_var {
         if ($1 != NULL) {
-            $1->flag = COMANDO;
             $$ = $1;
         } else {
             $$ = NULL;
@@ -235,6 +234,7 @@ local_var:
     } | 
     TK_IDENTIFICADOR TK_OC_LE literal {
         node_t* inicializa = create_node("<=");
+        inicializa->flag = COMANDO;
         add_child(inicializa, create_leaf($1->tk_value.s, $1));
         add_child(inicializa, $3);
         $$ = inicializa;
