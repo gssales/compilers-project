@@ -17,6 +17,7 @@ void yyerror(char const *s);
 %code requires {
     #include "valor_lexico.h"
     #include "arvore.h"
+    #include "tabela.h"
     extern void* arvore;
 }
 
@@ -87,6 +88,7 @@ programa:
     lista_elementos  {
         arvore = $1;
         //print_debug(arvore);
+        //erro_semantico(ERR_UNDECLARED, 5); // TESTANDO FUNCAO ERRO & EXIT
     } 
     | {
         arvore = NULL;

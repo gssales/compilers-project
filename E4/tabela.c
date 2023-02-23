@@ -207,8 +207,20 @@ void destroy_pilha(pilha_t* pilha) {
   }
 }
 
-
-
-
-
-
+void erro_semantico(int erro, int lineno) {
+  // TODO: terminar as mensagens de erro, adicionar mais informacoes (identificadores e sua natureza)
+  switch (erro) {
+    case ERR_UNDECLARED: //2.2
+      printf("ERR_UNDECLARED NA LINHA %d = EXIT(%d)\n", lineno, ERR_UNDECLARED);
+    case ERR_DECLARED: //2.2
+    case ERR_VARIABLE: //2.3
+    case ERR_ARRAY: //2.3
+    case ERR_FUNCTION: //2.3
+    case ERR_CHAR_TO_INT: //2.4
+    case ERR_CHAR_TO_FLOAT: //2.4
+    case ERR_CHAR_TO_BOOL: //2.4
+    case ERR_CHAR_VECTOR: //2.4
+    case ERR_X_TO_CHAR: //2.4
+  }
+  exit(erro);
+}
