@@ -86,7 +86,7 @@ void yyerror(char const *s);
 programa: 
     lista_elementos  {
         arvore = $1;
-        //print_debug(arvore);
+        print_debug(arvore);
     } 
     | {
         arvore = NULL;
@@ -172,8 +172,9 @@ lista_commands:
 command:  
     command_block  { $$ = $1; } // bloco de comando já tem um comando no inicio
     | declara_var  { 
-        $1->flag = COMANDO;
-        $$ = $1;
+        if ($1 != NULL)
+	        $1->flag = COMANDO;
+	    $$ = $1;
     } 
     | atrib {   
         $1->flag = COMANDO;
@@ -280,15 +281,21 @@ ident_atrib:
 
 lista_arranjo_atrib:
     lista_arranjo_atrib'^'expr  {
-        node_t* lista = create_node("^");
-        add_child(lista, $1);
-        add_child(lista, $3);
-        $$ = lista;
+        if ($1 != NULL) {
+            node_t* lista = create_node("^");
+            add_child(lista, $1);
+            add_child(lista, $3);
+            $$ = lista;
+        }
+        else {
+            $$ = $3;
+        }
     }
     | expr  { 
-        node_t* lista = create_node("^");
-        add_child(lista, $1);
-        $$ = lista;
+        //node_t* lista = create_node("^");
+        //add_child(lista, $1);
+        //$$ = lista;
+        $$ = $1;
     };
 
 /* Chamada de Função */
@@ -363,9 +370,10 @@ lista_expr:
         $$ = lista;
     } 
     | expr  { 
-        node_t* expr = create_node("^");
-        add_child(expr, $1);
-        $$ = expr;
+        //node_t* expr = create_node("^");
+        //add_child(expr, $1);
+        //$$ = expr;
+        $$ = $1;
     };
 
 expr: 
