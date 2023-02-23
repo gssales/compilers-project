@@ -86,7 +86,7 @@ void yyerror(char const *s);
 programa: 
     lista_elementos  {
         arvore = $1;
-        print_debug(arvore);
+        //print_debug(arvore);
     } 
     | {
         arvore = NULL;
