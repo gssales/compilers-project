@@ -124,7 +124,9 @@ ident_var:
     TK_IDENTIFICADOR  { destroy_lexvalue($1); } 
     | TK_IDENTIFICADOR'['lista_arranjo']'  { destroy_lexvalue($1); };
 
-lista_arranjo: lista_arranjo'^'TK_LIT_INT | TK_LIT_INT;
+lista_arranjo: 
+    lista_arranjo'^'TK_LIT_INT  { destroy_lexvalue($3); }
+    | TK_LIT_INT    { destroy_lexvalue($1); };
 
 
 /* Função */
