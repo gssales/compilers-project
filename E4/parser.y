@@ -405,6 +405,7 @@ literal:
         insert_symbol(t,$1->str, s);
 
         $$ = create_leaf($1->str, $1); 
+        $$.type = TYPE_INT;
     }
     | TK_LIT_FLOAT  {
         // adiciona literal na tabela de escopo atual
@@ -418,6 +419,7 @@ literal:
         insert_symbol(t,$1->str, s);
 
         $$ = create_leaf($1->str, $1); 
+        $$.type = TYPE_FLOAT;
     }
     | TK_LIT_FALSE  {
         // adiciona literal na tabela de escopo atual
@@ -430,6 +432,7 @@ literal:
         tabela_t *t = p->tabelas[p->count-1];
         insert_symbol(t,"false", s);
         $$ = create_leaf($1->str, $1); 
+        $$.type = TYPE_BOOL;
     }
     | TK_LIT_TRUE   {
         // adiciona literal na tabela de escopo atual
@@ -443,6 +446,7 @@ literal:
         insert_symbol(t,"true", s);
 
         $$ = create_leaf($1->str, $1); 
+        $$.type = TYPE_BOOL;
     }
     | TK_LIT_CHAR  { 
         // adiciona literal na tabela de escopo atual
@@ -456,6 +460,7 @@ literal:
         insert_symbol(t,$1->str, s);
 
         $$ = create_leaf(&$1->tk_value.c, $1); 
+        $$.type = TYPE_CHAR;
     };
 
 /* Atribuição */

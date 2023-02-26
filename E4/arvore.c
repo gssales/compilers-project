@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "arvore.h"
+#include "tabela.h"
 #include "valor_lexico.h"
 #include "parser.tab.h"
 
@@ -21,6 +21,7 @@ node_t* create_leaf(char* label, valor_lexico *value) {
     node->count_children = 0;
     node->children = NULL;
     node->flag = 0; // FUNCAO/COMANDO/EXPRESSAO
+    node->type = TYPE_UNDEFINED;
 	}
 	return node;
 }
@@ -34,6 +35,7 @@ node_t* create_node(char* label) {
     node->count_children = 0;
     node->children = NULL;
     node->flag = 0;
+    node->type = TYPE_UNDEFINED;
 	}
 	return node;
 }

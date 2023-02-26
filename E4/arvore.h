@@ -11,6 +11,7 @@ struct node {
 	char *label;
 	valor_lexico *value;
 	int count_children;
+	int type;
 	node_t **children;
 };
 
