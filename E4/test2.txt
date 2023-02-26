@@ -10,6 +10,12 @@ bool foo (int param,bool paramdois) {
 
     while (true == true) {
       int varEscopoTres;
+
+      if (true && false) then {
+        bool varEscopoQuatroIf;
+      } else {
+        bool varEscopoQuatroElse;
+      };
     };
   };
 }
