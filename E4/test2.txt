@@ -1,6 +1,8 @@
 bool varBoolEscopoZero;
 //bool varBoolEscopoZero;// TESTE ERR_DECLARED
-int intArranjoEscopoZero[1^2^3];
+//int intArranjoEscopoZero[1^2^3]; // TESTE TAMANHO DE ARRANJO INT (24)
+//bool boolArranjoEscopoZero[1^2^3]; // TESTE TAMANHO DE ARRANJO BOOL (6)
+//float floatArranjoEscopoZero[1^2^3]; // TESTE TAMANHO DE ARRANJO FLOAT (48)
 //char charArranjoEscopoZero[4^5^6]; // TESTE ERR_CHAR_VECTOR
 
 bool boolFooUm(int param,bool paramdois) {

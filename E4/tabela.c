@@ -28,7 +28,7 @@ void print_symbol(simbolo_t* symbol) {
   if (symbol != NULL) {
     printf("l:%d\tc:%d\t", symbol->pos.l, symbol->pos.c);
     if (symbol->valor) {
-      printf("nat: %s\ttipo: %s\t",natureza_simbolo_to_string(symbol->natureza),tipo_simbolo_to_string(symbol->tipo));
+      printf("nat: %s\ttipo: %s\ttam: %d\t",natureza_simbolo_to_string(symbol->natureza),tipo_simbolo_to_string(symbol->tipo),symbol->tamanhoB);
       printf("lex: ");
       print_lexvalue(symbol->valor);
     }
@@ -283,7 +283,31 @@ void add_tipos_pilha_str(struct strpilha_t *pilha_str, tabela_t* table, int tipo
       erro_semantico(ERR_CHAR_VECTOR, s->pos.l, str, s);
     }
 
+    // CALCULA E ADICIONA TAMANHO (DEPENDENDO DO TIPO E SE ARRANJO)
+    int tam_base = 0;
+    switch(tipo) {
+      case TYPE_INT:
+        tam_base = 4;
+        break;
+      case TYPE_BOOL:
+        tam_base = 1;
+        break;
+      case TYPE_FLOAT:
+        tam_base = 8;
+        break;
+      case TYPE_CHAR:
+        tam_base = 1;
+        break;
+    }
+    if (s->natureza == SYM_ARRANJO) {
+      // tam_base = tam_base * dimensoes
+      tam_base = tam_base * s->tamanhoB;
+    }
+
+    s->tamanhoB = tam_base;
+    // ADICIONA TIPO
     s->tipo = tipo;
+
     //printf("id %s recebeu tipo %s",par->symbol->valor->tk_value.s,tipo_simbolo_to_string(tipo));
     pop_strpilha(pilha_str);
     str = top_strpilha(pilha_str);

@@ -23,5 +23,6 @@ int main (int argc, char **argv)
   libera(arvore);
   arvore = NULL;
   yylex_destroy();
-  return ret;
+  //return ret;
+  return 0; // Na ausencia de qualquer erro, o programa deve retornar o valor zero.
 }

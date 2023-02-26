@@ -37,7 +37,9 @@ void yyerror(char const *s);
 %type<nodo> expr_preced0 expr_preced1 expr_preced2 expr_preced3 expr_preced4 expr_preced5 expr_preced6
 %type<nodo> atrib lista_arranjo_atrib chamada_func chamada_params chamada_lista_params
 %type<nodo> declara_var retorno condicional iteracao
+
 %type<valor_lexico> tipo
+%type<valor_lexico> lista_arranjo
 
 %token<valor_lexico> TK_PR_INT
 %token<valor_lexico> TK_PR_FLOAT
@@ -170,7 +172,6 @@ ident_var:
         //destroy_lexvalue($1); 
     } 
     | TK_IDENTIFICADOR'['lista_arranjo']'  { 
-
         // adiciona id na pilha_str para receber tipo depois
         push_strpilha(pilha_str,$1->tk_value.s);
         //printf("Push_strpilha: %s",$1->tk_value.s);
@@ -181,6 +182,7 @@ ident_var:
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_ARRANJO;
         s->valor = $1;
+        s->tamanhoB = $3->tk_value.i; // dimensao total (multiplicada dependendo do tipo na add_tipos_pilha_str)
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[0];
         check_declared($1->line_number, p, $1->tk_value.s);
@@ -190,8 +192,17 @@ ident_var:
     };
 
 lista_arranjo: 
-    lista_arranjo'^'TK_LIT_INT { destroy_lexvalue($3); }
-    | TK_LIT_INT { destroy_lexvalue($1); };
+    lista_arranjo'^'TK_LIT_INT { 
+        int dim_total = $1->tk_value.i + $3->tk_value.i;
+        
+        $1->tk_value.i = dim_total;
+        $$ = $1;
+        //destroy_lexvalue($3); 
+    }
+    | TK_LIT_INT { 
+        $$ = $1;
+        //destroy_lexvalue($1); 
+    };
 
 
 /* Função */
@@ -367,6 +378,7 @@ literal:
         s->natureza = SYM_LITERAL;
         s->tipo = TYPE_INT;
         s->valor = $1;
+        s->tamanhoB = 4;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
         insert_symbol(t,$1->str, s);
@@ -379,6 +391,7 @@ literal:
         s->natureza = SYM_LITERAL;
         s->tipo = TYPE_FLOAT;
         s->valor = $1;
+        s->tamanhoB = 8;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
         insert_symbol(t,$1->str, s);
@@ -391,6 +404,7 @@ literal:
         s->natureza = SYM_LITERAL;
         s->tipo = TYPE_BOOL;
         s->valor = $1;
+        s->tamanhoB = 1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
         insert_symbol(t,"false", s);
@@ -402,6 +416,7 @@ literal:
         s->natureza = SYM_LITERAL;
         s->tipo = TYPE_BOOL;
         s->valor = $1;
+        s->tamanhoB = 1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
         insert_symbol(t,"true", s);
@@ -414,6 +429,7 @@ literal:
         s->natureza = SYM_LITERAL;
         s->tipo = TYPE_CHAR;
         s->valor = $1;
+        s->tamanhoB = 1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
         insert_symbol(t,$1->str, s);
