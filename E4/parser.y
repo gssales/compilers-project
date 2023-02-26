@@ -314,6 +314,7 @@ literal:
         // adiciona literal na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_LITERAL;
+        s->tipo = TYPE_INT;
         s->valor = $1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
@@ -325,6 +326,7 @@ literal:
         // adiciona literal na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_LITERAL;
+        s->tipo = TYPE_FLOAT;
         s->valor = $1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
@@ -336,6 +338,7 @@ literal:
         // adiciona literal na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_LITERAL;
+        s->tipo = TYPE_BOOL;
         s->valor = $1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
@@ -346,6 +349,7 @@ literal:
         // adiciona literal na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_LITERAL;
+        s->tipo = TYPE_BOOL;
         s->valor = $1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
@@ -357,6 +361,7 @@ literal:
         // adiciona literal na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_LITERAL;
+        s->tipo = TYPE_CHAR;
         s->valor = $1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];

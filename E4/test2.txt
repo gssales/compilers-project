@@ -1,17 +1,17 @@
 bool varBoolEscopoZero;
-char charArranjoDeveTerErro[2];
-int arranjoGlobal[2^3^4], outrVarGlobal;
+int arranjoEscopoZero[2^3^4];
 
 bool foo (int param,bool paramdois) {
-  bool varTesteUm,varTesteDois,varTesteTres,varTesteLitBool <= false;
+  bool varTesteUm,varTesteDois,varTesteLitBool <= false;
   float varEscopoUm;
   {
     char varEscopoDois <= 't';
 
-    while (true == true) {
-      int varEscopoTres;
+    while (5 == 10) {
+      int varEscopoTres <= 10;
+      int outraVarEscopoTres <= 10;
 
-      if (true && false) then {
+      if (1.5 == 5.1) then {
         bool varEscopoQuatroIf;
       } else {
         bool varEscopoQuatroElse;

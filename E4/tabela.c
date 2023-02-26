@@ -242,21 +242,21 @@ void destroy_pilha(pilha_t* pilha) {
 
 char* natureza_simbolo_to_string(int naturezaSimbolo) {
   switch(naturezaSimbolo) {
-    case SYM_UNKNOWN:       return "SYM_UNKNOWN";       break;
+    case SYM_UNKNOWN:       return "SYM_UNKNOWN  ";       break;
     case SYM_LITERAL:         return "SYM_LITERAL";     break;
     case SYM_VARIAVEL:       return "SYM_VARIAVEL";     break;
-    case SYM_ARRANJO:        return "SYM_ARRANJO";      break;
-    case SYM_FUNCAO:        return "SYM_FUNCAO  ";        break;
+    case SYM_ARRANJO:        return "SYM_ARRANJO ";      break;
+    case SYM_FUNCAO:        return "SYM_FUNCAO   ";        break;
   }
 }
 
 char* tipo_simbolo_to_string(int tipoSimbolo) {
   switch(tipoSimbolo) {
     case TYPE_UNDEFINED:   return "TYPE_UNDEFINED";     break;
-    case TYPE_INT:         return "TYPE_INT";           break;
-    case TYPE_FLOAT:       return "TYPE_FLOAT";         break;
-    case TYPE_CHAR:        return "TYPE_CHAR";          break;
-    case TYPE_BOOL:        return "TYPE_BOOL";          break;
+    case TYPE_INT:         return "TYPE_INT      ";           break;
+    case TYPE_FLOAT:       return "TYPE_FLOAT    ";         break;
+    case TYPE_CHAR:        return "TYPE_CHAR     ";          break;
+    case TYPE_BOOL:        return "TYPE_BOOL     ";          break;
   }
 }
 
