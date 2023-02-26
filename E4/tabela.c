@@ -276,8 +276,14 @@ void add_tipos_pilha_str(struct strpilha_t *pilha_str, tabela_t* table, int tipo
   //printf("\nAdd_tipos_pilha_str:\n");
   while (str != NULL) {
     //printf("- id = %s, tipo = %s\n",str,tipo_simbolo_to_string(tipo));
-    par_insercao_t* par = get_symbol(table, str);
-    par->symbol->tipo = tipo;
+    simbolo_t* s = get_symbol(table, str)->symbol;
+
+    // ERR_CHAR_VECTOR
+    if (tipo == TYPE_CHAR && s->natureza == SYM_ARRANJO) {
+      erro_semantico(ERR_CHAR_VECTOR, s->pos.l, str, s);
+    }
+
+    s->tipo = tipo;
     //printf("id %s recebeu tipo %s",par->symbol->valor->tk_value.s,tipo_simbolo_to_string(tipo));
     pop_strpilha(pilha_str);
     str = top_strpilha(pilha_str);
