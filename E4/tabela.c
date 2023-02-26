@@ -30,7 +30,7 @@ void print_symbol(simbolo_t* symbol) {
       printf("lex: ");
       print_lexvalue(symbol->valor);
     }
-    printf("\n");
+    //printf("\n");
   }
 }
 
@@ -132,7 +132,18 @@ par_insercao_t* get_symbol(int lineno, tabela_t* table, char* key) {
       }
     }
   }
-  if (par == NULL) { // ERR_UNDECLARED
+  //if (par == NULL) { // ERR_UNDECLARED
+  //  erro_semantico(ERR_UNDECLARED, lineno, key, NULL);
+  //}
+  return par;
+}
+
+par_insercao_t* get_symbol_pilha(int lineno, pilha_t* pilha_tabela, char* key) {
+  par_insercao_t* par = NULL;
+  for (int i = pilha_tabela->count; i >= 0; i--) {
+    par = get_symbol(lineno, pilha_tabela->tabelas[i], key);
+  }
+  if (par == NULL) { // ERR_UNDECLARED: NAO ENCONTROU EM NENHUM ESCOPO
     erro_semantico(ERR_UNDECLARED, lineno, key, NULL);
   }
   return par;
@@ -173,6 +184,16 @@ void print_table(tabela_t* table) {
   }
 }
 
+void print_pilha(pilha_t* pilha) {
+  if (pilha != NULL) {
+    printf("\n========== PILHA FINAL ==========\n");
+    for (int i = 0; i < pilha->count; i++) {
+      printf("\n---> Escopo %d \n", i);
+      print_table(pilha->tabelas[i]);
+    }
+  }
+}
+
 pilha_t* create_pilha() {
   pilha_t* p;
   p = malloc(sizeof(pilha_t));
@@ -192,6 +213,10 @@ void push_table(pilha_t* pilha, tabela_t* table) {
 }
 
 tabela_t* pop_table(pilha_t* pilha) {
+  // printa tabela antes de deletar (para debugar)
+  printf("\n---> Escopo %d (Desempilhado)\n", pilha->count-1);
+  print_table(pilha->tabelas[pilha->count-1]);
+
   tabela_t* t = NULL;
   if (pilha != NULL && pilha->count > 0) {
     pilha->count--;

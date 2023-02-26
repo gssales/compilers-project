@@ -8,14 +8,14 @@ typedef union TokenValue {
   int i;
   float f;
   char c;
-  char* s; // usar string yytext caso nao seja literal?
+  char* s;
 } token_value_t;
 
 typedef struct valor_lexico valor_lexico;
 struct valor_lexico {
   int line_number;
   int tk_type;
-  char *str; // lexema
+  char *str;
   token_value_t tk_value;
 };
 

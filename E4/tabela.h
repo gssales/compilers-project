@@ -73,6 +73,9 @@ void destroy_table(tabela_t* table);
 void print_hash(tabela_t* table);
 void print_table(tabela_t* table);
 
+par_insercao_t* get_symbol_pilha(int lineno, pilha_t* pilha_tabela, char* key);
+void print_pilha(pilha_t* pilha);
+
 pilha_t* create_pilha();
 void push_table(pilha_t* pilha, tabela_t* table);
 tabela_t* pop_table(pilha_t* pilha);

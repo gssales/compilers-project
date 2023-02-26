@@ -89,17 +89,16 @@ programa:
     escopo_global lista_elementos  {
         arvore = $2;
         //print_debug(arvore);
-        pilha_t *pilha = pilha_tabelas;
-        print_table(pilha->tabelas[0]);
+        print_pilha(pilha_tabelas);
     } 
     | {
         arvore = NULL;
     };
 
 escopo_global: {
+    // cria pilha e empilha a tabela de escopo global
     pilha_tabelas = create_pilha();
-    tabela_t *t = create_symbol_table();
-    push_table(pilha_tabelas, t);
+    push_table(pilha_tabelas, create_symbol_table());
 }
 
 lista_elementos: 
@@ -133,7 +132,7 @@ lista_ident_var: lista_ident_var ',' ident_var | ident_var;
 ident_var: 
     TK_IDENTIFICADOR  { 
 
-        // adiciona var na tabela de escopo global
+        // adiciona simbolo na tabela de escopo global
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_VARIAVEL;
         s->valor = $1;
@@ -171,6 +170,10 @@ funcao:
         destroy_lexvalue($2);
     };
 
+empilha_escopo: { 
+        push_table(pilha_tabelas, create_symbol_table());
+    };
+
 func_params: lista_params | ;
 
 lista_params: lista_params ',' param | param;
@@ -180,9 +183,10 @@ param: tipo TK_IDENTIFICADOR  { destroy_lexvalue($2); };
 
 /* Bloco de Comandos */
 command_block: 
-    '{'lista_commands'}'  { 
-        $$ = $2;
+    '{' empilha_escopo lista_commands'}'  { 
+        $$ = $3;
         //print_tree($$);
+        pop_table(pilha_tabelas);
     };
 
 lista_commands:
@@ -203,7 +207,7 @@ lista_commands:
     | { $$ = NULL; };
 
 command:  
-    command_block  { $$ = $1; } // bloco de comando já tem um comando no inicio
+    command_block  { $$ = $1; }
     | declara_var  { 
 	if ($1 != NULL)
 	        $1->flag = COMANDO;
