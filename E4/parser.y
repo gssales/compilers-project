@@ -159,13 +159,13 @@ ident_var:
         //print_pilha_str(pilha_str);
 
         // adiciona simbolo na tabela de escopo global
-        // FALTA INFORMACAO DE TIPO
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_VARIAVEL;
         s->valor = $1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[0];
-        insert_symbol(t,$1->tk_value.s, s);
+        check_declared($1->line_number, p, $1->tk_value.s);
+        insert_symbol(t, $1->tk_value.s, s);
 
         //destroy_lexvalue($1); 
     } 
@@ -184,6 +184,7 @@ ident_var:
         s->valor = $1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[0];
+        check_declared($1->line_number, p, $1->tk_value.s);
         insert_symbol(t,$1->tk_value.s, s);
 
         //destroy_lexvalue($1); 
@@ -204,6 +205,7 @@ funcao:
         s->valor = $2;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
+        check_declared($2->line_number, p, $2->tk_value.s);
         insert_symbol(t,$2->tk_value.s, s);
         
         node_t* funcao = create_node($2->tk_value.s);
@@ -295,7 +297,6 @@ declara_var:
 lista_local_var:
     lista_local_var ',' local_var  {
         if ($3 != NULL) {
-            //$3 é um comando (declara_var)
             if ($1 != NULL) {
                 node_t* last_cmd = getLastOf($1, COMANDO);
                 add_child(last_cmd, $3);
@@ -331,6 +332,7 @@ local_var:
         s->valor = $1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
+        check_declared($1->line_number, p, $1->tk_value.s);
         insert_symbol(t,$1->tk_value.s, s);
 
         //destroy_lexvalue($1);
@@ -348,6 +350,7 @@ local_var:
         s->valor = $1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
+        check_declared($1->line_number, p, $1->tk_value.s);
         insert_symbol(t,$1->tk_value.s, s);
 
         node_t* inicializa = create_node("<=");
@@ -421,6 +424,8 @@ literal:
 
 atrib: 
     ident_atrib '=' expr {
+        // consultar a tabela pra ver se 'expr' esta sendo usada corretamente
+
         node_t* atribuicao = create_node("=");
         add_child(atribuicao, $1);
         add_child(atribuicao, $3);
@@ -429,9 +434,19 @@ atrib:
 
 ident_atrib:
     TK_IDENTIFICADOR  {
+        // consulta a tabela pra saber se id->natureza == SYM_VARIAVEL
+        pilha_t *p = pilha_tabelas;
+        simbolo_t* s = get_symbol_pilha($1->line_number, p, $1->tk_value.s)->symbol;
+        check_correct_use($1->line_number, s, SYM_VARIAVEL);
+
         $$ = create_leaf($1->tk_value.s, $1);
     } 
     | TK_IDENTIFICADOR'['lista_arranjo_atrib']'  {
+        // consulta a tabela pra saber se id->natureza == SYM_ARRANJO
+        pilha_t *p = pilha_tabelas;
+        simbolo_t* s = get_symbol_pilha($1->line_number, p, $1->tk_value.s)->symbol;
+        check_correct_use($1->line_number, s, SYM_ARRANJO);
+
         node_t* id_lista_atrib = create_leaf($1->tk_value.s, $1);
         node_t* indexador = create_node("[]");
         add_child(indexador, id_lista_atrib);
@@ -456,6 +471,12 @@ lista_arranjo_atrib:
 
 chamada_func:
     TK_IDENTIFICADOR'('chamada_params')'  {
+
+        // consulta a tabela pra saber se id->natureza == SYM_FUNCAO
+        pilha_t *p = pilha_tabelas;
+        simbolo_t* s = get_symbol_pilha($1->line_number, p, $1->tk_value.s)->symbol;
+        check_correct_use($1->line_number, s, SYM_FUNCAO);
+
         node_t* funcao = create_node("call ");
         strcat(funcao->label, $1->tk_value.s);
         if ($3 != NULL)

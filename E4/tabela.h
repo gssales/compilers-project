@@ -88,6 +88,9 @@ int tktype_to_type(int tk_type);
 char* natureza_simbolo_to_string(int naturezaSimbolo);
 char* tipo_simbolo_to_string(int tipoSimbolo);
 
+void check_declared(int lineno, pilha_t* pilha_tabela, char* key);
+void check_correct_use(int lineno, simbolo_t *s, enum naturezaSimbolo nat);
+
 void erro_semantico(int erro, int lineno, char* key, simbolo_t* symbol);
 
 #endif //_TABELA_H_

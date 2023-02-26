@@ -1,8 +1,17 @@
 bool varBoolEscopoZero;
+//bool varBoolEscopoZero;// TESTE ERR_DECLARED
 int intArranjoEscopoZero[2^3^4];
 
-bool boolFoo (int param,bool paramdois) {
+bool boolFooUm(int param,bool paramdois) {}
+
+bool boolFooDois(int param,bool paramdois) {
   bool boolVarTesteUm,boolVarTesteDois,boolVarTesteTres <= false;
+  //intFooTres(); // TESTE ERR_UNDECLARED
+  //varBoolEscopoZero(); // TESTE ERR_VARIABLE
+  //intArranjoEscopoZero(); // TESTE ERR_ARRAY
+  //boolFooUm = 5; // TESTE ERR_FUNCTION
+  varBoolEscopoZero = boolFooUm; // AQUI TINHA QUE DAR ERR_FUNCTION: FALTA A PARTE DE EXPRESSOES (regra "atrib: ident_atrib '=' expr")
+
   float floatVarEscopoUm;
   {
     char charVarEscopoDois <= 't';

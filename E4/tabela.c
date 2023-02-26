@@ -113,11 +113,6 @@ int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol) {
       table->list = realloc(table->list, table->count_symbols * sizeof(simbolo_t*));
       table->list[table->count_symbols-1] = par;
     }
-    else { // ERR_DECLARED
-      if (symbol->natureza != SYM_LITERAL) { // literal pode repetir na tabela sem ERR_DECLARED
-        erro_semantico(ERR_DECLARED, symbol->pos.l, key, symbol);
-      }
-    }
   }
   return pseudoindex;
 }
@@ -144,10 +139,42 @@ par_insercao_t* get_symbol_pilha(int lineno, pilha_t* pilha_tabela, char* key) {
   for (int i = pilha_tabela->count; i >= 0; i--) {
     par = get_symbol(pilha_tabela->tabelas[i], key);
   }
-  if (par == NULL) { // ERR_UNDECLARED: NAO ENCONTROU SIMBOLO EM NENHUM ESCOPO
+  // ERR_UNDECLARED: NAO ENCONTROU SIMBOLO EM NENHUM ESCOPO
+  if (par == NULL) { 
     erro_semantico(ERR_UNDECLARED, lineno, key, NULL);
   }
   return par;
+}
+
+void check_declared(int lineno, pilha_t* pilha_tabela, char* key) {
+  par_insercao_t* par = NULL;
+  for (int i = pilha_tabela->count; i >= 0; i--) {
+    par = get_symbol(pilha_tabela->tabelas[i], key);
+    // ERR_DECLARED: JA EXISTE SIMBOLO COM ESSE IDENTIFICADOR
+    if (par != NULL) { 
+      simbolo_t *s = par->symbol;
+      if (s->natureza != SYM_LITERAL) {
+        erro_semantico(ERR_DECLARED, s->pos.l, key, s);
+      }
+    }
+  }
+}
+
+void check_correct_use(int lineno, simbolo_t *s, enum naturezaSimbolo nat) {
+  // ERR_VARIAVEL, ERR_ARRAY, ERR_FUNCTION
+  if (s->natureza != nat) {
+    switch(s->natureza) {
+      case SYM_VARIAVEL:
+        erro_semantico(ERR_VARIABLE, lineno, s->valor->tk_value.s, s);
+        break;
+      case SYM_ARRANJO:
+        erro_semantico(ERR_ARRAY, lineno, s->valor->tk_value.s, s);
+        break;
+      case SYM_FUNCAO:
+        erro_semantico(ERR_FUNCTION, lineno, s->valor->tk_value.s, s);
+        break;
+    }
+  }
 }
 
 void destroy_table(tabela_t* table) {
