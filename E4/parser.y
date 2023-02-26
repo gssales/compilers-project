@@ -190,7 +190,9 @@ ident_var:
         //destroy_lexvalue($1); 
     };
 
-lista_arranjo: lista_arranjo'^'TK_LIT_INT | TK_LIT_INT;
+lista_arranjo: 
+    lista_arranjo'^'TK_LIT_INT { destroy_lexvalue($3); }
+    | TK_LIT_INT { destroy_lexvalue($1); };
 
 
 /* Função */
@@ -310,7 +312,6 @@ lista_local_var:
     } 
     | local_var {
         if ($1 != NULL) {
-            $1->flag = COMANDO;
             $$ = $1;
         } else {
             $$ = NULL;
@@ -354,6 +355,7 @@ local_var:
         insert_symbol(t,$1->tk_value.s, s);
 
         node_t* inicializa = create_node("<=");
+        inicializa->flag = COMANDO;
         add_child(inicializa, create_leaf($1->tk_value.s, $1));
         add_child(inicializa, $3);
         $$ = inicializa;
@@ -456,15 +458,22 @@ ident_atrib:
 
 lista_arranjo_atrib:
     lista_arranjo_atrib'^'expr  {
-        node_t* lista = create_node("^");
-        add_child(lista, $1);
-        add_child(lista, $3);
-        $$ = lista;
+        if ($1 != NULL) {
+            node_t* lista = create_node("^");
+            add_child(lista, $1);
+            add_child(lista, $3);
+            $$ = lista;
+        }
+        else {
+            $$ = $3;
+        }
+        
     }
     | expr  { 
-        node_t* lista = create_node("^");
-        add_child(lista, $1);
-        $$ = lista;
+        //node_t* lista = create_node("^");
+        //add_child(lista, $1);
+        //$$ = lista;
+        $$ = $1;
     };
 
 /* Chamada de Função */
@@ -545,9 +554,10 @@ lista_expr:
         $$ = lista;
     } 
     | expr  { 
-        node_t* expr = create_node("^");
-        add_child(expr, $1);
-        $$ = expr;
+        //node_t* expr = create_node("^");
+        //add_child(expr, $1);
+        //$$ = expr;
+        $$ = $1;
     };
 
 expr: 
