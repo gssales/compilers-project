@@ -177,7 +177,6 @@ ident_var:
         //print_pilha_str(pilha_str);
 
         // adiciona arranjo na tabela de escopo global
-        // FALTA INFORMACAO DE TIPO
         // FALTA INFORMACAO DE DIMENSOES DO ARRANJO
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_ARRANJO;
@@ -662,9 +661,21 @@ expr_preced6:
 
 expr_terminais: 
     TK_IDENTIFICADOR  { 
+
+        // consulta a tabela pra saber se id->natureza == SYM_VARIAVEL
+        pilha_t *p = pilha_tabelas;
+        simbolo_t* s = get_symbol_pilha($1->line_number, p, $1->tk_value.s)->symbol;
+        check_correct_use($1->line_number, s, SYM_VARIAVEL);
+
         $$ = create_leaf($1->tk_value.s, $1);
     }
     | TK_IDENTIFICADOR '[' lista_expr ']'  {
+
+        // consulta a tabela pra saber se id->natureza == SYM_ARRANJO
+        pilha_t *p = pilha_tabelas;
+        simbolo_t* s = get_symbol_pilha($1->line_number, p, $1->tk_value.s)->symbol;
+        check_correct_use($1->line_number, s, SYM_ARRANJO);
+
         node_t* id_lista_expr = create_leaf($1->tk_value.s, $1);
         node_t* indexador = create_node("[]");
         add_child(indexador, id_lista_expr);
