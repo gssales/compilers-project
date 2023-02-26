@@ -10,9 +10,12 @@ bool boolFooDois(int param,bool paramdois) {
   bool boolVarTesteUm,boolVarTesteDois,boolVarTesteTres <= false;
   //intFooTres(); // TESTE ERR_UNDECLARED
   //varBoolEscopoZero(); // TESTE ERR_VARIABLE
+  //boolVarTesteUm[1^2^3] = true; // TESTE_ERR_VARIABLE
   //intArranjoEscopoZero(); // TESTE ERR_ARRAY
+  //varBoolEscopoZero = intArranjoEscopoZero; // TESTE ERR_ARRAY
   //boolFooUm = 5; // TESTE ERR_FUNCTION
   //varBoolEscopoZero = boolFooUm; // TESTE ERR_FUNCTION
+  
 
   float floatVarEscopoUm;
   {

@@ -138,6 +138,9 @@ par_insercao_t* get_symbol_pilha(int lineno, pilha_t* pilha_tabela, char* key) {
   par_insercao_t* par = NULL;
   for (int i = pilha_tabela->count; i >= 0; i--) {
     par = get_symbol(pilha_tabela->tabelas[i], key);
+    if (par != NULL) {
+      break;
+    }
   }
   // ERR_UNDECLARED: NAO ENCONTROU SIMBOLO EM NENHUM ESCOPO
   if (par == NULL) { 

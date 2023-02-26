@@ -425,8 +425,6 @@ literal:
 
 atrib: 
     ident_atrib '=' expr {
-        // consultar a tabela pra ver se 'expr' esta sendo usada corretamente
-
         node_t* atribuicao = create_node("=");
         add_child(atribuicao, $1);
         add_child(atribuicao, $3);
