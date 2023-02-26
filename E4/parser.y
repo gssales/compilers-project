@@ -193,7 +193,7 @@ ident_var:
 
 lista_arranjo: 
     lista_arranjo'^'TK_LIT_INT { 
-        int dim_total = $1->tk_value.i + $3->tk_value.i;
+        int dim_total = $1->tk_value.i * $3->tk_value.i;
         
         $1->tk_value.i = dim_total;
         $$ = $1;
