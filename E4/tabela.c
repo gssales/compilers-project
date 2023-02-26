@@ -1,13 +1,12 @@
 #include <string.h>
 #include "tabela.h"
-#include "valor_lexico.h"
 
 simbolo_t* create_symbol(int lineno) {
   simbolo_t* s = NULL;
   s = malloc(sizeof(simbolo_t));
   if (s != NULL) {
     s->pos.l = lineno;
-    s->pos.c = -1;
+    s->pos.c = -1; // se quisermos tentar: 'Print Column' @https://stackoverflow.com/questions/62115979/how-to-implement-better-error-messages-for-flex-bison
     s->natureza = SYM_UNKNOWN;
     s->tipo = TYPE_UNDEFINED;
     s->tamanhoB = 0;
@@ -112,11 +111,14 @@ int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol) {
       table->list = realloc(table->list, table->count_symbols * sizeof(simbolo_t*));
       table->list[table->count_symbols-1] = par;
     }
+    else { // ERR_DECLARED
+      erro_semantico(ERR_DECLARED, symbol->pos.l, key, symbol);
+    }
   }
   return pseudoindex;
 }
 
-par_insercao_t* get_symbol(tabela_t* table, char* key) {
+par_insercao_t* get_symbol(int lineno, tabela_t* table, char* key) {
   par_insercao_t* par = NULL;
   if (table != NULL && key != NULL && *key) {
     int i = (int)(hash_function32(key) % table->size);
@@ -129,6 +131,9 @@ par_insercao_t* get_symbol(tabela_t* table, char* key) {
         }
       }
     }
+  }
+  if (par == NULL) { // ERR_UNDECLARED
+    erro_semantico(ERR_UNDECLARED, lineno, key, NULL);
   }
   return par;
 }
@@ -207,20 +212,38 @@ void destroy_pilha(pilha_t* pilha) {
   }
 }
 
-void erro_semantico(int erro, int lineno) {
-  // TODO: terminar as mensagens de erro, adicionar mais informacoes (identificadores e sua natureza)
+void erro_semantico(int erro, int lineno, char* key, simbolo_t* symbol) {
   switch (erro) {
     case ERR_UNDECLARED: //2.2
-      printf("ERR_UNDECLARED NA LINHA %d = EXIT(%d)\n", lineno, ERR_UNDECLARED);
+      printf("Linha %d - ERR_UNDECLARED: Identificador '%s' não declarado\n", lineno, key);
+      break;
     case ERR_DECLARED: //2.2
+      printf("Linha %d - ERR_DECLARED: Dupla declaração do identificador '%s'\n", lineno, symbol->valor->tk_value.s);
+      break;
     case ERR_VARIABLE: //2.3
+      printf("Linha %d - ERR_VARIABLE: Identificador de variável '%s' sendo usado como arranjo ou função\n", lineno, symbol->valor->tk_value.s);
+      break;
     case ERR_ARRAY: //2.3
+      printf("Linha %d - ERR_ARRAY: Identificador de arranjo '%s' sendo usado como variável ou função\n", lineno, symbol->valor->tk_value.s);
+      break;
     case ERR_FUNCTION: //2.3
+      printf("Linha %d - ERR_FUNCTION: Identificador de função '%s' sendo usado como variável ou arranjo\n", lineno, symbol->valor->tk_value.s);
+      break;
     case ERR_CHAR_TO_INT: //2.4
+      printf("Linha %d - ERR_CHAR_TO_INT: Tentativa de coerção da variável '%s' do tipo char para o tipo int\n", lineno, symbol->valor->tk_value.s);
+      break;
     case ERR_CHAR_TO_FLOAT: //2.4
+      printf("Linha %d - ERR_CHAR_TO_FLOAT: Tentativa de coerção da variável '%s' do tipo char para o tipo float\n", lineno, symbol->valor->tk_value.s);
+      break;
     case ERR_CHAR_TO_BOOL: //2.4
+      printf("Linha %d - ERR_CHAR_TO_BOOL: Tentativa de coerção da variável '%s' do tipo char para o tipo bool\n", lineno, symbol->valor->tk_value.s);
+      break;
     case ERR_CHAR_VECTOR: //2.4
+      printf("Linha %d - ERR_CHAR_VECTOR: Arranjo '%s' declarado com o tipo char\n", lineno, symbol->valor->tk_value.s);
+      break;
     case ERR_X_TO_CHAR: //2.4
+      printf("Linha %d - ERR_X_TO_CHAR: Tentativa de coerção da variável '%s' do tipo int/float/bool para o tipo char\n", lineno, symbol->valor->tk_value.s);
+      break;
   }
   exit(erro);
 }

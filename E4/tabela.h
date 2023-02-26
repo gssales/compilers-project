@@ -68,7 +68,7 @@ void print_symbol(simbolo_t* symbol);
 
 tabela_t* create_symbol_table();
 int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol);
-par_insercao_t* get_symbol(tabela_t* table, char* key);
+par_insercao_t* get_symbol(int lineno, tabela_t* table, char* key);
 void destroy_table(tabela_t* table);
 void print_hash(tabela_t* table);
 void print_table(tabela_t* table);
@@ -78,6 +78,6 @@ void push_table(pilha_t* pilha, tabela_t* table);
 tabela_t* pop_table(pilha_t* pilha);
 void destroy_pilha(pilha_t* pilha);
 
-void erro_semantico(int erro, int lineno);
+void erro_semantico(int erro, int lineno, char* key, simbolo_t* symbol);
 
 #endif //_TABELA_H_

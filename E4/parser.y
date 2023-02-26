@@ -15,10 +15,11 @@ void yyerror(char const *s);
 %define parse.trace true
 
 %code requires {
-    #include "valor_lexico.h"
+    //#include "valor_lexico.h"
     #include "arvore.h"
     #include "tabela.h"
     extern void* arvore;
+    extern void* pilha_tabelas;
 }
 
 %union {
@@ -85,14 +86,21 @@ void yyerror(char const *s);
 
 /* Programa */
 programa: 
-    lista_elementos  {
-        arvore = $1;
+    escopo_global lista_elementos  {
+        arvore = $2;
         //print_debug(arvore);
-        //erro_semantico(ERR_UNDECLARED, 5); // TESTANDO FUNCAO ERRO & EXIT
+        pilha_t *pilha = pilha_tabelas;
+        print_table(pilha->tabelas[0]);
     } 
     | {
         arvore = NULL;
     };
+
+escopo_global: {
+    pilha_tabelas = create_pilha();
+    tabela_t *t = create_symbol_table();
+    push_table(pilha_tabelas, t);
+}
 
 lista_elementos: 
     lista_elementos elemento  {
@@ -123,8 +131,31 @@ tipo: TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR;
 lista_ident_var: lista_ident_var ',' ident_var | ident_var;
 
 ident_var: 
-    TK_IDENTIFICADOR  { destroy_lexvalue($1); } 
-    | TK_IDENTIFICADOR'['lista_arranjo']'  { destroy_lexvalue($1); };
+    TK_IDENTIFICADOR  { 
+
+        // adiciona var na tabela de escopo global
+        simbolo_t *s = create_symbol($1->line_number);
+        s->natureza = SYM_VARIAVEL;
+        s->valor = $1;
+        pilha_t *p = pilha_tabelas;
+        tabela_t *t = p->tabelas[0];
+        insert_symbol(t,$1->tk_value.s, s);
+
+        //destroy_lexvalue($1); 
+    } 
+    | TK_IDENTIFICADOR'['lista_arranjo']'  { 
+
+        // adiciona arranjo na tabela de escopo global
+        // FALTA INFORMACAO DE DIMENSOES DO ARRANJO
+        simbolo_t *s = create_symbol($1->line_number);
+        s->natureza = SYM_ARRANJO;
+        s->valor = $1;
+        pilha_t *p = pilha_tabelas;
+        tabela_t *t = p->tabelas[0];
+        insert_symbol(t,$1->tk_value.s, s);
+
+        //destroy_lexvalue($1); 
+    };
 
 lista_arranjo: lista_arranjo'^'TK_LIT_INT | TK_LIT_INT;
 
@@ -233,9 +264,28 @@ lista_local_var:
 local_var: 
     TK_IDENTIFICADOR  {
         $$ = NULL;
-        destroy_lexvalue($1);
+
+        // adiciona var na tabela de escopo atual
+        simbolo_t *s = create_symbol($1->line_number);
+        s->natureza = SYM_VARIAVEL;
+        s->valor = $1;
+        pilha_t *p = pilha_tabelas;
+        tabela_t *t = p->tabelas[p->count-1];
+        insert_symbol(t,$1->tk_value.s, s);
+
+        //destroy_lexvalue($1);
     } | 
     TK_IDENTIFICADOR TK_OC_LE literal {
+
+        // adiciona var na tabela de escopo atual
+        // FALTA CONFERIR SE LITERAL
+        simbolo_t *s = create_symbol($1->line_number);
+        s->natureza = SYM_VARIAVEL;
+        s->valor = $1;
+        pilha_t *p = pilha_tabelas;
+        tabela_t *t = p->tabelas[p->count-1];
+        insert_symbol(t,$1->tk_value.s, s);
+
         node_t* inicializa = create_node("<=");
         add_child(inicializa, create_leaf($1->tk_value.s, $1));
         add_child(inicializa, $3);

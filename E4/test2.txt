@@ -1,0 +1,8 @@
+char varchar, varchardois;
+int variavel, array[2^3^4], outraVariavel;
+
+bool variavelBool;
+
+bool foo (int param,bool paramdois) {
+  int varUm, varDois;
+}
