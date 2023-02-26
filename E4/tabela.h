@@ -81,6 +81,9 @@ void push_table(pilha_t* pilha, tabela_t* table);
 tabela_t* pop_table(pilha_t* pilha);
 void destroy_pilha(pilha_t* pilha);
 
+char* natureza_simbolo_to_string(int naturezaSimbolo);
+char* tipo_simbolo_to_string(int tipoSimbolo);
+
 void erro_semantico(int erro, int lineno, char* key, simbolo_t* symbol);
 
 #endif //_TABELA_H_

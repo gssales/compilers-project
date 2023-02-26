@@ -123,7 +123,9 @@ elemento:
 
 
 /* Variável Global */
-var_global: tipo lista_ident_var ';';
+var_global: tipo lista_ident_var ';' {
+    
+};
 
 tipo: TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR;
 
@@ -133,6 +135,7 @@ ident_var:
     TK_IDENTIFICADOR  { 
 
         // adiciona simbolo na tabela de escopo global
+        // FALTA INFORMACAO DE TIPO
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_VARIAVEL;
         s->valor = $1;
@@ -145,6 +148,7 @@ ident_var:
     | TK_IDENTIFICADOR'['lista_arranjo']'  { 
 
         // adiciona arranjo na tabela de escopo global
+        // FALTA INFORMACAO DE TIPO
         // FALTA INFORMACAO DE DIMENSOES DO ARRANJO
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_ARRANJO;
@@ -162,12 +166,22 @@ lista_arranjo: lista_arranjo'^'TK_LIT_INT | TK_LIT_INT;
 /* Função */
 funcao:
     tipo TK_IDENTIFICADOR '(' func_params ')' command_block  {
+        
+        // add funcao na tabela de escopo atual
+        // FALTA INFORMACAO DE TIPO E ARGUMENTOS
+        simbolo_t *s = create_symbol($2->line_number);
+        s->natureza = SYM_FUNCAO;
+        s->valor = $2;
+        pilha_t *p = pilha_tabelas;
+        tabela_t *t = p->tabelas[p->count-1];
+        insert_symbol(t,$2->tk_value.s, s);
+        
         node_t* funcao = create_node($2->tk_value.s);
         funcao->flag = FUNCAO;
         if ($6 != NULL)
             add_child(funcao, $6);
         $$ = funcao;
-        destroy_lexvalue($2);
+        //destroy_lexvalue($2);
     };
 
 empilha_escopo: { 
@@ -238,7 +252,7 @@ command:
 
 declara_var: 
     tipo lista_local_var  {
-        $$ = $2; // lista de comandos de inicialização
+        $$ = $2;
     };
 
 lista_local_var:
@@ -282,7 +296,6 @@ local_var:
     TK_IDENTIFICADOR TK_OC_LE literal {
 
         // adiciona var na tabela de escopo atual
-        // FALTA CONFERIR SE LITERAL
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_VARIAVEL;
         s->valor = $1;
@@ -298,18 +311,57 @@ local_var:
 
 literal: 
     TK_LIT_INT  { 
+        // adiciona literal na tabela de escopo atual
+        simbolo_t *s = create_symbol($1->line_number);
+        s->natureza = SYM_LITERAL;
+        s->valor = $1;
+        pilha_t *p = pilha_tabelas;
+        tabela_t *t = p->tabelas[p->count-1];
+        insert_symbol(t,$1->str, s);
+
         $$ = create_leaf($1->str, $1); 
     }
     | TK_LIT_FLOAT  {
+        // adiciona literal na tabela de escopo atual
+        simbolo_t *s = create_symbol($1->line_number);
+        s->natureza = SYM_LITERAL;
+        s->valor = $1;
+        pilha_t *p = pilha_tabelas;
+        tabela_t *t = p->tabelas[p->count-1];
+        insert_symbol(t,$1->str, s);
+
         $$ = create_leaf($1->str, $1); 
     }
     | TK_LIT_FALSE  {
+        // adiciona literal na tabela de escopo atual
+        simbolo_t *s = create_symbol($1->line_number);
+        s->natureza = SYM_LITERAL;
+        s->valor = $1;
+        pilha_t *p = pilha_tabelas;
+        tabela_t *t = p->tabelas[p->count-1];
+        insert_symbol(t,"false", s);
         $$ = create_leaf($1->str, $1); 
     }
     | TK_LIT_TRUE   {
+        // adiciona literal na tabela de escopo atual
+        simbolo_t *s = create_symbol($1->line_number);
+        s->natureza = SYM_LITERAL;
+        s->valor = $1;
+        pilha_t *p = pilha_tabelas;
+        tabela_t *t = p->tabelas[p->count-1];
+        insert_symbol(t,"true", s);
+
         $$ = create_leaf($1->str, $1); 
     }
     | TK_LIT_CHAR  { 
+        // adiciona literal na tabela de escopo atual
+        simbolo_t *s = create_symbol($1->line_number);
+        s->natureza = SYM_LITERAL;
+        s->valor = $1;
+        pilha_t *p = pilha_tabelas;
+        tabela_t *t = p->tabelas[p->count-1];
+        insert_symbol(t,$1->str, s);
+
         $$ = create_leaf(&$1->tk_value.c, $1); 
     };
 

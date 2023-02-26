@@ -10,7 +10,7 @@ extern int yyparse(void);
 extern int yylex_destroy(void);
 
 void *arvore = NULL;
-void* pilha_tabelas;
+void* pilha_tabelas = NULL;
 void exporta (void *arvore);
 void libera (void *arvore);
 

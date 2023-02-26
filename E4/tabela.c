@@ -25,8 +25,9 @@ void destroy_symbol(simbolo_t* symbol) {
 
 void print_symbol(simbolo_t* symbol) {
   if (symbol != NULL) {
-    printf("l:%d c:%d ", symbol->pos.l, symbol->pos.c);
+    printf("l:%d\tc:%d\t", symbol->pos.l, symbol->pos.c);
     if (symbol->valor) {
+      printf("nat: %s\ttipo: %s\t",natureza_simbolo_to_string(symbol->natureza),tipo_simbolo_to_string(symbol->tipo));
       printf("lex: ");
       print_lexvalue(symbol->valor);
     }
@@ -101,7 +102,7 @@ int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol) {
       pseudoindex = get_free_index(table, key);
     }
     // printf("%d\n", table->size);
-    printf("%d %s\n", pseudoindex, key);
+    printf("Insert_symbol: %d %s\n", pseudoindex, key);
     if (pseudoindex >= 0) { // KEY_ALREADY_INSERTED
       par_insercao_t *par = malloc(sizeof(par_insercao_t));
       par->key = strdup(key);
@@ -112,7 +113,9 @@ int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol) {
       table->list[table->count_symbols-1] = par;
     }
     else { // ERR_DECLARED
-      erro_semantico(ERR_DECLARED, symbol->pos.l, key, symbol);
+      if (symbol->natureza != SYM_LITERAL) { // literal pode repetir na tabela sem ERR_DECLARED
+        erro_semantico(ERR_DECLARED, symbol->pos.l, key, symbol);
+      }
     }
   }
   return pseudoindex;
@@ -143,7 +146,7 @@ par_insercao_t* get_symbol_pilha(int lineno, pilha_t* pilha_tabela, char* key) {
   for (int i = pilha_tabela->count; i >= 0; i--) {
     par = get_symbol(lineno, pilha_tabela->tabelas[i], key);
   }
-  if (par == NULL) { // ERR_UNDECLARED: NAO ENCONTROU EM NENHUM ESCOPO
+  if (par == NULL) { // ERR_UNDECLARED: NAO ENCONTROU SIMBOLO EM NENHUM ESCOPO
     erro_semantico(ERR_UNDECLARED, lineno, key, NULL);
   }
   return par;
@@ -188,7 +191,7 @@ void print_pilha(pilha_t* pilha) {
   if (pilha != NULL) {
     printf("\n========== PILHA FINAL ==========\n");
     for (int i = 0; i < pilha->count; i++) {
-      printf("\n---> Escopo %d \n", i);
+      printf("---> Escopo %d \n", i);
       print_table(pilha->tabelas[i]);
     }
   }
@@ -234,6 +237,26 @@ void destroy_pilha(pilha_t* pilha) {
         destroy_table(t);
     }
     free(pilha);
+  }
+}
+
+char* natureza_simbolo_to_string(int naturezaSimbolo) {
+  switch(naturezaSimbolo) {
+    case SYM_UNKNOWN:       return "SYM_UNKNOWN";       break;
+    case SYM_LITERAL:         return "SYM_LITERAL";     break;
+    case SYM_VARIAVEL:       return "SYM_VARIAVEL";     break;
+    case SYM_ARRANJO:        return "SYM_ARRANJO";      break;
+    case SYM_FUNCAO:        return "SYM_FUNCAO  ";        break;
+  }
+}
+
+char* tipo_simbolo_to_string(int tipoSimbolo) {
+  switch(tipoSimbolo) {
+    case TYPE_UNDEFINED:   return "TYPE_UNDEFINED";     break;
+    case TYPE_INT:         return "TYPE_INT";           break;
+    case TYPE_FLOAT:       return "TYPE_FLOAT";         break;
+    case TYPE_CHAR:        return "TYPE_CHAR";          break;
+    case TYPE_BOOL:        return "TYPE_BOOL";          break;
   }
 }
 

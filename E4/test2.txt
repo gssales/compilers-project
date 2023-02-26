@@ -3,10 +3,10 @@ char charArranjoDeveTerErro[2];
 int arranjoGlobal[2^3^4], outrVarGlobal;
 
 bool foo (int param,bool paramdois) {
+  bool varTesteUm,varTesteDois,varTesteTres,varTesteLitBool <= false;
   float varEscopoUm;
-
   {
-    int varEscopoDois;
+    char varEscopoDois <= 't';
 
     while (true == true) {
       int varEscopoTres;
