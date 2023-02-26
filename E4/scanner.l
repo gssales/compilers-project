@@ -12,10 +12,22 @@
 %%
 
 [ \t\n\r]               { /* Ignora espaco, tab, e new line */ }
-"int"                   { return TK_PR_INT; }
-"float"                 { return TK_PR_FLOAT; }
-"bool"                  { return TK_PR_BOOL; }
-"char"                  { return TK_PR_CHAR; }
+"int"                   { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INT, yytext);
+    return TK_PR_INT; 
+}
+"float"                 { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_FLOAT, yytext);
+    return TK_PR_FLOAT; 
+}
+"bool"                  { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_BOOL, yytext);
+    return TK_PR_BOOL; 
+}
+"char"                  { 
+    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_CHAR, yytext);
+    return TK_PR_CHAR; 
+}
 "if"                    { return TK_PR_IF; }
 "then"                  { return TK_PR_THEN; }
 "else"                  { return TK_PR_ELSE; }

@@ -1,20 +1,20 @@
 bool varBoolEscopoZero;
-int arranjoEscopoZero[2^3^4];
+int intArranjoEscopoZero[2^3^4];
 
-bool foo (int param,bool paramdois) {
-  bool varTesteUm,varTesteDois,varTesteLitBool <= false;
-  float varEscopoUm;
+bool boolFoo (int param,bool paramdois) {
+  bool boolVarTesteUm,boolVarTesteDois,boolVarTesteTres <= false;
+  float floatVarEscopoUm;
   {
-    char varEscopoDois <= 't';
+    char charVarEscopoDois <= 't';
 
     while (5 == 10) {
-      int varEscopoTres <= 10;
-      int outraVarEscopoTres <= 10;
+      int intVarEscopoTres <= 10;
+      int intOutraVarEscopoTres <= 10;
 
       if (1.5 == 5.1) then {
-        bool varEscopoQuatroIf;
+        bool boolVarEscopoQuatroIf;
       } else {
-        bool varEscopoQuatroElse;
+        bool boolVarEscopoQuatroElse;
       };
     };
   };

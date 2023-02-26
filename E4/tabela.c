@@ -1,5 +1,6 @@
 #include <string.h>
 #include "tabela.h"
+#include "parser.tab.h"
 
 simbolo_t* create_symbol(int lineno) {
   simbolo_t* s = NULL;
@@ -121,7 +122,7 @@ int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol) {
   return pseudoindex;
 }
 
-par_insercao_t* get_symbol(int lineno, tabela_t* table, char* key) {
+par_insercao_t* get_symbol(tabela_t* table, char* key) {
   par_insercao_t* par = NULL;
   if (table != NULL && key != NULL && *key) {
     int i = (int)(hash_function32(key) % table->size);
@@ -135,16 +136,13 @@ par_insercao_t* get_symbol(int lineno, tabela_t* table, char* key) {
       }
     }
   }
-  //if (par == NULL) { // ERR_UNDECLARED
-  //  erro_semantico(ERR_UNDECLARED, lineno, key, NULL);
-  //}
   return par;
 }
 
 par_insercao_t* get_symbol_pilha(int lineno, pilha_t* pilha_tabela, char* key) {
   par_insercao_t* par = NULL;
   for (int i = pilha_tabela->count; i >= 0; i--) {
-    par = get_symbol(lineno, pilha_tabela->tabelas[i], key);
+    par = get_symbol(pilha_tabela->tabelas[i], key);
   }
   if (par == NULL) { // ERR_UNDECLARED: NAO ENCONTROU SIMBOLO EM NENHUM ESCOPO
     erro_semantico(ERR_UNDECLARED, lineno, key, NULL);
@@ -240,13 +238,47 @@ void destroy_pilha(pilha_t* pilha) {
   }
 }
 
+void add_tipos_pilha_str(struct strpilha_t *pilha_str, tabela_t* table, int tipo) {
+  tipo = tktype_to_type(tipo);
+  
+  char *str;
+  str = top_strpilha(pilha_str);
+  //printf("\nAdd_tipos_pilha_str:\n");
+  while (str != NULL) {
+    //printf("- id = %s, tipo = %s\n",str,tipo_simbolo_to_string(tipo));
+    par_insercao_t* par = get_symbol(table, str);
+    par->symbol->tipo = tipo;
+    //printf("id %s recebeu tipo %s",par->symbol->valor->tk_value.s,tipo_simbolo_to_string(tipo));
+    pop_strpilha(pilha_str);
+    str = top_strpilha(pilha_str);
+  }
+  printf("\n");
+}
+
+int tktype_to_type(int tk_type) {
+  switch(tk_type) {
+    case TK_PR_INT:
+      return TYPE_INT;
+      break;
+    case TK_PR_FLOAT:
+      return TYPE_FLOAT;
+      break;
+    case TK_PR_BOOL:
+      return TYPE_BOOL;
+      break;
+    case TK_PR_CHAR:
+      return TYPE_CHAR;
+      break;
+  }
+}
+
 char* natureza_simbolo_to_string(int naturezaSimbolo) {
   switch(naturezaSimbolo) {
-    case SYM_UNKNOWN:       return "SYM_UNKNOWN  ";       break;
-    case SYM_LITERAL:         return "SYM_LITERAL";     break;
-    case SYM_VARIAVEL:       return "SYM_VARIAVEL";     break;
-    case SYM_ARRANJO:        return "SYM_ARRANJO ";      break;
-    case SYM_FUNCAO:        return "SYM_FUNCAO   ";        break;
+    case SYM_UNKNOWN:       return "SYM_UNKNOWN ";       break;
+    case SYM_LITERAL:       return "SYM_LITERAL ";     break;
+    case SYM_VARIAVEL:      return "SYM_VARIAVEL";     break;
+    case SYM_ARRANJO:       return "SYM_ARRANJO ";      break;
+    case SYM_FUNCAO:        return "SYM_FUNCAO  ";        break;
   }
 }
 

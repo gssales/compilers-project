@@ -22,6 +22,7 @@ node_t* getLastOf(node_t *list, int tipo);
 void add_child(node_t *node, node_t *child); // adiciona um nodo no final da lista
 void unshift_child(node_t *node, node_t *child); // adiciona um nodo no inicio da lista
 void print_debug(node_t *tree);
+void print_var_list(node_t *var_list);
 /* função usada na main */
 void libera(void* root);
 /* função usada na main */

@@ -18,8 +18,10 @@ void yyerror(char const *s);
     //#include "valor_lexico.h"
     #include "arvore.h"
     #include "tabela.h"
+    #include "stringstack.h"
     extern void* arvore;
     extern void* pilha_tabelas;
+    extern void* pilha_str;
 }
 
 %union {
@@ -35,11 +37,12 @@ void yyerror(char const *s);
 %type<nodo> expr_preced0 expr_preced1 expr_preced2 expr_preced3 expr_preced4 expr_preced5 expr_preced6
 %type<nodo> atrib lista_arranjo_atrib chamada_func chamada_params chamada_lista_params
 %type<nodo> declara_var retorno condicional iteracao
+%type<valor_lexico> tipo
 
-%token TK_PR_INT
-%token TK_PR_FLOAT
-%token TK_PR_BOOL
-%token TK_PR_CHAR
+%token<valor_lexico> TK_PR_INT
+%token<valor_lexico> TK_PR_FLOAT
+%token<valor_lexico> TK_PR_BOOL
+%token<valor_lexico> TK_PR_CHAR
 %token TK_PR_IF
 %token TK_PR_THEN
 %token TK_PR_ELSE
@@ -99,6 +102,9 @@ escopo_global: {
     // cria pilha e empilha a tabela de escopo global
     pilha_tabelas = create_pilha();
     push_table(pilha_tabelas, create_symbol_table());
+
+    // cria pilha de string simples pra adicionar tipos aos id de declaracoes
+    pilha_str = create_strpilha();
 }
 
 lista_elementos: 
@@ -124,15 +130,33 @@ elemento:
 
 /* Variável Global */
 var_global: tipo lista_ident_var ';' {
-    
+
+    // desempilha pilha_str adicionando tipo a todos
+    pilha_t *p = pilha_tabelas;
+    tabela_t *t = p->tabelas[p->count-1];
+    add_tipos_pilha_str(pilha_str, t, $1->tk_type);
+
 };
 
-tipo: TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR;
+tipo: TK_PR_INT {
+        $$ = $1;
+    } | TK_PR_FLOAT {
+        $$ = $1;
+    } | TK_PR_BOOL {
+        $$ = $1;
+    } | TK_PR_CHAR {
+        $$ = $1;
+    };
 
 lista_ident_var: lista_ident_var ',' ident_var | ident_var;
 
 ident_var: 
     TK_IDENTIFICADOR  { 
+
+        // adiciona id na pilha_str para receber tipo depois
+        push_strpilha(pilha_str,$1->tk_value.s);
+        //printf("Push_strpilha: %s",$1->tk_value.s);
+        //print_pilha_str(pilha_str);
 
         // adiciona simbolo na tabela de escopo global
         // FALTA INFORMACAO DE TIPO
@@ -146,6 +170,11 @@ ident_var:
         //destroy_lexvalue($1); 
     } 
     | TK_IDENTIFICADOR'['lista_arranjo']'  { 
+
+        // adiciona id na pilha_str para receber tipo depois
+        push_strpilha(pilha_str,$1->tk_value.s);
+        //printf("Push_strpilha: %s",$1->tk_value.s);
+        //print_pilha_str(pilha_str);
 
         // adiciona arranjo na tabela de escopo global
         // FALTA INFORMACAO DE TIPO
@@ -168,9 +197,10 @@ funcao:
     tipo TK_IDENTIFICADOR '(' func_params ')' command_block  {
         
         // add funcao na tabela de escopo atual
-        // FALTA INFORMACAO DE TIPO E ARGUMENTOS
+        // FALTA INFORMACAO DE ARGUMENTOS
         simbolo_t *s = create_symbol($2->line_number);
         s->natureza = SYM_FUNCAO;
+        s->tipo = tktype_to_type($1->tk_type);
         s->valor = $2;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
@@ -185,6 +215,7 @@ funcao:
     };
 
 empilha_escopo: { 
+        // cria nova tabela de simbolos e empilha na pilha de escopos
         push_table(pilha_tabelas, create_symbol_table());
     };
 
@@ -252,6 +283,12 @@ command:
 
 declara_var: 
     tipo lista_local_var  {
+
+        // desempilha pilha_str adicionando tipo a todos
+        pilha_t *p = pilha_tabelas;
+        tabela_t *t = p->tabelas[p->count-1];
+        add_tipos_pilha_str(pilha_str, t, $1->tk_type);
+
         $$ = $2;
     };
 
@@ -283,6 +320,11 @@ local_var:
     TK_IDENTIFICADOR  {
         $$ = NULL;
 
+        // adiciona id na pilha_str para receber tipo depois
+        push_strpilha(pilha_str,$1->tk_value.s);
+        //printf("Push_strpilha: %s",$1->tk_value.s);
+        //print_pilha_str(pilha_str);
+
         // adiciona var na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_VARIAVEL;
@@ -294,6 +336,11 @@ local_var:
         //destroy_lexvalue($1);
     } | 
     TK_IDENTIFICADOR TK_OC_LE literal {
+
+        // adiciona id na pilha_str para receber tipo depois
+        push_strpilha(pilha_str,$1->tk_value.s);
+        //printf("Push_strpilha: %s",$1->tk_value.s);
+        //print_pilha_str(pilha_str);
 
         // adiciona var na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);

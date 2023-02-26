@@ -98,8 +98,19 @@ void _print_debug(node_t *tree, int depth) {
     }
   }
 }
+
 void print_debug(node_t *tree) {
   _print_debug(tree, 0);
+}
+
+void print_var_list(node_t *var_list) {
+  if (var_list != NULL) {
+    printf("\n");
+    print_node(var_list);
+    for (int i = 0; i < var_list->count_children; i++) {
+      print_var_list(var_list->children[i]);
+    }
+  }
 }
 
 void libera(void* root) {
@@ -136,8 +147,6 @@ void print_entrega(node_t *root, node_t *parent)
 }
 
 void exporta(void* root) {
-	//node_t* arvore = arvore; ONDE ACESSAR A RAIZ?
-	
 	node_t* node = (node_t *)root;
 	print_entrega(node, NULL);
 }

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "valor_lexico.h"
+#include "stringstack.h"
 
 #define ERR_UNDECLARED 10 //2.2
 #define ERR_DECLARED 11 //2.2
@@ -68,7 +69,7 @@ void print_symbol(simbolo_t* symbol);
 
 tabela_t* create_symbol_table();
 int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol);
-par_insercao_t* get_symbol(int lineno, tabela_t* table, char* key);
+par_insercao_t* get_symbol(tabela_t* table, char* key);
 void destroy_table(tabela_t* table);
 void print_hash(tabela_t* table);
 void print_table(tabela_t* table);
@@ -80,6 +81,9 @@ pilha_t* create_pilha();
 void push_table(pilha_t* pilha, tabela_t* table);
 tabela_t* pop_table(pilha_t* pilha);
 void destroy_pilha(pilha_t* pilha);
+
+void add_tipos_pilha_str(struct strpilha_t *pilha_str, tabela_t* table, int tipo);
+int tktype_to_type(int tk_type);
 
 char* natureza_simbolo_to_string(int naturezaSimbolo);
 char* tipo_simbolo_to_string(int tipoSimbolo);
