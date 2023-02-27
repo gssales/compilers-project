@@ -3,7 +3,7 @@
 
 #include "valor_lexico.h"
 
-enum tipoNode { FUNCAO, COMANDO, EXPRESSAO };
+enum tipoNode { FUNCAO, COMANDO, EXPRESSAO, VAR_INICIALIZACAO, LIT_INICIALIZACAO };
 
 typedef struct node node_t;
 struct node {

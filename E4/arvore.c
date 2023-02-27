@@ -5,7 +5,7 @@
 #include "parser.tab.h"
 
 void print_node(node_t *node) {
-  printf(":%s", node->label);
+  printf(":%s type %d", node->label, node->type);
   if (node->value != NULL) {
     printf(" -> ");
     print_tk_value(node->value);

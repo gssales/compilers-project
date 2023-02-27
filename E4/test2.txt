@@ -11,12 +11,12 @@ bool boolFooUm(int paramUm,bool paramDois) {
   bool b, d;
   float f, g;
 
-  x = y * c;              // TESTE ERR_CHAR_TO_INT
-  d = b && c;             // TESTE ERR_CHAR_TO_BOOL
-  g = f * c;              // TESTE ERR_CHAR_TO_FLOAT
-  c = x;                  // TESTE ERR_X_TO_CHAR (INT)
-  c = b;                  // TESTE ERR_X_TO_CHAR (BOOL)
-  c = f;                  // TESTE ERR_X_TO_CHAR (FLOAT)
+  //x = y * c;              // TESTE ERR_CHAR_TO_INT
+  //d = b && c;             // TESTE ERR_CHAR_TO_BOOL
+  //g = f * c;              // TESTE ERR_CHAR_TO_FLOAT
+  //c = x;                  // TESTE ERR_X_TO_CHAR (INT)
+  //c = b;                  // TESTE ERR_X_TO_CHAR (BOOL)
+  //c = f;                  // TESTE ERR_X_TO_CHAR (FLOAT)
 
   return 1;
 }
@@ -35,7 +35,6 @@ bool boolFooDois(int paramTres,bool paramQuatro) {
   //boolFooUm = 5;                            // TESTE ERR_FUNCTION
   //varBoolEscopoZero = boolFooUm;            // TESTE ERR_FUNCTION
   
-
   float floatVarEscopoUm;
   {
     char charVarEscopoDois <= 't';

@@ -24,7 +24,7 @@ struct posicao {
 
 enum naturezaSimbolo { SYM_UNKNOWN, SYM_LITERAL, SYM_VARIAVEL, SYM_ARRANJO, SYM_FUNCAO };
 
-enum tipoSimbolo { TYPE_UNDEFINED, TYPE_INT, TYPE_FLOAT, TYPE_CHAR, TYPE_BOOL };
+enum tipoSimbolo { TYPE_UNDEFINED, TYPE_FLOAT, TYPE_INT, TYPE_BOOL, TYPE_CHAR };
 
 typedef struct simbolo simbolo_t;
 struct simbolo {
