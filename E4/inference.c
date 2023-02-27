@@ -12,9 +12,6 @@ void erro_inferencia(int erro, node_t* exprA, node_t* exprB) {
     case ERR_CHAR_TO_BOOL: //2.4
       printf("Linha %d - ERR_CHAR_TO_BOOL: Tentativa de coerção da expressão '%s' do tipo char para o tipo bool\n", get_lineno(exprB), "CHAR");
       break;
-    case ERR_CHAR_VECTOR: //2.4
-      printf("Linha %d - ERR_CHAR_VECTOR: Arranjo '%s' declarado com o tipo char\n", get_lineno(exprB), "CHAR");
-      break;
     case ERR_X_TO_CHAR: //2.4
       printf("Linha %d - ERR_X_TO_CHAR: Tentativa de coerção da variável '%s' do tipo int/float/bool para o tipo char\n", get_lineno(exprB), "CHAR");
       break;

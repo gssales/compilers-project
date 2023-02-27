@@ -95,7 +95,8 @@ programa:
     escopo_global lista_elementos  {
         arvore = $2;
         //print_debug(arvore);
-        print_pilha(pilha_tabelas);
+        //print_pilha(pilha_tabelas);
+        destroy_pilha(pilha_tabelas);
     } 
     | {
         arvore = NULL;
@@ -247,7 +248,7 @@ param: tipo TK_IDENTIFICADOR  {
     s->valor = $2;
     s->tipo = tktype_to_type($1->tk_type);
     calcula_tam(s, tktype_to_type($1->tk_type));
-    printf("calcula_tam: %d",s->tamanhoB);
+    //printf("calcula_tam: %d",s->tamanhoB);
     pilha_t *p = pilha_tabelas;
     tabela_t *t = p->tabelas[p->count-1];
     check_declared($2->line_number, p, $2->tk_value.s);

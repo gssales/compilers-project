@@ -103,7 +103,7 @@ int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol) {
       pseudoindex = get_free_index(table, key);
     }
     // printf("%d\n", table->size);
-    printf("Insert_symbol: %d %s\n", pseudoindex, key);
+    //printf("Insert_symbol: %d %s\n", pseudoindex, key);
     if (pseudoindex >= 0) { // KEY_ALREADY_INSERTED
       par_insercao_t *par = malloc(sizeof(par_insercao_t));
       par->key = strdup(key);
@@ -188,6 +188,7 @@ void destroy_table(tabela_t* table) {
         free(p->key);
         destroy_symbol(p->symbol);
       }
+      free(p);
       table->count_symbols--;
     }
     free(table->list);
@@ -245,8 +246,8 @@ void push_table(pilha_t* pilha, tabela_t* table) {
 
 tabela_t* pop_table(pilha_t* pilha) {
   // printa tabela antes de deletar (para debugar)
-  printf("\n---> Escopo %d (Desempilhado)\n", pilha->count-1);
-  print_table(pilha->tabelas[pilha->count-1]);
+  //printf("\n---> Escopo %d (Desempilhado)\n", pilha->count-1);
+  //print_table(pilha->tabelas[pilha->count-1]);
 
   tabela_t* t = NULL;
   if (pilha != NULL && pilha->count > 0) {
@@ -292,7 +293,7 @@ void add_tipos_pilha_str(struct strpilha_t *pilha_str, tabela_t* table, int tipo
     pop_strpilha(pilha_str);
     str = top_strpilha(pilha_str);
   }
-  printf("\n");
+  //printf("\n");
 }
 
 void calcula_tam(simbolo_t* s, enum tipoSimbolo type) {

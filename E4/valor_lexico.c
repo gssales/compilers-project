@@ -92,7 +92,7 @@ void destroy_lexvalue(valor_lexico* valor_lexico) {
     case TK_LIT_FALSE:
       break;
     default:
-      // printf("%p after\n", valor_lexico->tk_value.s);
+      //printf("%p after\n", valor_lexico->tk_value.s);
       free(valor_lexico->tk_value.s);
   }
   free(valor_lexico);
