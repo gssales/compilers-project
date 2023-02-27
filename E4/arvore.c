@@ -14,29 +14,33 @@ void print_node(node_t *node) {
 
 node_t* create_leaf(char* label, valor_lexico *value) {
 	node_t *node = NULL;
-	node = malloc(sizeof(node_t));
-	if (node != NULL) {
-    node->label = strdup(label);
-    node->value = value;
-    node->count_children = 0;
-    node->children = NULL;
-    node->flag = 0; // FUNCAO/COMANDO/EXPRESSAO
-    node->type = TYPE_UNDEFINED;
-	}
+  if (label != NULL) {
+  	node = malloc(sizeof(node_t));
+  	if (node != NULL) {
+      node->label = strdup(label);
+      node->value = value;
+      node->count_children = 0;
+      node->children = NULL;
+      node->flag = 0; // FUNCAO/COMANDO/EXPRESSAO
+      node->type = TYPE_UNDEFINED;
+  	}
+  }
 	return node;
 }
 
 node_t* create_node(char* label) {
 	node_t *node = NULL;
-	node = malloc(sizeof(node_t));
-	if (node != NULL) {
-		node->label = strdup(label);
-    node->value = NULL;
-    node->count_children = 0;
-    node->children = NULL;
-    node->flag = 0;
-    node->type = TYPE_UNDEFINED;
-	}
+  if (label != NULL) {
+  	node = malloc(sizeof(node_t));
+  	if (node != NULL) {
+  		node->label = strdup(label);
+      node->value = NULL;
+      node->count_children = 0;
+      node->children = NULL;
+      node->flag = 0;
+      node->type = TYPE_UNDEFINED;
+  	}
+  }
 	return node;
 }
 

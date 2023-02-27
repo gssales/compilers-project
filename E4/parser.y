@@ -95,8 +95,10 @@ programa:
     escopo_global lista_elementos  {
         arvore = $2;
         //print_debug(arvore);
-        //print_pilha(pilha_tabelas);
-        destroy_pilha(pilha_tabelas);
+        //destroy_pilha(pilha_tabelas);
+        //print_pilha_str(pilha_str);
+        printf("antes\n");
+        //destroy_strpilha(pilha_str);
     } 
     | {
         arvore = NULL;
@@ -140,6 +142,7 @@ var_global: tipo lista_ident_var ';' {
     tabela_t *t = p->tabelas[p->count-1];
     add_tipos_pilha_str(pilha_str, t, $1->tk_type);
 
+    destroy_lexvalue($1);
 };
 
 tipo: TK_PR_INT {
@@ -165,13 +168,13 @@ ident_var:
         // adiciona simbolo na tabela de escopo global
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_VARIAVEL;
-        s->valor = $1;
+        s->valor = copy_lexvalue($1);
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[0];
         check_declared($1->line_number, p, $1->tk_value.s);
         insert_symbol(t, $1->tk_value.s, s);
 
-        //destroy_lexvalue($1); 
+        destroy_lexvalue($1); 
     } 
     | TK_IDENTIFICADOR'['lista_arranjo']'  { 
         // adiciona id na pilha_str para receber tipo depois
@@ -183,14 +186,15 @@ ident_var:
         // FALTA INFORMACAO DE DIMENSOES DO ARRANJO
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_ARRANJO;
-        s->valor = $1;
+        s->valor = copy_lexvalue($1);
         s->tamanhoB = $3->tk_value.i; // dimensao total (multiplicada dependendo do tipo na add_tipos_pilha_str)
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[0];
         check_declared($1->line_number, p, $1->tk_value.s);
         insert_symbol(t,$1->tk_value.s, s);
 
-        //destroy_lexvalue($1); 
+        destroy_lexvalue($1); 
+        destroy_lexvalue($3); 
     };
 
 lista_arranjo: 
@@ -199,7 +203,7 @@ lista_arranjo:
         
         $1->tk_value.i = dim_total;
         $$ = $1;
-        //destroy_lexvalue($3); 
+        destroy_lexvalue($3); 
     }
     | TK_LIT_INT { 
         $$ = $1;
@@ -214,21 +218,27 @@ funcao:
         simbolo_t *s = create_symbol($2->line_number);
         s->natureza = SYM_FUNCAO;
         s->tipo = tktype_to_type($1->tk_type);
-        s->valor = $2;
+        s->valor = copy_lexvalue($2);
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
+        //print_pilha(p);
+        //print_lexvalue($2);
         check_declared($2->line_number, p, $2->tk_value.s);
         insert_symbol(t,$2->tk_value.s, s);
     } empilha_escopo func_params ')' command_block_no_new_scope  {
         // desempilha escopo do bloco de corpo da funcao
-        pop_table(pilha_tabelas);
 
         node_t* funcao = create_node($2->tk_value.s);
         funcao->flag = FUNCAO;
         if ($8 != NULL)
             add_child(funcao, $8);
         $$ = funcao;
-        //destroy_lexvalue($2);
+
+        tabela_t *to = pop_table(pilha_tabelas);
+        //print_table(to);
+        destroy_table(to);
+        destroy_lexvalue($1);
+        destroy_lexvalue($2);
 };
 
 empilha_escopo: { 
@@ -245,7 +255,7 @@ param: tipo TK_IDENTIFICADOR  {
     // adiciona parametro como var no escopo atual (do corpo da funcao)
     simbolo_t *s = create_symbol($2->line_number);
     s->natureza = SYM_VARIAVEL;
-    s->valor = $2;
+    s->valor = copy_lexvalue($2);
     s->tipo = tktype_to_type($1->tk_type);
     calcula_tam(s, tktype_to_type($1->tk_type));
     //printf("calcula_tam: %d",s->tamanhoB);
@@ -254,7 +264,8 @@ param: tipo TK_IDENTIFICADOR  {
     check_declared($2->line_number, p, $2->tk_value.s);
     insert_symbol(t,$2->tk_value.s, s);
     
-    //destroy_lexvalue($2); 
+    destroy_lexvalue($1);
+    destroy_lexvalue($2);
 };
 
 
@@ -268,7 +279,9 @@ command_block:
     '{' empilha_escopo lista_commands '}'  { 
         $$ = $3;
         // desempilha escopo do bloco de comando
-        pop_table(pilha_tabelas);
+        tabela_t *to = pop_table(pilha_tabelas);
+        //print_table(to);
+        destroy_table(to);
     };
 
 lista_commands:
@@ -329,6 +342,7 @@ declara_var:
         infere_tipo_inicializacao($2, tktype_to_type($1->tk_type));
 
         $$ = $2;
+        destroy_lexvalue($1);
     };
 
 lista_local_var:
@@ -365,13 +379,13 @@ local_var:
         // adiciona var na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_VARIAVEL;
-        s->valor = $1;
+        s->valor = copy_lexvalue($1);
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
         check_declared($1->line_number, p, $1->tk_value.s);
         insert_symbol(t,$1->tk_value.s, s);
 
-        //destroy_lexvalue($1);
+        destroy_lexvalue($1);
     } | 
     TK_IDENTIFICADOR TK_OC_LE literal {
 
@@ -383,7 +397,7 @@ local_var:
         // adiciona var na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_VARIAVEL;
-        s->valor = $1;
+        s->valor = copy_lexvalue($1);
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
         check_declared($1->line_number, p, $1->tk_value.s);
@@ -400,6 +414,8 @@ local_var:
         add_child(inicializa, $3);
 
         $$ = inicializa;
+
+        //destroy_lexvalue($1);
     };
 
 literal: 
@@ -408,21 +424,24 @@ literal:
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_LITERAL;
         s->tipo = TYPE_INT;
-        s->valor = $1;
+        s->valor = copy_lexvalue($1);
         s->tamanhoB = 4;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
         insert_symbol(t,$1->str, s);
+        //print_pilha(p);
 
         $$ = create_leaf($1->str, $1); 
         $$->type = TYPE_INT;
+
+        //destroy_lexvalue($1);
     }
     | TK_LIT_FLOAT  {
         // adiciona literal na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_LITERAL;
         s->tipo = TYPE_FLOAT;
-        s->valor = $1;
+        s->valor = copy_lexvalue($1);
         s->tamanhoB = 8;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
@@ -430,26 +449,28 @@ literal:
 
         $$ = create_leaf($1->str, $1); 
         $$->type = TYPE_FLOAT;
+        //destroy_lexvalue($1);
     }
     | TK_LIT_FALSE  {
         // adiciona literal na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_LITERAL;
         s->tipo = TYPE_BOOL;
-        s->valor = $1;
+        s->valor = copy_lexvalue($1);
         s->tamanhoB = 1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
         insert_symbol(t,"false", s);
         $$ = create_leaf($1->str, $1); 
         $$->type = TYPE_BOOL;
+        //destroy_lexvalue($1);
     }
     | TK_LIT_TRUE   {
         // adiciona literal na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_LITERAL;
         s->tipo = TYPE_BOOL;
-        s->valor = $1;
+        s->valor = copy_lexvalue($1);
         s->tamanhoB = 1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
@@ -457,20 +478,24 @@ literal:
 
         $$ = create_leaf($1->str, $1); 
         $$->type = TYPE_BOOL;
+        //destroy_lexvalue($1);
     }
     | TK_LIT_CHAR  { 
         // adiciona literal na tabela de escopo atual
         simbolo_t *s = create_symbol($1->line_number);
         s->natureza = SYM_LITERAL;
         s->tipo = TYPE_CHAR;
-        s->valor = $1;
+        s->valor = copy_lexvalue($1);
         s->tamanhoB = 1;
         pilha_t *p = pilha_tabelas;
         tabela_t *t = p->tabelas[p->count-1];
         insert_symbol(t,$1->str, s);
 
-        $$ = create_leaf(&$1->tk_value.c, $1); 
+        char label[2] = "\0";
+        label[0] = $1->tk_value.c;
+        $$ = create_leaf(label, $1); 
         $$->type = TYPE_CHAR;
+        //destroy_lexvalue($1);
     };
 
 /* Atribuição */
@@ -493,6 +518,8 @@ ident_atrib:
 
         $$ = create_leaf($1->tk_value.s, $1);
         $$->type = s->tipo;
+
+        //destroy_lexvalue($1);
     } 
     | TK_IDENTIFICADOR'['lista_arranjo_atrib']'  {
         // consulta a tabela pra saber se id->natureza == SYM_ARRANJO
@@ -507,6 +534,8 @@ ident_atrib:
         add_child(indexador, id_lista_atrib);
         add_child(indexador, $3);
         $$ = indexador;
+
+        //destroy_lexvalue($1);
     };
 
 lista_arranjo_atrib:
@@ -540,12 +569,13 @@ chamada_func:
         check_correct_use($1->line_number, s, SYM_FUNCAO);
 
         node_t* funcao = create_node("call ");
-        strcat(funcao->label, $1->tk_value.s);
-        funcao->value = $1;
+        funcao->value = copy_lexvalue($1);
         if ($3 != NULL)
             add_child(funcao, $3);
         funcao->type = s->tipo;
         $$ = funcao;
+
+        destroy_lexvalue($1);
     };
 
 chamada_params: 
@@ -768,6 +798,8 @@ expr_terminais:
 
         $$ = create_leaf($1->tk_value.s, $1);
         $$->type = s->tipo;
+
+        //destroy_lexvalue($1);
     }
     | TK_IDENTIFICADOR '[' lista_expr ']'  {
 
@@ -783,6 +815,8 @@ expr_terminais:
         add_child(indexador, id_lista_expr);
         add_child(indexador, $3);
         $$ = indexador;
+
+        //destroy_lexvalue($1);
     }
     | literal  { $$ = $1; }
     | '(' expr ')'  { $$ = $2; }

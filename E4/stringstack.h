@@ -26,5 +26,6 @@ char* top_strpilha(struct strpilha_t *strpilha);
 void pop_strpilha(struct strpilha_t *strpilha);
 void push_strpilha(struct strpilha_t *strpilha, char *value);
 void print_pilha_str(struct strpilha_t *strpilha);
+void destroy_strpilha(struct strpilha_t *strpilha);
 
 #endif //_STRINGSTACK_H_

@@ -18,7 +18,7 @@ simbolo_t* create_symbol(int lineno) {
 
 void destroy_symbol(simbolo_t* symbol) {
   if (symbol != NULL) {
-    if (symbol->valor)
+    if (symbol->valor != NULL)
       destroy_lexvalue(symbol->valor);
     free(symbol);
   }
@@ -50,7 +50,7 @@ tabela_t* create_symbol_table() {
   if (t != NULL) {
     t->count_symbols = 0;
     t->size = HASH_TABLE_SIZE;
-    t->hashes = malloc(t->size * sizeof(u_int64_t));
+    t->hashes = malloc(t->size * sizeof(int));
     for (int i = 0; i < t->size; i++)
       t->hashes[i] = -1;
     t->list = NULL;
@@ -119,7 +119,7 @@ int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol) {
 
 par_insercao_t* get_symbol(tabela_t* table, char* key) {
   par_insercao_t* par = NULL;
-  if (table != NULL && key != NULL && *key) {
+  if (table != NULL && key != NULL) {
     int i = (int)(hash_function32(key) % table->size);
     for (int j = 0; j < table->size; j++, i = (i+j) % table->size) {
       if (table->hashes[i] != -1) {
@@ -151,7 +151,10 @@ par_insercao_t* get_symbol_pilha(int lineno, pilha_t* pilha_tabela, char* key) {
 
 void check_declared(int lineno, pilha_t* pilha_tabela, char* key) {
   par_insercao_t* par = NULL;
-  for (int i = pilha_tabela->count; i >= 0; i--) {
+  for (int i = pilha_tabela->count-1; i >= 0; i--) {
+    tabela_t* t = pilha_tabela->tabelas[i];
+    print_table(t);
+    printf("table %p\n", t);
     par = get_symbol(pilha_tabela->tabelas[i], key);
     // ERR_DECLARED: JA EXISTE SIMBOLO COM ESSE IDENTIFICADOR
     if (par != NULL) { 
@@ -190,6 +193,7 @@ void destroy_table(tabela_t* table) {
       }
       free(p);
       table->count_symbols--;
+      // printf("symbols left %d\n", table->count_symbols);
     }
     free(table->list);
     free(table->hashes);

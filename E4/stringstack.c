@@ -68,7 +68,7 @@ void print_pilha_str(struct strpilha_t *strpilha)
 void clear(struct strpilha_t *strpilha)
 {
   while (strpilha->head != NULL)
-    pop_strpilha(strpilha);
+  pop_strpilha(strpilha);
 }
 
 void free_pilha_str(struct strpilha_t **strpilha)
@@ -76,4 +76,11 @@ void free_pilha_str(struct strpilha_t **strpilha)
   clear(*strpilha);
   free(*strpilha);
   *strpilha = NULL;
+}
+
+void destroy_strpilha(struct strpilha_t *strpilha) {
+  while (strpilha->head != NULL) {
+    pop_strpilha(strpilha);
+  }
+  free(strpilha);
 }

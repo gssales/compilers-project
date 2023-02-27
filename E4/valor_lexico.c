@@ -36,9 +36,9 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
   new_lexvalue = malloc(sizeof(valor_lexico));
   new_lexvalue->line_number = lineno;
   new_lexvalue->tk_type = token;
-  new_lexvalue->str = malloc(strlen(lexema) * sizeof(char));
-  // printf("%p before\n", new_lexvalue->str);
-  strcpy(new_lexvalue->str, lexema);
+  new_lexvalue->str = malloc((strlen(lexema) + 1) * sizeof(char));
+  if (new_lexvalue->str != NULL)
+    strcpy(new_lexvalue->str, lexema);
   switch (token) {
     case 0: // chars especiais
     case TK_OC_LE:
@@ -60,7 +60,7 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
     case TK_PR_OUTPUT:
     case TK_PR_RETURN:
     case TK_PR_FOR:
-      new_lexvalue->tk_value.s = malloc(strlen(lexema) * sizeof(char));
+      new_lexvalue->tk_value.s = malloc((strlen(lexema)+1) * sizeof(char));
       strcpy(new_lexvalue->tk_value.s, lexema);
       break;
     case TK_LIT_INT:
@@ -82,20 +82,47 @@ valor_lexico* create_lexvalue(int lineno, int token, char* lexema) {
   return new_lexvalue;
 }
 
-void destroy_lexvalue(valor_lexico* valor_lexico) {
-  free(valor_lexico->str);
-  switch(valor_lexico->tk_type) {
-    case TK_LIT_INT:
-    case TK_LIT_FLOAT:
-    case TK_LIT_CHAR:
-    case TK_LIT_TRUE:
-    case TK_LIT_FALSE:
-      break;
-    default:
-      //printf("%p after\n", valor_lexico->tk_value.s);
-      free(valor_lexico->tk_value.s);
+valor_lexico* copy_lexvalue(valor_lexico* value) {
+  valor_lexico *lex = malloc(sizeof(valor_lexico));
+  lex->line_number = value->line_number;
+  lex->tk_type = value->tk_type;
+  lex->str = malloc((strlen(value->str) + 1) * sizeof(char));
+  if (lex->str != NULL)
+    strcpy(lex->str, value->str);
+
+  switch (lex->tk_type) {
+  case TK_LIT_INT:
+  case TK_LIT_FLOAT:
+  case TK_LIT_CHAR:
+  case TK_LIT_TRUE:
+  case TK_LIT_FALSE:
+    lex->tk_value = value->tk_value;
+    break;
+  default:
+    lex->tk_value.s = malloc((strlen(value->tk_value.s)+1) * sizeof(char));
+    strcpy(lex->tk_value.s, value->tk_value.s);
   }
-  free(valor_lexico);
+
+  return lex;
+}
+
+void destroy_lexvalue(valor_lexico* valor_lexico) {
+  //print_lexvalue(valor_lexico);
+  if (valor_lexico != NULL) {
+    free(valor_lexico->str);
+    switch(valor_lexico->tk_type) {
+      case TK_LIT_INT:
+      case TK_LIT_FLOAT:
+      case TK_LIT_CHAR:
+      case TK_LIT_TRUE:
+      case TK_LIT_FALSE:
+        break;
+      default:
+        //printf("%s after\n", valor_lexico->tk_value.s);
+        free(valor_lexico->tk_value.s);
+    }
+    free(valor_lexico);
+  }
 }
 
 void print_lexvalue(valor_lexico* lexvalue) {
