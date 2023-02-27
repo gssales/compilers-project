@@ -21,8 +21,6 @@ int main (int argc, char **argv)
   int ret = yyparse();
   //exporta(arvore);
   libera(arvore);
-  destroy_pilha(pilha_tabelas);
-  destroy_strpilha(pilha_str);
   arvore = NULL;
   yylex_destroy();
   //return ret;

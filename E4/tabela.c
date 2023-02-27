@@ -153,8 +153,8 @@ void check_declared(int lineno, pilha_t* pilha_tabela, char* key) {
   par_insercao_t* par = NULL;
   for (int i = pilha_tabela->count-1; i >= 0; i--) {
     tabela_t* t = pilha_tabela->tabelas[i];
-    print_table(t);
-    printf("table %p\n", t);
+    // print_table(t);
+    // printf("table %p\n", t);
     par = get_symbol(pilha_tabela->tabelas[i], key);
     // ERR_DECLARED: JA EXISTE SIMBOLO COM ESSE IDENTIFICADOR
     if (par != NULL) { 

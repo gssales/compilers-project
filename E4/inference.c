@@ -4,16 +4,16 @@
 void erro_inferencia(int erro, node_t* exprA, node_t* exprB) {
   switch (erro) {
     case ERR_CHAR_TO_INT: //2.4
-      printf("Linha %d - ERR_CHAR_TO_INT: Tentativa de coerção da expressão '%s' do tipo char para o tipo int\n", get_lineno(exprB), "CHAR");
+      printf("Linha %d - ERR_CHAR_TO_INT: Tentativa de coerção da expressão do tipo char para o tipo int\n", get_lineno(exprB));
       break;
     case ERR_CHAR_TO_FLOAT: //2.4
-      printf("Linha %d - ERR_CHAR_TO_FLOAT: Tentativa de coerção da expressão '%s' do tipo char para o tipo float\n", get_lineno(exprB), "CHAR");
+      printf("Linha %d - ERR_CHAR_TO_FLOAT: Tentativa de coerção da expressão do tipo char para o tipo float\n", get_lineno(exprB));
       break;
     case ERR_CHAR_TO_BOOL: //2.4
-      printf("Linha %d - ERR_CHAR_TO_BOOL: Tentativa de coerção da expressão '%s' do tipo char para o tipo bool\n", get_lineno(exprB), "CHAR");
+      printf("Linha %d - ERR_CHAR_TO_BOOL: Tentativa de coerção da expressão do tipo char para o tipo bool\n", get_lineno(exprB));
       break;
     case ERR_X_TO_CHAR: //2.4
-      printf("Linha %d - ERR_X_TO_CHAR: Tentativa de coerção da variável '%s' do tipo int/float/bool para o tipo char\n", get_lineno(exprB), "CHAR");
+      printf("Linha %d - ERR_X_TO_CHAR: Tentativa de coerção da variável do tipo int/float/bool para o tipo char\n", get_lineno(exprB));
       break;
   }
   exit(erro);

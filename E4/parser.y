@@ -95,10 +95,10 @@ programa:
     escopo_global lista_elementos  {
         arvore = $2;
         //print_debug(arvore);
-        //destroy_pilha(pilha_tabelas);
+        destroy_pilha(pilha_tabelas);
         //print_pilha_str(pilha_str);
-        printf("antes\n");
-        //destroy_strpilha(pilha_str);
+        //printf("antes\n");
+        destroy_strpilha(pilha_str);
     } 
     | {
         arvore = NULL;

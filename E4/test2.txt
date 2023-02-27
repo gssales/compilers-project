@@ -1,8 +1,8 @@
 bool varBoolEscopoZero[50];
 //bool varBoolEscopoZero;// TESTE ERR_DECLARED
-//int intArranjoEscopoZero[2^2^2]; // TESTE TAMANHO DE ARRANJO INT (32)
-//bool boolArranjoEscopoZero[2^2^2]; // TESTE TAMANHO DE ARRANJO BOOL (8)
-//float floatArranjoEscopoZero[2^2^2]; // TESTE TAMANHO DE ARRANJO FLOAT (64)
+int intArranjoEscopoZero[2^2^2]; // TESTE TAMANHO DE ARRANJO INT (32)
+bool boolArranjoEscopoZero[2^2^2]; // TESTE TAMANHO DE ARRANJO BOOL (8)
+float floatArranjoEscopoZero[2^2^2]; // TESTE TAMANHO DE ARRANJO FLOAT (64)
 //char charArranjoEscopoZero[4^5^6]; // TESTE ERR_CHAR_VECTOR
 
 bool boolFooUm(int paramUm,bool paramDois) {
