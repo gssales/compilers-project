@@ -84,7 +84,7 @@ void destroy_pilha(pilha_t* pilha);
 
 void add_tipos_pilha_str(struct strpilha_t *pilha_str, tabela_t* table, int tipo);
 int tktype_to_type(int tk_type);
-
+void calcula_tam(simbolo_t* s, enum tipoSimbolo type);
 char* natureza_simbolo_to_string(int naturezaSimbolo);
 char* tipo_simbolo_to_string(int tipoSimbolo);
 

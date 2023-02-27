@@ -30,7 +30,7 @@ void yyerror(char const *s);
 }
 
 %type<nodo> programa lista_elementos elemento funcao expr_terminais
-%type<nodo> command_block lista_commands command
+%type<nodo> command_block command_block_no_new_scope lista_commands command
 %type<nodo> lista_local_var local_var
 %type<nodo> literal ident_atrib
 %type<nodo> lista_expr expr
@@ -207,10 +207,8 @@ lista_arranjo:
 
 /* Função */
 funcao:
-    tipo TK_IDENTIFICADOR '(' func_params ')' command_block  {
-        
+    tipo TK_IDENTIFICADOR '(' {
         // add funcao na tabela de escopo atual
-        // FALTA INFORMACAO DE ARGUMENTOS
         simbolo_t *s = create_symbol($2->line_number);
         s->natureza = SYM_FUNCAO;
         s->tipo = tktype_to_type($1->tk_type);
@@ -219,32 +217,55 @@ funcao:
         tabela_t *t = p->tabelas[p->count-1];
         check_declared($2->line_number, p, $2->tk_value.s);
         insert_symbol(t,$2->tk_value.s, s);
-        
+    } empilha_escopo func_params ')' command_block_no_new_scope  {
+        // desempilha escopo do bloco de corpo da funcao
+        pop_table(pilha_tabelas);
+
         node_t* funcao = create_node($2->tk_value.s);
         funcao->flag = FUNCAO;
-        if ($6 != NULL)
-            add_child(funcao, $6);
+        if ($8 != NULL)
+            add_child(funcao, $8);
         $$ = funcao;
         //destroy_lexvalue($2);
-    };
+};
 
 empilha_escopo: { 
         // cria nova tabela de simbolos e empilha na pilha de escopos
         push_table(pilha_tabelas, create_symbol_table());
-    };
+};
 
-func_params: lista_params | ;
+func_params: lista_params {} | {};
 
 lista_params: lista_params ',' param | param;
 
-param: tipo TK_IDENTIFICADOR  { destroy_lexvalue($2); };
+param: tipo TK_IDENTIFICADOR  { 
+    
+    // adiciona parametro como var no escopo atual (do corpo da funcao)
+    simbolo_t *s = create_symbol($2->line_number);
+    s->natureza = SYM_VARIAVEL;
+    s->valor = $2;
+    s->tipo = tktype_to_type($1->tk_type);
+    calcula_tam(s, tktype_to_type($1->tk_type));
+    printf("calcula_tam: %d",s->tamanhoB);
+    pilha_t *p = pilha_tabelas;
+    tabela_t *t = p->tabelas[p->count-1];
+    check_declared($2->line_number, p, $2->tk_value.s);
+    insert_symbol(t,$2->tk_value.s, s);
+    
+    //destroy_lexvalue($2); 
+};
 
 
 /* Bloco de Comandos */
+command_block_no_new_scope:
+    '{' lista_commands '}'  { 
+        $$ = $2;
+    };
+
 command_block: 
-    '{' empilha_escopo lista_commands'}'  { 
+    '{' empilha_escopo lista_commands '}'  { 
         $$ = $3;
-        //print_tree($$);
+        // desempilha escopo do bloco de comando
         pop_table(pilha_tabelas);
     };
 

@@ -9,7 +9,7 @@ bool foo (int param,bool paramdois) {
   {
     bool novaVar, maisVar <= 'c', teste;
 
-    chamaFunc();
+    foo();
   };
   return -5;
 }

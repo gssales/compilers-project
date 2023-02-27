@@ -282,10 +282,22 @@ void add_tipos_pilha_str(struct strpilha_t *pilha_str, tabela_t* table, int tipo
     if (tipo == TYPE_CHAR && s->natureza == SYM_ARRANJO) {
       erro_semantico(ERR_CHAR_VECTOR, s->pos.l, str, s);
     }
+    // adiciona tamanho
+    calcula_tam(s, tipo);
 
-    // CALCULA E ADICIONA TAMANHO (DEPENDENDO DO TIPO E SE ARRANJO)
+    // adiciona tipo
+    s->tipo = tipo;
+
+    //printf("id %s recebeu tipo %s",par->symbol->valor->tk_value.s,tipo_simbolo_to_string(tipo));
+    pop_strpilha(pilha_str);
+    str = top_strpilha(pilha_str);
+  }
+  printf("\n");
+}
+
+void calcula_tam(simbolo_t* s, enum tipoSimbolo type) {
     int tam_base = 0;
-    switch(tipo) {
+    switch(type) {
       case TYPE_INT:
         tam_base = 4;
         break;
@@ -305,14 +317,6 @@ void add_tipos_pilha_str(struct strpilha_t *pilha_str, tabela_t* table, int tipo
     }
 
     s->tamanhoB = tam_base;
-    // ADICIONA TIPO
-    s->tipo = tipo;
-
-    //printf("id %s recebeu tipo %s",par->symbol->valor->tk_value.s,tipo_simbolo_to_string(tipo));
-    pop_strpilha(pilha_str);
-    str = top_strpilha(pilha_str);
-  }
-  printf("\n");
 }
 
 int tktype_to_type(int tk_type) {
