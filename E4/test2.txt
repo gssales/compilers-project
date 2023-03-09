@@ -1,0 +1,53 @@
+bool varBoolEscopoZero[50];
+//bool varBoolEscopoZero;// TESTE ERR_DECLARED
+int intArranjoEscopoZero[2^2^2]; // TESTE TAMANHO DE ARRANJO INT (32)
+bool boolArranjoEscopoZero[2^2^2]; // TESTE TAMANHO DE ARRANJO BOOL (8)
+float floatArranjoEscopoZero[2^2^2]; // TESTE TAMANHO DE ARRANJO FLOAT (64)
+//char charArranjoEscopoZero[4^5^6]; // TESTE ERR_CHAR_VECTOR
+
+bool boolFooUm(int paramUm,bool paramDois) {
+  int x, y;
+  char c;
+  bool b, d;
+  float f, g;
+
+  //x = y * c;              // TESTE ERR_CHAR_TO_INT
+  //d = b && c;             // TESTE ERR_CHAR_TO_BOOL
+  //g = f * c;              // TESTE ERR_CHAR_TO_FLOAT
+  //c = x;                  // TESTE ERR_X_TO_CHAR (INT)
+  //c = b;                  // TESTE ERR_X_TO_CHAR (BOOL)
+  //c = f;                  // TESTE ERR_X_TO_CHAR (FLOAT)
+
+  return 1;
+}
+
+bool boolFooDois(int paramTres,bool paramQuatro) {
+  bool boolVarTesteUm,boolVarTesteDois,boolVarTesteTres <= false;
+  boolVarTesteUm = false;
+
+  boolFooDois(5, true); // TESTE CHAMADA RECURSIVA DA FUNCAO
+
+  //intFooTres();                             // TESTE ERR_UNDECLARED
+  //varBoolEscopoZero();                      // TESTE ERR_VARIABLE
+  //boolVarTesteUm[1^2^3] = true;             // TESTE_ERR_VARIABLE
+  //intArranjoEscopoZero();                   // TESTE ERR_ARRAY
+  //varBoolEscopoZero = intArranjoEscopoZero; // TESTE ERR_ARRAY
+  //boolFooUm = 5;                            // TESTE ERR_FUNCTION
+  //varBoolEscopoZero = boolFooUm;            // TESTE ERR_FUNCTION
+  
+  float floatVarEscopoUm;
+  {
+    char charVarEscopoDois <= 't';
+
+    while (5 == 10) {
+      int intVarEscopoTres <= 10;
+      int intOutraVarEscopoTres <= 10;
+
+      if (1.5 == 5.1) then {
+        bool boolVarEscopoQuatroIf;
+      } else {
+        bool boolVarEscopoQuatroElse;
+      };
+    };
+  };
+}
