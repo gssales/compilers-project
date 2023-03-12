@@ -7,25 +7,27 @@
 /**
  * Type for individual stack entry
  */
-struct strpilha_entry {
+typedef struct strstack_entry strstack_entry_t;
+struct strstack_entry {
   char *data;
-  struct strpilha_entry *next;
+  strstack_entry_t *next;
 };
 
 /**
  * Type for stack instance
  */
-struct strpilha_t
+typedef struct strstack
 {
-  struct strpilha_entry *head;
-  size_t stackSize;
-};
-struct strpilha_t *create_strpilha(void);
-char *copyStr(char *str);
-char* top_strpilha(struct strpilha_t *strpilha);
-void pop_strpilha(struct strpilha_t *strpilha);
-void push_strpilha(struct strpilha_t *strpilha, char *value);
-void print_pilha_str(struct strpilha_t *strpilha);
-void destroy_strpilha(struct strpilha_t *strpilha);
+  strstack_entry_t *head;
+  size_t stack_size;
+} strstack_t;
+
+strstack_t *create_strstack(void);
+char* copy_str(char *str);
+char* top_strstack(strstack_t *stack);
+void pop_strstack(strstack_t *stack);
+void push_strstack(strstack_t *stack, char *value);
+void print_strstack(strstack_t *stack);
+void destroy_strstack(strstack_t *stack);
 
 #endif //_STRINGSTACK_H_

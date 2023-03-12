@@ -1,75 +1,44 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tabela.h"
-#include "valor_lexico.h"
+#include "lexvalue.h"
 #include "parser.tab.h"
 
 void print_node(node_t *node) {
-  printf(":%s type %d", node->label, node->type);
+  printf(":%s type %d", node->label, node->sym_type);
   if (node->value != NULL) {
     printf(" -> ");
     print_tk_value(node->value);
   }
 }
 
-node_t* create_leaf(char* label, valor_lexico *value) {
-	node_t *node = NULL;
-  if (label != NULL) {
-  	node = malloc(sizeof(node_t));
-  	if (node != NULL) {
-      node->label = strdup(label);
-      node->value = value;
-      node->count_children = 0;
-      node->children = NULL;
-      node->flag = 0; // FUNCAO/COMANDO/EXPRESSAO
-      node->type = TYPE_UNDEFINED;
-  	}
-  }
-	return node;
-}
-
 node_t* create_node(char* label) {
-	node_t *node = NULL;
-  if (label != NULL) {
-  	node = malloc(sizeof(node_t));
-  	if (node != NULL) {
-  		node->label = strdup(label);
-      node->value = NULL;
-      node->count_children = 0;
-      node->children = NULL;
-      node->flag = 0;
-      node->type = TYPE_UNDEFINED;
-  	}
-  }
+	node_t *node = malloc(sizeof(node_t));
+	if (node != NULL) {
+		node->label = strdup(label);
+    node->value = NULL;
+    node->count_children = 0;
+    node->children = NULL;
+    node->ast_type = AST_NONE;
+    node->sym_type = SYM_UNKNOWN;
+	}
 	return node;
 }
 
-node_t* asList_getLeaf(node_t *list) {
-  if (list->count_children == 0)
-    return list;
-  if (list->count_children == 1)
-    return asList_getLeaf(list->children[0]);
-  else
-    printf("ERROR node is not a list: %s\n", list->label);
+node_t* create_leaf(char* label, lexvalue_t *value) {
+	node_t *node = create_node(label);
+	if (node != NULL) {
+    node->value = value;
+	}
+	return node;
 }
 
-node_t* getLastChildOfSameLabel(node_t *list) {
-  if (list->count_children == 0)
-    return list;
-  else {
-    for (int i = 0; i < list->count_children; i++) 
-      if(strcmp(list->label, list->children[i]->label) == 0)
-        return getLastChildOfSameLabel(list->children[i]);
-    return list;
-  }
-}
-
-node_t* getLastOf(node_t *list, int tipo) {
-  if (list->flag == tipo) {
+node_t* get_last_of(node_t *list, ast_type_t ast_type) {
+  if (list->ast_type == ast_type) {
     for (int i = 0; i < list->count_children; i++) {
-      node_t* funct = getLastOf(list->children[i], tipo);
-      if (funct != NULL)
-        return funct;
+      node_t* last = get_last_of(list->children[i], ast_type);
+      if (last != NULL)
+        return last;
     }
     return list;
   }
@@ -96,7 +65,7 @@ void unshift_child(node_t *node, node_t *child) {
 
 void _print_debug(node_t *tree, int depth) {
   if (tree != NULL) {
-    for (int d = 0; d < depth;d++) printf("| ");
+    for (int d = 0; d < depth; d++) printf("| ");
     print_node(tree);
     printf("\n");
     for (int i = 0; i < tree->count_children; i++) {
@@ -129,6 +98,7 @@ void libera(void* root) {
 		free(node->label);
 		free(node->children);
 		free(node);
+    root = NULL;
 	}
 }
 
@@ -155,9 +125,4 @@ void print_entrega(node_t *root, node_t *parent)
 void exporta(void* root) {
 	node_t* node = (node_t *)root;
 	print_entrega(node, NULL);
-}
-
-int isLiteral(node_t* node)
-{
-	return (node->value != NULL);
 }

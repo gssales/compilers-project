@@ -11,9 +11,13 @@ etapa2
 etapa3
 etapa4
 etapa4-dbg
+etapa5
+etapa5-dbg
 
 
 testes
 
 TESTES*
+
+.vscode
 

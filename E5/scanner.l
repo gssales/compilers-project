@@ -13,19 +13,19 @@
 
 [ \t\n\r]               { /* Ignora espaco, tab, e new line */ }
 "int"                   { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_INT, yytext);
+    yylval.lexvalue = create_lexvalue(yylineno, TK_PR_INT, yytext);
     return TK_PR_INT; 
 }
 "float"                 { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_FLOAT, yytext);
+    yylval.lexvalue = create_lexvalue(yylineno, TK_PR_FLOAT, yytext);
     return TK_PR_FLOAT; 
 }
 "bool"                  { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_BOOL, yytext);
+    yylval.lexvalue = create_lexvalue(yylineno, TK_PR_BOOL, yytext);
     return TK_PR_BOOL; 
 }
 "char"                  { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_PR_CHAR, yytext);
+    yylval.lexvalue = create_lexvalue(yylineno, TK_PR_CHAR, yytext);
     return TK_PR_CHAR; 
 }
 "if"                    { return TK_PR_IF; }
@@ -47,35 +47,35 @@
 "||"                    { return TK_OC_OR; }
 
 "false"   { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FALSE, yytext);
+    yylval.lexvalue = create_lexvalue(yylineno, TK_LIT_FALSE, yytext);
     return TK_LIT_FALSE;
 }
 "true"    {
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_TRUE, yytext);
+    yylval.lexvalue = create_lexvalue(yylineno, TK_LIT_TRUE, yytext);
     return TK_LIT_TRUE;
 }
 
 [a-zA-Z]+   { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_IDENTIFICADOR, yytext);
+    yylval.lexvalue = create_lexvalue(yylineno, TK_IDENTIFICADOR, yytext);
     return TK_IDENTIFICADOR;
 }
 [0-9]+      { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_INT, yytext);
+    yylval.lexvalue = create_lexvalue(yylineno, TK_LIT_INT, yytext);
     return TK_LIT_INT;
 }
 [0-9]+\.[0-9]+    { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FLOAT, yytext);
+    yylval.lexvalue = create_lexvalue(yylineno, TK_LIT_FLOAT, yytext);
     return TK_LIT_FLOAT;
 }
 
 [0-9]+\.[0-9]+[eE][\-+]?[0-9]+    { 
     /* Notacao cientifica */
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_FLOAT, yytext);
+    yylval.lexvalue = create_lexvalue(yylineno, TK_LIT_FLOAT, yytext);
     return TK_LIT_FLOAT;
 }
 
 '.'     { 
-    yylval.valor_lexico = create_lexvalue(yylineno, TK_LIT_CHAR, yytext);
+    yylval.lexvalue = create_lexvalue(yylineno, TK_LIT_CHAR, yytext);
     return TK_LIT_CHAR; 
 }
 

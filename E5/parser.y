@@ -18,13 +18,13 @@ void yyerror(char const *s);
     #include "inference.h"
     #include "stringstack.h"
     extern void* arvore;
-    extern void* pilha_tabelas;
-    extern void* pilha_str;
+    stack_t* table_stack;
+    strstack_t* strstack;
 }
 
 %union {
   node_t *nodo;
-  valor_lexico *valor_lexico;
+  lexvalue_t *lexvalue;
 }
 
 %type<nodo> programa lista_elementos elemento funcao expr_terminais
@@ -36,13 +36,13 @@ void yyerror(char const *s);
 %type<nodo> atrib lista_arranjo_atrib chamada_func chamada_params chamada_lista_params
 %type<nodo> declara_var retorno condicional iteracao
 
-%type<valor_lexico> tipo
-%type<valor_lexico> lista_arranjo
+%type<lexvalue> tipo
+%type<lexvalue> lista_arranjo
 
-%token<valor_lexico> TK_PR_INT
-%token<valor_lexico> TK_PR_FLOAT
-%token<valor_lexico> TK_PR_BOOL
-%token<valor_lexico> TK_PR_CHAR
+%token<lexvalue> TK_PR_INT
+%token<lexvalue> TK_PR_FLOAT
+%token<lexvalue> TK_PR_BOOL
+%token<lexvalue> TK_PR_CHAR
 %token TK_PR_IF
 %token TK_PR_THEN
 %token TK_PR_ELSE
@@ -57,12 +57,12 @@ void yyerror(char const *s);
 %token TK_OC_NE
 %token TK_OC_AND
 %token TK_OC_OR
-%token<valor_lexico> TK_LIT_INT
-%token<valor_lexico> TK_LIT_FLOAT
-%token<valor_lexico> TK_LIT_FALSE
-%token<valor_lexico> TK_LIT_TRUE
-%token<valor_lexico> TK_LIT_CHAR
-%token<valor_lexico> TK_IDENTIFICADOR
+%token<lexvalue> TK_LIT_INT
+%token<lexvalue> TK_LIT_FLOAT
+%token<lexvalue> TK_LIT_FALSE
+%token<lexvalue> TK_LIT_TRUE
+%token<lexvalue> TK_LIT_CHAR
+%token<lexvalue> TK_IDENTIFICADOR
 %token TK_ERRO
 
 %token '['
@@ -91,11 +91,8 @@ void yyerror(char const *s);
 programa: 
     escopo_global lista_elementos  {
         arvore = $2;
-        //print_debug(arvore);
-        destroy_pilha(pilha_tabelas);
-        //print_pilha_str(pilha_str);
-        //printf("antes\n");
-        destroy_strpilha(pilha_str);
+        destroy_stack(table_stack);
+        destroy_strstack(strstack);
     } 
     | {
         arvore = NULL;
@@ -103,18 +100,18 @@ programa:
 
 escopo_global: {
     // cria pilha e empilha a tabela de escopo global
-    pilha_tabelas = create_pilha();
-    push_table(pilha_tabelas, create_symbol_table());
+    table_stack = create_stack();
+    push_table(table_stack, create_symbol_table(1));
 
     // cria pilha de string simples pra adicionar tipos aos id de declaracoes
-    pilha_str = create_strpilha();
+    strstack = create_strstack();
 }
 
 lista_elementos: 
     lista_elementos elemento  {
         if ($2 != NULL) {
             if ($1 != NULL) {
-                node_t* last_function = getLastOf($1, FUNCAO);
+                node_t* last_function = get_last_of($1, AST_FUNCTION);
                 add_child(last_function, $2);
                 $$ = $1;
             } else {
@@ -134,10 +131,9 @@ elemento:
 /* Variável Global */
 var_global: tipo lista_ident_var ';' {
 
-    // desempilha pilha_str adicionando tipo a todos
-    pilha_t *p = pilha_tabelas;
-    tabela_t *t = p->tabelas[p->count-1];
-    add_tipos_pilha_str(pilha_str, t, $1->tk_type);
+    // desempilha strstack adicionando tipo a todos
+    table_t *t = get_table(table_stack, table_stack->count-1);
+    add_types_to_strstack(strstack, t, $1->tk_type);
 
     destroy_lexvalue($1);
 };
@@ -157,38 +153,24 @@ lista_ident_var: lista_ident_var ',' ident_var | ident_var;
 ident_var: 
     TK_IDENTIFICADOR  { 
 
-        // adiciona id na pilha_str para receber tipo depois
-        push_strpilha(pilha_str,$1->tk_value.s);
-        //printf("Push_strpilha: %s",$1->tk_value.s);
-        //print_pilha_str(pilha_str);
+        // adiciona id na strstack para receber tipo depois
+        push_strstack(strstack,$1->tk_value.s);
 
         // adiciona simbolo na tabela de escopo global
-        simbolo_t *s = create_symbol($1->line_number);
-        s->natureza = SYM_VARIAVEL;
-        s->valor = copy_lexvalue($1);
-        pilha_t *p = pilha_tabelas;
-        tabela_t *t = p->tabelas[0];
-        check_declared($1->line_number, p, $1->tk_value.s);
-        insert_symbol(t, $1->tk_value.s, s);
+        symbol_t *s = create_symbol_id($1->line_number, $1, TYPE_UNDEFINED);
+        int result = push_symbol_into_table(table_stack, $1->tk_value.s, s);
+        if (!is_inserted(result)) destroy_symbol(s);
 
         destroy_lexvalue($1); 
     } 
     | TK_IDENTIFICADOR'['lista_arranjo']'  { 
-        // adiciona id na pilha_str para receber tipo depois
-        push_strpilha(pilha_str,$1->tk_value.s);
-        //printf("Push_strpilha: %s",$1->tk_value.s);
-        //print_pilha_str(pilha_str);
+        // adiciona id na strstack para receber tipo depois
+        push_strstack(strstack,$1->tk_value.s);
 
         // adiciona arranjo na tabela de escopo global
-        // FALTA INFORMACAO DE DIMENSOES DO ARRANJO
-        simbolo_t *s = create_symbol($1->line_number);
-        s->natureza = SYM_ARRANJO;
-        s->valor = copy_lexvalue($1);
-        s->tamanhoB = $3->tk_value.i; // dimensao total (multiplicada dependendo do tipo na add_tipos_pilha_str)
-        pilha_t *p = pilha_tabelas;
-        tabela_t *t = p->tabelas[0];
-        check_declared($1->line_number, p, $1->tk_value.s);
-        insert_symbol(t,$1->tk_value.s, s);
+        symbol_t *s = create_symbol_array($1->line_number, $1, $3->tk_value.i); // dimensao total (multiplicada dependendo do tipo na add_tipos_strstack)
+        int result = push_symbol_into_table(table_stack, $1->tk_value.s, s);
+        if (!is_inserted(result)) destroy_symbol(s);
 
         destroy_lexvalue($1); 
         destroy_lexvalue($3); 
@@ -197,14 +179,12 @@ ident_var:
 lista_arranjo: 
     lista_arranjo'^'TK_LIT_INT { 
         int dim_total = $1->tk_value.i * $3->tk_value.i;
-        
         $1->tk_value.i = dim_total;
         $$ = $1;
         destroy_lexvalue($3); 
     }
     | TK_LIT_INT { 
         $$ = $1;
-        //destroy_lexvalue($1); 
     };
 
 
@@ -212,36 +192,30 @@ lista_arranjo:
 funcao:
     tipo TK_IDENTIFICADOR '(' {
         // add funcao na tabela de escopo atual
-        simbolo_t *s = create_symbol($2->line_number);
-        s->natureza = SYM_FUNCAO;
-        s->tipo = tktype_to_type($1->tk_type);
-        s->valor = copy_lexvalue($2);
-        pilha_t *p = pilha_tabelas;
-        tabela_t *t = p->tabelas[p->count-1];
-        //print_pilha(p);
-        //print_lexvalue($2);
-        check_declared($2->line_number, p, $2->tk_value.s);
-        insert_symbol(t,$2->tk_value.s, s);
+        symbol_t *s = create_symbol_function($2->line_number, $2, tktype_to_type($1->tk_type));
+        int result = push_symbol_into_table(table_stack, $2->tk_value.s, s);
+        if (!is_inserted(result)) destroy_symbol(s);
+
     } empilha_escopo func_params ')' command_block_no_new_scope  {
         // desempilha escopo do bloco de corpo da funcao
 
         node_t* funcao = create_node($2->tk_value.s);
-        funcao->flag = FUNCAO;
+        funcao->ast_type = AST_FUNCTION;
         if ($8 != NULL)
             add_child(funcao, $8);
         $$ = funcao;
 
-        tabela_t *to = pop_table(pilha_tabelas);
-        //print_table(to);
+        table_t *to = pop_table(table_stack);
         destroy_table(to);
+        
         destroy_lexvalue($1);
         destroy_lexvalue($2);
-};
+    };
 
 empilha_escopo: { 
         // cria nova tabela de simbolos e empilha na pilha de escopos
-        push_table(pilha_tabelas, create_symbol_table());
-};
+        push_table(table_stack, create_symbol_table(0));
+    };
 
 func_params: lista_params {} | {};
 
@@ -250,16 +224,9 @@ lista_params: lista_params ',' param | param;
 param: tipo TK_IDENTIFICADOR  { 
     
     // adiciona parametro como var no escopo atual (do corpo da funcao)
-    simbolo_t *s = create_symbol($2->line_number);
-    s->natureza = SYM_VARIAVEL;
-    s->valor = copy_lexvalue($2);
-    s->tipo = tktype_to_type($1->tk_type);
-    calcula_tam(s, tktype_to_type($1->tk_type));
-    //printf("calcula_tam: %d",s->tamanhoB);
-    pilha_t *p = pilha_tabelas;
-    tabela_t *t = p->tabelas[p->count-1];
-    check_declared($2->line_number, p, $2->tk_value.s);
-    insert_symbol(t,$2->tk_value.s, s);
+    symbol_t *s = create_symbol_id($2->line_number, $2, tktype_to_type($1->tk_type));    
+    int result = push_symbol_into_table(table_stack, $2->tk_value.s, s);
+        if (!is_inserted(result)) destroy_symbol(s);
     
     destroy_lexvalue($1);
     destroy_lexvalue($2);
@@ -276,7 +243,7 @@ command_block:
     '{' empilha_escopo lista_commands '}'  { 
         $$ = $3;
         // desempilha escopo do bloco de comando
-        tabela_t *to = pop_table(pilha_tabelas);
+        table_t *to = pop_table(table_stack);
         //print_table(to);
         destroy_table(to);
     };
@@ -286,7 +253,7 @@ lista_commands:
         if ($2 != NULL) {
             //$2 é um comando
             if ($1 != NULL) {
-                node_t* last_cmd = getLastOf($1, COMANDO);
+                node_t* last_cmd = get_last_of($1, AST_COMMAND);
                 add_child(last_cmd, $2);
                 $$ = $1;
             } else {
@@ -302,27 +269,27 @@ command:
     command_block  { $$ = $1; }
     | declara_var  { 
 	if ($1 != NULL)
-	        $1->flag = COMANDO;
+	    $1->ast_type = AST_COMMAND;
 	$$ = $1;
     } 
     | atrib {   
-        $1->flag = COMANDO;
+        $1->ast_type = AST_COMMAND;
         $$ = $1;
     } 
     | chamada_func  { 
-        $1->flag = COMANDO;
+        $1->ast_type = AST_COMMAND;
         $$ = $1;
     } 
     | retorno  { 
-        $1->flag = COMANDO;
+        $1->ast_type = AST_COMMAND;
         $$ = $1;
     } 
     | condicional  { 
-        $1->flag = COMANDO;
+        $1->ast_type = AST_COMMAND;
         $$ = $1;
     } 
     | iteracao { 
-        $1->flag = COMANDO;
+        $1->ast_type = AST_COMMAND;
         $$ = $1;
     }; 
 
@@ -331,12 +298,11 @@ command:
 declara_var: 
     tipo lista_local_var  {
 
-        // desempilha pilha_str adicionando tipo a todos
-        pilha_t *p = pilha_tabelas;
-        tabela_t *t = p->tabelas[p->count-1];
-        add_tipos_pilha_str(pilha_str, t, $1->tk_type);
+        // desempilha strstack adicionando tipo a todos
+        table_t *t = get_table(table_stack, table_stack->count-1);
+        add_types_to_strstack(strstack, t, $1->tk_type);
 
-        infere_tipo_inicializacao($2, tktype_to_type($1->tk_type));
+        infer_type_initialization($2, tktype_to_type($1->tk_type));
 
         $$ = $2;
         destroy_lexvalue($1);
@@ -346,7 +312,7 @@ lista_local_var:
     lista_local_var ',' local_var  {
         if ($3 != NULL) {
             if ($1 != NULL) {
-                node_t* last_cmd = getLastOf($1, COMANDO);
+                node_t* last_cmd = get_last_of($1, AST_COMMAND);
                 add_child(last_cmd, $3);
                 $$ = $1;
             } else {
@@ -368,46 +334,34 @@ local_var:
     TK_IDENTIFICADOR  {
         $$ = NULL;
 
-        // adiciona id na pilha_str para receber tipo depois
-        push_strpilha(pilha_str,$1->tk_value.s);
-        //printf("Push_strpilha: %s",$1->tk_value.s);
-        //print_pilha_str(pilha_str);
+        // adiciona id na strstack para receber tipo depois
+        push_strstack(strstack,$1->tk_value.s);
 
         // adiciona var na tabela de escopo atual
-        simbolo_t *s = create_symbol($1->line_number);
-        s->natureza = SYM_VARIAVEL;
-        s->valor = copy_lexvalue($1);
-        pilha_t *p = pilha_tabelas;
-        tabela_t *t = p->tabelas[p->count-1];
-        check_declared($1->line_number, p, $1->tk_value.s);
-        insert_symbol(t,$1->tk_value.s, s);
+        symbol_t *s = create_symbol_id($1->line_number, $1, TYPE_UNDEFINED);
+        int result = push_symbol_into_table(table_stack, $1->tk_value.s, s);
+        if (!is_inserted(result)) destroy_symbol(s);
 
         destroy_lexvalue($1);
     } | 
     TK_IDENTIFICADOR TK_OC_LE literal {
 
-        // adiciona id na pilha_str para receber tipo depois
-        push_strpilha(pilha_str,$1->tk_value.s);
-        //printf("Push_strpilha: %s",$1->tk_value.s);
-        //print_pilha_str(pilha_str);
+        // adiciona id na strstack para receber tipo depois
+        push_strstack(strstack,$1->tk_value.s);
 
         // adiciona var na tabela de escopo atual
-        simbolo_t *s = create_symbol($1->line_number);
-        s->natureza = SYM_VARIAVEL;
-        s->valor = copy_lexvalue($1);
-        pilha_t *p = pilha_tabelas;
-        tabela_t *t = p->tabelas[p->count-1];
-        check_declared($1->line_number, p, $1->tk_value.s);
-        insert_symbol(t,$1->tk_value.s, s);
+        symbol_t *s = create_symbol_id($1->line_number, $1, TYPE_UNDEFINED);
+        int result = push_symbol_into_table(table_stack, $1->tk_value.s, s);
+        if (!is_inserted(result)) destroy_symbol(s);
 
         node_t* inicializa = create_node("<=");
-        inicializa->flag = COMANDO;
+        inicializa->ast_type = AST_COMMAND;
 
         node_t* var_inicializa = create_leaf($1->tk_value.s, $1);
-        var_inicializa->flag = VAR_INICIALIZACAO;
+        var_inicializa->ast_type = AST_VAR_INITIALIZED;
         add_child(inicializa, var_inicializa);
 
-        $3->flag = LIT_INICIALIZACAO;
+        $3->ast_type = AST_LIT_DECLARED;
         add_child(inicializa, $3);
 
         $$ = inicializa;
@@ -418,80 +372,55 @@ local_var:
 literal: 
     TK_LIT_INT  { 
         // adiciona literal na tabela de escopo atual
-        simbolo_t *s = create_symbol($1->line_number);
-        s->natureza = SYM_LITERAL;
-        s->tipo = TYPE_INT;
-        s->valor = copy_lexvalue($1);
-        s->tamanhoB = 4;
-        pilha_t *p = pilha_tabelas;
-        tabela_t *t = p->tabelas[p->count-1];
-        insert_symbol(t,$1->str, s);
-        //print_pilha(p);
+        symbol_t *s = create_symbol_literal($1->line_number, $1, TYPE_INT);
+        int result = push_symbol_into_table(table_stack, $1->lexema, s);
+        if (!is_inserted(result)) destroy_symbol(s);
 
-        $$ = create_leaf($1->str, $1); 
-        $$->type = TYPE_INT;
+        $$ = create_leaf($1->lexema, $1); 
+        $$->sym_type = TYPE_INT;
 
         //destroy_lexvalue($1);
     }
     | TK_LIT_FLOAT  {
         // adiciona literal na tabela de escopo atual
-        simbolo_t *s = create_symbol($1->line_number);
-        s->natureza = SYM_LITERAL;
-        s->tipo = TYPE_FLOAT;
-        s->valor = copy_lexvalue($1);
-        s->tamanhoB = 8;
-        pilha_t *p = pilha_tabelas;
-        tabela_t *t = p->tabelas[p->count-1];
-        insert_symbol(t,$1->str, s);
+        symbol_t *s = create_symbol_literal($1->line_number, $1, TYPE_FLOAT);
+        int result = push_symbol_into_table(table_stack, $1->lexema, s);
+        if (!is_inserted(result)) destroy_symbol(s);
 
-        $$ = create_leaf($1->str, $1); 
-        $$->type = TYPE_FLOAT;
+        $$ = create_leaf($1->lexema, $1); 
+        $$->sym_type = TYPE_FLOAT;
         //destroy_lexvalue($1);
     }
     | TK_LIT_FALSE  {
         // adiciona literal na tabela de escopo atual
-        simbolo_t *s = create_symbol($1->line_number);
-        s->natureza = SYM_LITERAL;
-        s->tipo = TYPE_BOOL;
-        s->valor = copy_lexvalue($1);
-        s->tamanhoB = 1;
-        pilha_t *p = pilha_tabelas;
-        tabela_t *t = p->tabelas[p->count-1];
-        insert_symbol(t,"false", s);
-        $$ = create_leaf($1->str, $1); 
-        $$->type = TYPE_BOOL;
+        symbol_t *s = create_symbol_literal($1->line_number, $1, TYPE_BOOL);
+        int result = push_symbol_into_table(table_stack, $1->lexema, s);
+        if (!is_inserted(result)) destroy_symbol(s);
+
+        $$ = create_leaf($1->lexema, $1); 
+        $$->sym_type = TYPE_BOOL;
         //destroy_lexvalue($1);
     }
     | TK_LIT_TRUE   {
         // adiciona literal na tabela de escopo atual
-        simbolo_t *s = create_symbol($1->line_number);
-        s->natureza = SYM_LITERAL;
-        s->tipo = TYPE_BOOL;
-        s->valor = copy_lexvalue($1);
-        s->tamanhoB = 1;
-        pilha_t *p = pilha_tabelas;
-        tabela_t *t = p->tabelas[p->count-1];
-        insert_symbol(t,"true", s);
+        symbol_t *s = create_symbol_literal($1->line_number, $1, TYPE_BOOL);
+        int result = push_symbol_into_table(table_stack, $1->lexema, s);
+        if (!is_inserted(result)) destroy_symbol(s);
 
-        $$ = create_leaf($1->str, $1); 
-        $$->type = TYPE_BOOL;
+        $$ = create_leaf($1->lexema, $1); 
+        $$->sym_type = TYPE_BOOL;
         //destroy_lexvalue($1);
     }
     | TK_LIT_CHAR  { 
         // adiciona literal na tabela de escopo atual
-        simbolo_t *s = create_symbol($1->line_number);
-        s->natureza = SYM_LITERAL;
-        s->tipo = TYPE_CHAR;
-        s->valor = copy_lexvalue($1);
-        s->tamanhoB = 1;
-        pilha_t *p = pilha_tabelas;
-        tabela_t *t = p->tabelas[p->count-1];
-        insert_symbol(t,$1->str, s);
+        symbol_t *s = create_symbol_literal($1->line_number, $1, TYPE_CHAR);
+        int result = push_symbol_into_table(table_stack, $1->lexema, s);
+        if (!is_inserted(result)) destroy_symbol(s);  
 
         char label[2] = "\0";
         label[0] = $1->tk_value.c;
         $$ = create_leaf(label, $1); 
-        $$->type = TYPE_CHAR;
+        $$->sym_type = TYPE_CHAR;
         //destroy_lexvalue($1);
     };
 
@@ -500,7 +429,7 @@ literal:
 atrib: 
     ident_atrib '=' expr {
         node_t* atribuicao = create_node("=");
-        infere_tipo_atrib($1->type, $3);
+        infer_type_attribution($1->sym_type, $3);
         add_child(atribuicao, $1);
         add_child(atribuicao, $3);
         $$ = atribuicao;
@@ -508,26 +437,24 @@ atrib:
 
 ident_atrib:
     TK_IDENTIFICADOR  {
-        // consulta a tabela pra saber se id->natureza == SYM_VARIAVEL
-        pilha_t *p = pilha_tabelas;
-        simbolo_t* s = get_symbol_pilha($1->line_number, p, $1->tk_value.s)->symbol;
+        // consulta a tabela pra saber se id->sym_nature == SYM_VARIAVEL
+        symbol_t* s = get_symbol_stack($1->line_number, table_stack, $1->tk_value.s)->symbol;
         check_correct_use($1->line_number, s, SYM_VARIAVEL);
 
         $$ = create_leaf($1->tk_value.s, $1);
-        $$->type = s->tipo;
+        $$->sym_type = s->sym_type;
 
         //destroy_lexvalue($1);
     } 
     | TK_IDENTIFICADOR'['lista_arranjo_atrib']'  {
-        // consulta a tabela pra saber se id->natureza == SYM_ARRANJO
-        pilha_t *p = pilha_tabelas;
-        simbolo_t* s = get_symbol_pilha($1->line_number, p, $1->tk_value.s)->symbol;
+        // consulta a tabela pra saber se id->sym_nature == SYM_ARRANJO
+        symbol_t* s = get_symbol_stack($1->line_number, table_stack, $1->tk_value.s)->symbol;
         check_correct_use($1->line_number, s, SYM_ARRANJO);
 
         node_t* id_lista_atrib = create_leaf($1->tk_value.s, $1);
-        id_lista_atrib->type = s->tipo;
+        id_lista_atrib->sym_type = s->sym_type;
         node_t* indexador = create_node("[]");
-        indexador->type = s->tipo;
+        indexador->sym_type = s->sym_type;
         add_child(indexador, id_lista_atrib);
         add_child(indexador, $3);
         $$ = indexador;
@@ -560,16 +487,15 @@ lista_arranjo_atrib:
 chamada_func:
     TK_IDENTIFICADOR'('chamada_params')'  {
 
-        // consulta a tabela pra saber se id->natureza == SYM_FUNCAO
-        pilha_t *p = pilha_tabelas;
-        simbolo_t* s = get_symbol_pilha($1->line_number, p, $1->tk_value.s)->symbol;
+        // consulta a tabela pra saber se id->sym_nature == SYM_FUNCAO
+        symbol_t* s = get_symbol_stack($1->line_number, table_stack, $1->tk_value.s)->symbol;
         check_correct_use($1->line_number, s, SYM_FUNCAO);
 
         node_t* funcao = create_node("call ");
         funcao->value = copy_lexvalue($1);
         if ($3 != NULL)
             add_child(funcao, $3);
-        funcao->type = s->tipo;
+        funcao->sym_type = s->sym_type;
         $$ = funcao;
 
         destroy_lexvalue($1);
@@ -581,7 +507,7 @@ chamada_params:
 
 chamada_lista_params: 
     chamada_lista_params ',' expr  {
-        node_t* last_expr = getLastOf($1, EXPRESSAO);
+        node_t* last_expr = get_last_of($1, AST_EXPRESSION);
         add_child(last_expr, $3);
         $$ = $1;
     } | 
@@ -595,11 +521,11 @@ retorno:
     TK_PR_RETURN expr  {
         node_t* cmd_ret = create_node("return");
 
-        if ($2->type == TYPE_UNDEFINED) {
+        if ($2->sym_type == TYPE_UNDEFINED) {
             printf("ERRO expressão não tem tipo");
             exit(1);
         }
-        cmd_ret->type = $2->type;
+        cmd_ret->sym_type = $2->sym_type;
 
         add_child(cmd_ret, $2);
         $$ = cmd_ret;
@@ -611,11 +537,11 @@ condicional:
     TK_PR_IF '('expr')' TK_PR_THEN command_block  {
         node_t* cmd_if = create_node("if");
 
-        if ($3->type == TYPE_UNDEFINED) {
+        if ($3->sym_type == TYPE_UNDEFINED) {
             printf("ERRO expressão não tem tipo");
             exit(1);
         }
-        cmd_if->type = $3->type;
+        cmd_if->sym_type = $3->sym_type;
 
         add_child(cmd_if, $3);
         add_child(cmd_if, $6);
@@ -624,11 +550,11 @@ condicional:
     | TK_PR_IF '('expr')' TK_PR_THEN command_block TK_PR_ELSE command_block  {
         node_t* cmd_if = create_node("if");
 
-        if ($3->type == TYPE_UNDEFINED) {
+        if ($3->sym_type == TYPE_UNDEFINED) {
             printf("ERRO expressão não tem tipo");
             exit(1);
         }
-        cmd_if->type = $3->type;
+        cmd_if->sym_type = $3->sym_type;
 
         add_child(cmd_if, $3);
         add_child(cmd_if, $6);
@@ -642,11 +568,11 @@ iteracao:
     TK_PR_WHILE '('expr')' command_block  {
         node_t* cmd_while = create_node("while");
 
-        if ($3->type == TYPE_UNDEFINED) {
+        if ($3->sym_type == TYPE_UNDEFINED) {
             printf("ERRO expressão não tem tipo");
             exit(1);
         }
-        cmd_while->type = $3->type;
+        cmd_while->sym_type = $3->sym_type;
 
         add_child(cmd_while, $3);
         add_child(cmd_while, $5);
@@ -658,7 +584,7 @@ iteracao:
 lista_expr:
     lista_expr '^' expr  {
         node_t* lista = create_node("^");
-        lista->type = infere_tipo($1, $3);
+        lista->sym_type = infer_type($1, $3);
         add_child(lista, $1);
         add_child(lista, $3);
         $$ = lista;
@@ -673,13 +599,13 @@ lista_expr:
 expr: 
     expr_preced0  {
         $$ = $1;
-        $$->flag = EXPRESSAO;
+        $$->ast_type = AST_EXPRESSION;
     };
 
 expr_preced0: 
     expr_preced0 TK_OC_OR expr_preced1  { 
         $$ = create_node("||");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     }
@@ -688,7 +614,7 @@ expr_preced0:
 expr_preced1: 
     expr_preced1 TK_OC_AND expr_preced2  { 
         $$ = create_node("&&");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     } 
@@ -697,13 +623,13 @@ expr_preced1:
 expr_preced2:
     expr_preced2 TK_OC_EQ expr_preced3  { 
         $$ = create_node("==");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     }
     | expr_preced2 TK_OC_NE expr_preced3  { 
         $$ = create_node("!=");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     }
@@ -712,25 +638,25 @@ expr_preced2:
 expr_preced3:
     expr_preced3 '<' expr_preced4  { 
         $$ = create_node("<");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     } 
     | expr_preced3 '>' expr_preced4  { 
         $$ = create_node(">");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     } 
     | expr_preced3 TK_OC_LE expr_preced4  { 
         $$ = create_node("<=");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     }
     | expr_preced3 TK_OC_GE expr_preced4  { 
         $$ = create_node(">=");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     } 
@@ -739,13 +665,13 @@ expr_preced3:
 expr_preced4: 
     expr_preced4 '+' expr_preced5  { 
         $$ = create_node("+");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     }
     | expr_preced4 '-' expr_preced5  { 
         $$ = create_node("-");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     }
@@ -754,19 +680,19 @@ expr_preced4:
 expr_preced5:
     expr_preced5 '*' expr_preced6  { 
         $$ = create_node("*");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     }
     | expr_preced5 '/' expr_preced6  { 
         $$ = create_node("/");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     }
     | expr_preced5 '%' expr_preced6  { 
         $$ = create_node("%");
-        $$->type = infere_tipo($1, $3);
+        $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
     }
@@ -775,12 +701,12 @@ expr_preced5:
 expr_preced6: 
     '-' expr_terminais  { 
         $$ = create_node("-");
-        $$->type = $2->type;
+        $$->sym_type = $2->sym_type;
         add_child($$, $2);
     }
     | '!' expr_terminais  { 
         $$ = create_node("!");
-        $$->type = $2->type;
+        $$->sym_type = $2->sym_type;
         add_child($$, $2);
     }
     | expr_terminais { $$ = $1; };
@@ -788,27 +714,25 @@ expr_preced6:
 expr_terminais: 
     TK_IDENTIFICADOR  { 
 
-        // consulta a tabela pra saber se id->natureza == SYM_VARIAVEL
-        pilha_t *p = pilha_tabelas;
-        simbolo_t* s = get_symbol_pilha($1->line_number, p, $1->tk_value.s)->symbol;
+        // consulta a tabela pra saber se id->sym_nature == SYM_VARIAVEL
+        symbol_t* s = get_symbol_stack($1->line_number, table_stack, $1->tk_value.s)->symbol;
         check_correct_use($1->line_number, s, SYM_VARIAVEL);
 
         $$ = create_leaf($1->tk_value.s, $1);
-        $$->type = s->tipo;
+        $$->sym_type = s->sym_type;
 
         //destroy_lexvalue($1);
     }
     | TK_IDENTIFICADOR '[' lista_expr ']'  {
 
-        // consulta a tabela pra saber se id->natureza == SYM_ARRANJO
-        pilha_t *p = pilha_tabelas;
-        simbolo_t* s = get_symbol_pilha($1->line_number, p, $1->tk_value.s)->symbol;
+        // consulta a tabela pra saber se id->sym_nature == SYM_ARRANJO
+        symbol_t* s = get_symbol_stack($1->line_number, table_stack, $1->tk_value.s)->symbol;
         check_correct_use($1->line_number, s, SYM_ARRANJO);
 
         node_t* id_lista_expr = create_leaf($1->tk_value.s, $1);
-        id_lista_expr->type = s->tipo;
+        id_lista_expr->sym_type = s->sym_type;
         node_t* indexador = create_node("[]");
-        indexador->type = s->tipo;
+        indexador->sym_type = s->sym_type;
         add_child(indexador, id_lista_expr);
         add_child(indexador, $3);
         $$ = indexador;

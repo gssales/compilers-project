@@ -1,9 +1,9 @@
 #ifndef _TABELA_H_
 #define _TABELA_H_
 
-#include <stdio.h>
-#include "valor_lexico.h"
+#include "lexvalue.h"
 #include "stringstack.h"
+#include "types.h"
 
 #define ERR_UNDECLARED 10 //2.2
 #define ERR_DECLARED 11 //2.2
@@ -16,81 +16,75 @@
 #define ERR_CHAR_VECTOR 34 //2.4
 #define ERR_X_TO_CHAR 35 //2.4
 
-typedef struct posicao posicao_t;
-struct posicao {
-	int l;
-	int c;
-};
+typedef unsigned int u_int32_t;
 
-enum naturezaSimbolo { SYM_UNKNOWN, SYM_LITERAL, SYM_VARIAVEL, SYM_ARRANJO, SYM_FUNCAO };
-
-enum tipoSimbolo { TYPE_UNDEFINED, TYPE_FLOAT, TYPE_INT, TYPE_BOOL, TYPE_CHAR };
-
-typedef struct simbolo simbolo_t;
-struct simbolo {
-	posicao_t pos;
-	int natureza;
-	int tipo;
-	int tamanhoB;
-	valor_lexico* valor;
+typedef struct symbol {
+	int lineno;
+	symbol_nature_t sym_nature;
+	symbol_type_t sym_type;
+	int sizeB;
+	lexvalue_t* value;
 	// ... outros argumentos/função; dimensões/arranjo
-};
+} symbol_t;
 
 #define HASH_TABLE_SIZE 64
-
 #define NOT_INSERTED -3
 #define KEY_ALREADY_INSERTED -2
 #define HASH_TABLE_FULL -1
 
-typedef struct par_insercao par_insercao_t;
-struct par_insercao {
+typedef struct insert_pair {
 	char* key;
-	simbolo_t* symbol;
-};
+	symbol_t* symbol;
+} insert_pair_t;
 
-typedef struct tabela_simbolo tabela_t;
-struct tabela_simbolo {
+typedef struct tabela_simbolo {
+	int is_global_scope;
 	int count_symbols;
 	int* hashes;
 	int size;
-	par_insercao_t** list;
-};
+	insert_pair_t** list;
+} table_t;
 
-typedef struct pilha pilha_t;
-struct pilha {
+typedef struct stack {
 	int count;
-	tabela_t** tabelas;
-};
+	table_t** tables;
+} stack_t;
 
-simbolo_t* create_symbol(int lineno);
-void destroy_symbol(simbolo_t* symbol);
+symbol_t* create_symbol(int lineno);
+symbol_t* create_symbol_id(int lineno, lexvalue_t* lexvalue, symbol_type_t type);
+symbol_t* create_symbol_array(int lineno, lexvalue_t* lexvalue, int size);
+symbol_t* create_symbol_function(int lineno, lexvalue_t* lexvalue, symbol_type_t type);
+symbol_t* create_symbol_literal(int lineno, lexvalue_t* lexvalue, symbol_type_t type);
+void destroy_symbol(symbol_t* symbol);
 // talvez uma funcão pra cada natureza de simbolo tipo "create_function_symbol" "create_array_symbol"...
-void print_symbol(simbolo_t* symbol);
+void print_symbol(symbol_t* symbol);
 
-tabela_t* create_symbol_table();
-int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol);
-par_insercao_t* get_symbol(tabela_t* table, char* key);
-void destroy_table(tabela_t* table);
-void print_hash(tabela_t* table);
-void print_table(tabela_t* table);
+table_t* create_symbol_table(int is_global_scope);
+int insert_symbol(table_t* table, char* key, symbol_t* symbol);
+int is_inserted(int result);
+insert_pair_t* get_symbol(table_t* table, char* key);
+void destroy_table(table_t* table);
 
-par_insercao_t* get_symbol_pilha(int lineno, pilha_t* pilha_tabela, char* key);
-void print_pilha(pilha_t* pilha);
+void print_hash(table_t* table);
+void print_table(table_t* table);
 
-pilha_t* create_pilha();
-void push_table(pilha_t* pilha, tabela_t* table);
-tabela_t* pop_table(pilha_t* pilha);
-void destroy_pilha(pilha_t* pilha);
+insert_pair_t* get_symbol_stack(int lineno, stack_t* table_stack, char* key);
+void print_pilha(stack_t* pilha);
 
-void add_tipos_pilha_str(struct strpilha_t *pilha_str, tabela_t* table, int tipo);
+stack_t* create_stack();
+void push_table(stack_t* stack, table_t* table);
+int push_symbol_into_table(stack_t* stack, char* key, symbol_t* symbol);
+table_t* pop_table(stack_t* stack);
+table_t* get_table(stack_t* stack, int index);
+void destroy_stack(stack_t* stack);
+
+void add_types_to_strstack(strstack_t *strstack, table_t* table, int tk_type);
 int tktype_to_type(int tk_type);
-void calcula_tam(simbolo_t* s, enum tipoSimbolo type);
-char* natureza_simbolo_to_string(int naturezaSimbolo);
-char* tipo_simbolo_to_string(int tipoSimbolo);
+int calculate_size(symbol_t* s, symbol_type_t type);
 
-void check_declared(int lineno, pilha_t* pilha_tabela, char* key);
-void check_correct_use(int lineno, simbolo_t *s, enum naturezaSimbolo nat);
+void check_declared(int lineno, stack_t* table_stack, char* key);
+void check_correct_use(int lineno, symbol_t *s, symbol_nature_t sym_nature);
 
-void erro_semantico(int erro, int lineno, char* key, simbolo_t* symbol);
+void semantic_error(int erro, int lineno, char* key, symbol_t* symbol);
 
 #endif //_TABELA_H_

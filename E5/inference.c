@@ -1,7 +1,7 @@
 #include "inference.h"
 
 
-void erro_inferencia(int erro, node_t* exprA, node_t* exprB) {
+void inference_error(int erro, node_t* exprA, node_t* exprB) {
   switch (erro) {
     case ERR_CHAR_TO_INT: //2.4
       printf("Linha %d - ERR_CHAR_TO_INT: Tentativa de coerção da expressão do tipo char para o tipo int\n", get_lineno(exprB));
@@ -33,102 +33,102 @@ int get_lineno(node_t* expr) {
   return line_number;
 }
 
-int _infere_tipo(int tipo1, int tipo2, node_t* exprA, node_t* exprB) {
-  int tipo_inferido = TYPE_UNDEFINED;
-  switch (tipo1) {
+symbol_type_t _infer_type(int type1, int type2, node_t* exprA, node_t* exprB) {
+  symbol_type_t infered_type = TYPE_UNDEFINED;
+  switch (type1) {
   case TYPE_FLOAT:
-    switch (tipo2) {
+    switch (type2) {
     case TYPE_INT:
     case TYPE_BOOL:
-      tipo_inferido = TYPE_FLOAT;
+      infered_type = TYPE_FLOAT;
       break;
     case TYPE_CHAR: 
-      erro_inferencia(ERR_CHAR_TO_FLOAT, exprA, exprB);
+      inference_error(ERR_CHAR_TO_FLOAT, exprA, exprB);
     }
     break;
   case TYPE_INT:
-    switch (tipo2) {
+    switch (type2) {
     case TYPE_FLOAT:
-      tipo_inferido = TYPE_FLOAT;
+      infered_type = TYPE_FLOAT;
       break;
     case TYPE_BOOL:
-      tipo_inferido = TYPE_INT;
+      infered_type = TYPE_INT;
       break;
     case TYPE_CHAR: 
-      erro_inferencia(ERR_CHAR_TO_INT, exprA, exprB);
+      inference_error(ERR_CHAR_TO_INT, exprA, exprB);
     }
     break;
   case TYPE_BOOL:
-    switch (tipo2) {
+    switch (type2) {
     case TYPE_FLOAT:
-      tipo_inferido = TYPE_FLOAT;
+      infered_type = TYPE_FLOAT;
       break;
     case TYPE_INT:
-      tipo_inferido = TYPE_INT;
+      infered_type = TYPE_INT;
       break;
     case TYPE_CHAR: 
-      erro_inferencia(ERR_CHAR_TO_BOOL, exprA, exprB);
+      inference_error(ERR_CHAR_TO_BOOL, exprA, exprB);
     }
     break;
   case TYPE_CHAR:
-    switch (tipo2) {
+    switch (type2) {
     case TYPE_FLOAT:
-      erro_inferencia(ERR_CHAR_TO_FLOAT, exprA, exprB);
+      inference_error(ERR_CHAR_TO_FLOAT, exprA, exprB);
       break;
     case TYPE_INT:
-      erro_inferencia(ERR_CHAR_TO_INT, exprA, exprB);
+      inference_error(ERR_CHAR_TO_INT, exprA, exprB);
       break;
     case TYPE_BOOL: 
-      erro_inferencia(ERR_CHAR_TO_BOOL, exprA, exprB);
+      inference_error(ERR_CHAR_TO_BOOL, exprA, exprB);
     }
     break;    
   }
-  return tipo_inferido;
+  return infered_type;
 }
 
-int infere_tipo(node_t* exprA, node_t* exprB) {
-  if (exprA->type == TYPE_UNDEFINED || exprB->type == TYPE_UNDEFINED) {
+symbol_type_t infer_type(node_t* exprA, node_t* exprB) {
+  if (exprA->sym_type == TYPE_UNDEFINED || exprB->sym_type == TYPE_UNDEFINED) {
     printf("ERRO expressão não tem tipo");
     exit(1);
   }
 
-  if (exprA->type == exprB->type)
-    return exprA->type;
+  if (exprA->sym_type == exprB->sym_type)
+    return exprA->sym_type;
 
-  return _infere_tipo(exprA->type, exprB->type, exprA, exprB);
+  return _infer_type(exprA->sym_type, exprB->sym_type, exprA, exprB);
 }
 
-void infere_tipo_atrib(int type, node_t* expr) {
+void infer_type_attribution(int type, node_t* expr) {
   if (type == TYPE_CHAR) {
-    if (expr->type != TYPE_CHAR) {
-      erro_inferencia(ERR_X_TO_CHAR, NULL, expr);
+    if (expr->sym_type != TYPE_CHAR) {
+      inference_error(ERR_X_TO_CHAR, NULL, expr);
     }
   } else {
-    _infere_tipo(type, expr->type, NULL, expr);
+    _infer_type(type, expr->sym_type, NULL, expr);
   }
 }
 
-void infere_tipo_inicializacao(node_t* lista_local_var, int type) {
-  if (lista_local_var != NULL && lista_local_var->flag == COMANDO) {
+void infer_type_initialization(node_t* lista_local_var, int type) {
+  if (lista_local_var != NULL && lista_local_var->ast_type == AST_COMMAND) {
     for (int i = 0; i < lista_local_var->count_children; i++) {
       node_t* child = lista_local_var->children[i];
 
-      if (child->flag == VAR_INICIALIZACAO) {
-        child->type = type;
-        lista_local_var->type = type;
+      if (child->ast_type == AST_VAR_INITIALIZED) {
+        child->sym_type = type;
+        lista_local_var->sym_type = type;
       }
 
-      if (child->flag == LIT_INICIALIZACAO)
+      if (child->ast_type == AST_LIT_DECLARED)
         if (type == TYPE_CHAR) {
-          if (child->type != TYPE_CHAR) {
-            erro_inferencia(ERR_X_TO_CHAR, NULL, lista_local_var);
+          if (child->sym_type != TYPE_CHAR) {
+            inference_error(ERR_X_TO_CHAR, NULL, lista_local_var);
           }
         } else {
-          _infere_tipo(type, child->type, NULL, lista_local_var);
+          _infer_type(type, child->sym_type, NULL, lista_local_var);
         }
 
-      if (child->flag == COMANDO)
-        infere_tipo_inicializacao(child, type);
+      if (child->ast_type == AST_COMMAND)
+        infer_type_initialization(child, type);
     }
   }
 }

@@ -1,53 +1,97 @@
+
 #include <string.h>
 #include "tabela.h"
 #include "parser.tab.h"
 
-simbolo_t* create_symbol(int lineno) {
-  simbolo_t* s = NULL;
-  s = malloc(sizeof(simbolo_t));
+symbol_t* create_symbol(int lineno) {
+  symbol_t* s = malloc(sizeof(symbol_t));
   if (s != NULL) {
-    s->pos.l = lineno;
-    s->pos.c = -1; // se quisermos tentar: 'Print Column' @https://stackoverflow.com/questions/62115979/how-to-implement-better-error-messages-for-flex-bison
-    s->natureza = SYM_UNKNOWN;
-    s->tipo = TYPE_UNDEFINED;
-    s->tamanhoB = 0;
-    s->valor = NULL;
+    s->lineno = lineno;
+    s->sym_nature = SYM_UNKNOWN;
+    s->sym_type = TYPE_UNDEFINED;
+    s->sizeB = 0;
+    s->value = NULL;
   }
   return s;
 }
 
-void destroy_symbol(simbolo_t* symbol) {
+symbol_t* create_symbol_id(int lineno, lexvalue_t* lexvalue, symbol_type_t type) {
+  symbol_t* s = create_symbol(lineno);
+  if (s != NULL) {
+    s->sym_nature = SYM_VARIAVEL;
+    s->value = copy_lexvalue(lexvalue);
+    s->sym_type = type;
+    s->sizeB = calculate_size(s, s->sym_type);
+  }
+  return s;
+}
+
+symbol_t* create_symbol_array(int lineno, lexvalue_t* lexvalue, int size) {
+  symbol_t* s = create_symbol(lineno);
+  if (s != NULL) {
+    s->sym_nature = SYM_ARRANJO;
+    s->value = copy_lexvalue(lexvalue);
+    s->sizeB = size;
+  }
+  return s;
+}
+
+symbol_t* create_symbol_function(int lineno, lexvalue_t* lexvalue, symbol_type_t type) {
+  symbol_t* s = create_symbol(lineno);
+  if (s != NULL) {
+    s->sym_nature = SYM_FUNCAO;
+    s->value = copy_lexvalue(lexvalue);
+    s->sym_type = type;
+  }
+  return s;
+}
+
+symbol_t* create_symbol_literal(int lineno, lexvalue_t* lexvalue, symbol_type_t type) {
+  symbol_t* s = create_symbol(lineno);
+  if (s != NULL) {
+    s->sym_nature = SYM_LITERAL;
+    s->value = copy_lexvalue(lexvalue);
+    s->sym_type = type;
+    s->sizeB = calculate_size(s, s->sym_type);
+  }
+  return s;
+}
+
+void destroy_symbol(symbol_t* symbol) {
   if (symbol != NULL) {
-    if (symbol->valor != NULL)
-      destroy_lexvalue(symbol->valor);
+    if (symbol->value != NULL) {
+      destroy_lexvalue(symbol->value);
+      symbol->value = NULL;
+    }
     free(symbol);
   }
 }
 
-void print_symbol(simbolo_t* symbol) {
+void print_symbol(symbol_t* symbol) {
   if (symbol != NULL) {
-    printf("l:%d\tc:%d\t", symbol->pos.l, symbol->pos.c);
-    if (symbol->valor) {
-      printf("nat: %s\ttipo: %s\ttam: %d\t",natureza_simbolo_to_string(symbol->natureza),tipo_simbolo_to_string(symbol->tipo),symbol->tamanhoB);
+    printf("l:%d\t", symbol->lineno);
+    printf("nat: %s\ttipo: %s\ttam: %d\t",sym_nature_to_string(symbol->sym_nature),sym_type_to_string(symbol->sym_type),symbol->sizeB);
+    if (symbol->value) {
       printf("lex: ");
-      print_lexvalue(symbol->valor);
+      print_lexvalue(symbol->value);
     }
-    //printf("\n");
+    printf("\n");
   }
 }
 
-u_int64_t hash_function32(char* str) {
-  u_int64_t hash = 2166136261UL;
+u_int32_t hash_function32(char* str) {
+  u_int32_t hash = 2166136261UL;
   for (const char* s = str; *s; s++) {
-    hash ^= (u_int64_t) (unsigned char) (*s);
+    hash ^= (u_int32_t) (unsigned char) (*s);
     hash *= 16777619UL;
   }
   return hash;
 }
 
-tabela_t* create_symbol_table() {
-  tabela_t* t = malloc(sizeof(tabela_t));
+table_t* create_symbol_table(int is_global_scope) {
+  table_t* t = malloc(sizeof(table_t));
   if (t != NULL) {
+    t->is_global_scope = is_global_scope;
     t->count_symbols = 0;
     t->size = HASH_TABLE_SIZE;
     t->hashes = malloc(t->size * sizeof(int));
@@ -58,7 +102,7 @@ tabela_t* create_symbol_table() {
   return t;
 }
 
-int get_free_index(tabela_t* table, char* key) {
+int get_free_index(table_t* table, char* key) {
   int pseudoindex = HASH_TABLE_FULL;
   if (table != NULL && key != NULL && *key) {
     int k = (int)(hash_function32(key) % table->size);
@@ -68,7 +112,7 @@ int get_free_index(tabela_t* table, char* key) {
         break;
       }
       else {
-        par_insercao_t *p = table->list[table->hashes[i]];
+        insert_pair_t *p = table->list[table->hashes[i]];
         if (strcmp(p->key, key) == 0) {
           pseudoindex = KEY_ALREADY_INSERTED;
           break;
@@ -79,7 +123,7 @@ int get_free_index(tabela_t* table, char* key) {
   return pseudoindex;
 }
 
-void resize_table(tabela_t* table) {
+void resize_table(table_t* table) {
   if (table != NULL) {
     table->size = table->size + HASH_TABLE_SIZE;
     free(table->hashes);
@@ -87,14 +131,14 @@ void resize_table(tabela_t* table) {
     for (int i = 0; i < table->size; i++)
       table->hashes[i] = -1;
     for (int i = 0; i < table->count_symbols; i++) {
-      par_insercao_t *p = table->list[i];
+      insert_pair_t *p = table->list[i];
       int pseudoindex = get_free_index(table, p->key);
       table->hashes[pseudoindex] = i;
     }
   }
 }
 
-int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol) {
+int insert_symbol(table_t* table, char* key, symbol_t* symbol) {
   int pseudoindex = NOT_INSERTED;
   if (table != NULL && key != NULL && *key && symbol != NULL) {
     pseudoindex = get_free_index(table, key);
@@ -102,28 +146,42 @@ int insert_symbol(tabela_t* table, char* key, simbolo_t* symbol) {
       resize_table(table);
       pseudoindex = get_free_index(table, key);
     }
-    // printf("%d\n", table->size);
-    //printf("Insert_symbol: %d %s\n", pseudoindex, key);
     if (pseudoindex >= 0) { // KEY_ALREADY_INSERTED
-      par_insercao_t *par = malloc(sizeof(par_insercao_t));
+      insert_pair_t *par = malloc(sizeof(insert_pair_t));
       par->key = strdup(key);
       par->symbol = symbol;
       table->count_symbols++;
       table->hashes[pseudoindex] = table->count_symbols-1;
-      table->list = realloc(table->list, table->count_symbols * sizeof(simbolo_t*));
+      table->list = realloc(table->list, table->count_symbols * sizeof(symbol_t*));
       table->list[table->count_symbols-1] = par;
     }
   }
   return pseudoindex;
 }
 
-par_insercao_t* get_symbol(tabela_t* table, char* key) {
-  par_insercao_t* par = NULL;
+int push_symbol_into_table(stack_t* stack, char* key, symbol_t* symbol) {
+  int pseudoindex = NOT_INSERTED;
+  if (stack != NULL && stack->count > 0 && key != NULL && *key && symbol != NULL) {
+    if (symbol->sym_nature != SYM_LITERAL && symbol->value != NULL) {
+      check_declared(symbol->value->line_number, stack, key);
+    }
+    table_t* top_table = get_table(stack, stack->count-1);
+    pseudoindex = insert_symbol(top_table, key, symbol);
+  }
+  return pseudoindex;
+}
+
+int is_inserted(int result) {
+  return result != NOT_INSERTED && result != KEY_ALREADY_INSERTED && result != HASH_TABLE_FULL;
+}
+
+insert_pair_t* get_symbol(table_t* table, char* key) {
+  insert_pair_t* par = NULL;
   if (table != NULL && key != NULL) {
     int i = (int)(hash_function32(key) % table->size);
     for (int j = 0; j < table->size; j++, i = (i+j) % table->size) {
       if (table->hashes[i] != -1) {
-        par_insercao_t *p = table->list[table->hashes[i]];
+        insert_pair_t *p = table->list[table->hashes[i]];
         if (strcmp(p->key, key) == 0) {
           par = p;
           break;
@@ -134,74 +192,74 @@ par_insercao_t* get_symbol(tabela_t* table, char* key) {
   return par;
 }
 
-par_insercao_t* get_symbol_pilha(int lineno, pilha_t* pilha_tabela, char* key) {
-  par_insercao_t* par = NULL;
-  for (int i = pilha_tabela->count-1; i >= 0; i--) {
-    par = get_symbol(pilha_tabela->tabelas[i], key);
-    if (par != NULL) {
+insert_pair_t* get_symbol_stack(int lineno, stack_t* table_stack, char* key) {
+  insert_pair_t* pair = NULL;
+  for (int i = table_stack->count-1; i >= 0; i--) {
+    pair = get_symbol(table_stack->tables[i], key);
+    if (pair != NULL) {
       break;
     }
   }
   // ERR_UNDECLARED: NAO ENCONTROU SIMBOLO EM NENHUM ESCOPO
-  if (par == NULL) { 
-    erro_semantico(ERR_UNDECLARED, lineno, key, NULL);
+  if (pair == NULL) { 
+    semantic_error(ERR_UNDECLARED, lineno, key, NULL);
   }
-  return par;
+  return pair;
 }
 
-void check_declared(int lineno, pilha_t* pilha_tabela, char* key) {
-  par_insercao_t* par = NULL;
-  for (int i = pilha_tabela->count-1; i >= 0; i--) {
-    tabela_t* t = pilha_tabela->tabelas[i];
-    // print_table(t);
-    // printf("table %p\n", t);
-    par = get_symbol(pilha_tabela->tabelas[i], key);
+void check_declared(int lineno, stack_t* table_stack, char* key) {
+  insert_pair_t* par = NULL;
+  for (int i = table_stack->count-1; i >= 0; i--) {
+    table_t* t = table_stack->tables[i];
+    par = get_symbol(table_stack->tables[i], key);
     // ERR_DECLARED: JA EXISTE SIMBOLO COM ESSE IDENTIFICADOR
     if (par != NULL) { 
-      simbolo_t *s = par->symbol;
-      if (s->natureza != SYM_LITERAL) {
-        erro_semantico(ERR_DECLARED, s->pos.l, key, s);
+      symbol_t *s = par->symbol;
+      if (s->sym_nature != SYM_LITERAL) {
+        semantic_error(ERR_DECLARED, s->lineno, key, s);
       }
     }
   }
 }
 
-void check_correct_use(int lineno, simbolo_t *s, enum naturezaSimbolo nat) {
+void check_correct_use(int lineno, symbol_t *s, symbol_nature_t sym_nature) {
   // ERR_VARIAVEL, ERR_ARRAY, ERR_FUNCTION
-  if (s->natureza != nat) {
-    switch(s->natureza) {
+  if (s && s->sym_nature != sym_nature) {
+    switch(s->sym_nature) {
       case SYM_VARIAVEL:
-        erro_semantico(ERR_VARIABLE, lineno, s->valor->tk_value.s, s);
+        semantic_error(ERR_VARIABLE, lineno, s->value->tk_value.s, s);
         break;
       case SYM_ARRANJO:
-        erro_semantico(ERR_ARRAY, lineno, s->valor->tk_value.s, s);
+        semantic_error(ERR_ARRAY, lineno, s->value->tk_value.s, s);
         break;
       case SYM_FUNCAO:
-        erro_semantico(ERR_FUNCTION, lineno, s->valor->tk_value.s, s);
+        semantic_error(ERR_FUNCTION, lineno, s->value->tk_value.s, s);
         break;
     }
   }
 }
 
-void destroy_table(tabela_t* table) {
+void destroy_table(table_t* table) {
   if (table != NULL) {
     while (table->count_symbols > 0) {
-      par_insercao_t* p = table->list[table->count_symbols-1];
+      insert_pair_t* p = table->list[table->count_symbols-1];
       if (p != NULL) {
+        // if (p->symbol->sym_nature == SYM_LITERAL && p->symbol->sym_type == TYPE_BOOL) print_symbol(p->symbol);
+
         free(p->key);
         destroy_symbol(p->symbol);
       }
       free(p);
       table->count_symbols--;
-      // printf("symbols left %d\n", table->count_symbols);
     }
     free(table->list);
     free(table->hashes);
     free(table);
+    table = NULL;
   }
 }
 
-void print_hash(tabela_t* table) {
+void print_hash(table_t* table) {
   if (table != NULL) {
     printf("size: %d\n", table->size);
     for (int i = 0; i < table->size; i++) {
@@ -210,97 +268,99 @@ void print_hash(tabela_t* table) {
   }
 }
 
-void print_table(tabela_t* table) {
+void print_table(table_t* table) {
   if (table != NULL) {
     printf("count symbols: %d\n", table->count_symbols);
     for (int i = 0; i < table->count_symbols; i++) {
-      par_insercao_t* p = table->list[i];
+      insert_pair_t* p = table->list[i];
       print_symbol(p->symbol);
     }
   }
 }
 
-void print_pilha(pilha_t* pilha) {
-  if (pilha != NULL) {
+void print_pilha(stack_t* stack) {
+  if (stack != NULL) {
     printf("\n========== PILHA FINAL ==========\n");
-    for (int i = 0; i < pilha->count; i++) {
+    for (int i = 0; i < stack->count; i++) {
       printf("---> Escopo %d \n", i);
-      print_table(pilha->tabelas[i]);
+      print_table(stack->tables[i]);
     }
   }
 }
 
-pilha_t* create_pilha() {
-  pilha_t* p;
-  p = malloc(sizeof(pilha_t));
+stack_t* create_stack() {
+  stack_t* p = malloc(sizeof(stack_t));
   if (p != NULL) {
     p->count = 0;
-    p->tabelas = NULL;
+    p->tables = NULL;
   }
   return p;  
 }
 
-void push_table(pilha_t* pilha, tabela_t* table) {
-  if (pilha != NULL && table != NULL) {
-    pilha->count++;
-    pilha->tabelas = realloc(pilha->tabelas, pilha->count * sizeof(tabela_t));
-    pilha->tabelas[pilha->count-1] = table;
+void push_table(stack_t* stack, table_t* table) {
+  if (stack != NULL && table != NULL) {
+    stack->count++;
+    stack->tables = realloc(stack->tables, stack->count * sizeof(table_t));
+    stack->tables[stack->count-1] = table;
   }
 }
 
-tabela_t* pop_table(pilha_t* pilha) {
-  // printa tabela antes de deletar (para debugar)
-  //printf("\n---> Escopo %d (Desempilhado)\n", pilha->count-1);
-  //print_table(pilha->tabelas[pilha->count-1]);
-
-  tabela_t* t = NULL;
-  if (pilha != NULL && pilha->count > 0) {
-    pilha->count--;
-    t = pilha->tabelas[pilha->count];
-    pilha->tabelas = realloc(pilha->tabelas, pilha->count * sizeof(tabela_t));
+table_t* pop_table(stack_t* stack) {
+  table_t* t = NULL;
+  if (stack != NULL && stack->count > 0) {
+    stack->count--;
+    t = stack->tables[stack->count];
+    stack->tables = realloc(stack->tables, stack->count * sizeof(table_t));
   }
   return t;
 }
 
-void destroy_pilha(pilha_t* pilha) {
-  if (pilha != NULL) {
-    while (pilha->count > 0) {
-      tabela_t* t = pop_table(pilha);
+table_t* get_table(stack_t* stack, int index) {
+  table_t* t = NULL;
+  if (stack != NULL && index < stack->count) {
+    t = stack->tables[index];
+  }
+  return t;
+}
+
+void destroy_stack(stack_t* stack) {
+  if (stack != NULL) {
+    while (stack->count > 0) {
+      table_t* t = pop_table(stack);
       if (t != NULL)
         destroy_table(t);
     }
-    free(pilha);
+    free(stack);
+    stack = NULL;
   }
 }
 
-void add_tipos_pilha_str(struct strpilha_t *pilha_str, tabela_t* table, int tipo) {
-  tipo = tktype_to_type(tipo);
-  
-  char *str;
-  str = top_strpilha(pilha_str);
-  //printf("\nAdd_tipos_pilha_str:\n");
-  while (str != NULL) {
-    //printf("- id = %s, tipo = %s\n",str,tipo_simbolo_to_string(tipo));
-    simbolo_t* s = get_symbol(table, str)->symbol;
+void add_types_to_strstack(strstack_t *strstack, table_t* table, int tk_type) {
+  if (strstack && table) {
+    tk_type = tktype_to_type(tk_type);
+    
+    char *str;
+    str = top_strstack(strstack);
+    while (str != NULL) {
+      symbol_t* s = get_symbol(table, str)->symbol;
 
-    // ERR_CHAR_VECTOR
-    if (tipo == TYPE_CHAR && s->natureza == SYM_ARRANJO) {
-      erro_semantico(ERR_CHAR_VECTOR, s->pos.l, str, s);
+      // ERR_CHAR_VECTOR
+      if (tk_type == TYPE_CHAR && s->sym_nature == SYM_ARRANJO) {
+        semantic_error(ERR_CHAR_VECTOR, s->lineno, str, s);
+      }
+      // adiciona tamanho
+      s->sizeB = calculate_size(s, tk_type);
+
+      // adiciona tipo
+      s->sym_type = tk_type;
+
+      pop_strstack(strstack);
+      str = top_strstack(strstack);
     }
-    // adiciona tamanho
-    calcula_tam(s, tipo);
-
-    // adiciona tipo
-    s->tipo = tipo;
-
-    //printf("id %s recebeu tipo %s",par->symbol->valor->tk_value.s,tipo_simbolo_to_string(tipo));
-    pop_strpilha(pilha_str);
-    str = top_strpilha(pilha_str);
   }
-  //printf("\n");
 }
 
-void calcula_tam(simbolo_t* s, enum tipoSimbolo type) {
+int calculate_size(symbol_t* s, symbol_type_t type) {
     int tam_base = 0;
     switch(type) {
       case TYPE_INT:
@@ -316,12 +376,12 @@ void calcula_tam(simbolo_t* s, enum tipoSimbolo type) {
         tam_base = 1;
         break;
     }
-    if (s->natureza == SYM_ARRANJO) {
+    if (s->sym_nature == SYM_ARRANJO) {
       // tam_base = tam_base * dimensoes
-      tam_base = tam_base * s->tamanhoB;
+      tam_base = tam_base * s->sizeB;
     }
 
-    s->tamanhoB = tam_base;
+    return tam_base;
 }
 
 int tktype_to_type(int tk_type) {
@@ -341,57 +401,37 @@ int tktype_to_type(int tk_type) {
   }
 }
 
-char* natureza_simbolo_to_string(int naturezaSimbolo) {
-  switch(naturezaSimbolo) {
-    case SYM_UNKNOWN:       return "SYM_UNKNOWN ";       break;
-    case SYM_LITERAL:       return "SYM_LITERAL ";     break;
-    case SYM_VARIAVEL:      return "SYM_VARIAVEL";     break;
-    case SYM_ARRANJO:       return "SYM_ARRANJO ";      break;
-    case SYM_FUNCAO:        return "SYM_FUNCAO  ";        break;
-  }
-}
-
-char* tipo_simbolo_to_string(int tipoSimbolo) {
-  switch(tipoSimbolo) {
-    case TYPE_UNDEFINED:   return "TYPE_UNDEFINED";     break;
-    case TYPE_INT:         return "TYPE_INT      ";           break;
-    case TYPE_FLOAT:       return "TYPE_FLOAT    ";         break;
-    case TYPE_CHAR:        return "TYPE_CHAR     ";          break;
-    case TYPE_BOOL:        return "TYPE_BOOL     ";          break;
-  }
-}
-
-void erro_semantico(int erro, int lineno, char* key, simbolo_t* symbol) {
+void semantic_error(int erro, int lineno, char* key, symbol_t* symbol) {
   switch (erro) {
     case ERR_UNDECLARED: //2.2
       printf("Linha %d - ERR_UNDECLARED: Identificador '%s' não declarado\n", lineno, key);
       break;
     case ERR_DECLARED: //2.2
-      printf("Linha %d - ERR_DECLARED: Dupla declaração do identificador '%s'\n", lineno, symbol->valor->tk_value.s);
+      printf("Linha %d - ERR_DECLARED: Dupla declaração do identificador '%s'\n", lineno, symbol->value->tk_value.s);
       break;
     case ERR_VARIABLE: //2.3
-      printf("Linha %d - ERR_VARIABLE: Identificador de variável '%s' sendo usado como arranjo ou função\n", lineno, symbol->valor->tk_value.s);
+      printf("Linha %d - ERR_VARIABLE: Identificador de variável '%s' sendo usado como arranjo ou função\n", lineno, symbol->value->tk_value.s);
       break;
     case ERR_ARRAY: //2.3
-      printf("Linha %d - ERR_ARRAY: Identificador de arranjo '%s' sendo usado como variável ou função\n", lineno, symbol->valor->tk_value.s);
+      printf("Linha %d - ERR_ARRAY: Identificador de arranjo '%s' sendo usado como variável ou função\n", lineno, symbol->value->tk_value.s);
       break;
     case ERR_FUNCTION: //2.3
-      printf("Linha %d - ERR_FUNCTION: Identificador de função '%s' sendo usado como variável ou arranjo\n", lineno, symbol->valor->tk_value.s);
+      printf("Linha %d - ERR_FUNCTION: Identificador de função '%s' sendo usado como variável ou arranjo\n", lineno, symbol->value->tk_value.s);
       break;
     case ERR_CHAR_TO_INT: //2.4
-      printf("Linha %d - ERR_CHAR_TO_INT: Tentativa de coerção da variável '%s' do tipo char para o tipo int\n", lineno, symbol->valor->tk_value.s);
+      printf("Linha %d - ERR_CHAR_TO_INT: Tentativa de coerção da variável '%s' do tipo char para o tipo int\n", lineno, symbol->value->tk_value.s);
       break;
     case ERR_CHAR_TO_FLOAT: //2.4
-      printf("Linha %d - ERR_CHAR_TO_FLOAT: Tentativa de coerção da variável '%s' do tipo char para o tipo float\n", lineno, symbol->valor->tk_value.s);
+      printf("Linha %d - ERR_CHAR_TO_FLOAT: Tentativa de coerção da variável '%s' do tipo char para o tipo float\n", lineno, symbol->value->tk_value.s);
       break;
     case ERR_CHAR_TO_BOOL: //2.4
-      printf("Linha %d - ERR_CHAR_TO_BOOL: Tentativa de coerção da variável '%s' do tipo char para o tipo bool\n", lineno, symbol->valor->tk_value.s);
+      printf("Linha %d - ERR_CHAR_TO_BOOL: Tentativa de coerção da variável '%s' do tipo char para o tipo bool\n", lineno, symbol->value->tk_value.s);
       break;
     case ERR_CHAR_VECTOR: //2.4
-      printf("Linha %d - ERR_CHAR_VECTOR: Arranjo '%s' declarado com o tipo char\n", lineno, symbol->valor->tk_value.s);
+      printf("Linha %d - ERR_CHAR_VECTOR: Arranjo '%s' declarado com o tipo char\n", lineno, symbol->value->tk_value.s);
       break;
     case ERR_X_TO_CHAR: //2.4
-      printf("Linha %d - ERR_X_TO_CHAR: Tentativa de coerção da variável '%s' do tipo int/float/bool para o tipo char\n", lineno, symbol->valor->tk_value.s);
+      printf("Linha %d - ERR_X_TO_CHAR: Tentativa de coerção da variável '%s' do tipo int/float/bool para o tipo char\n", lineno, symbol->value->tk_value.s);
       break;
   }
   exit(erro);
