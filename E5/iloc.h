@@ -70,6 +70,11 @@ void push_iloc_code(iloc_program_t* program, iloc_code_t* code);
 void unshift_iloc_code(iloc_program_t* program, iloc_code_t* code);
 void destroy_iloc_program(iloc_program_t* program);
 
+int new_label();
+int new_reg();
+int rfp_displacement(int disp);
+int rbss_displacement(int disp);
+
 void print_program(iloc_program_t* program);
 
 #endif //_ILOC_H_

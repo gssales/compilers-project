@@ -12,14 +12,16 @@ void yyerror(char const *s);
 %define parse.trace true
 
 %code requires {
-    //#include "valor_lexico.h"
+    #include "lexvalue.h"
     #include "arvore.h"
     #include "tabela.h"
     #include "inference.h"
     #include "stringstack.h"
     extern void* arvore;
-    stack_t* table_stack;
-    strstack_t* strstack;
+    //stack_t* table_stack;
+    extern void* table_stack;
+    //strstack_t* strstack;
+    extern void* strstack;
 }
 
 %union {
@@ -132,7 +134,8 @@ elemento:
 var_global: tipo lista_ident_var ';' {
 
     // desempilha strstack adicionando tipo a todos
-    table_t *t = get_table(table_stack, table_stack->count-1);
+    stack_t* ts = table_stack;
+    table_t *t = get_table(ts, ts->count-1);
     add_types_to_strstack(strstack, t, $1->tk_type);
 
     destroy_lexvalue($1);
@@ -299,7 +302,8 @@ declara_var:
     tipo lista_local_var  {
 
         // desempilha strstack adicionando tipo a todos
-        table_t *t = get_table(table_stack, table_stack->count-1);
+        stack_t *ts = table_stack;
+        table_t *t = get_table(ts, ts->count-1);
         add_types_to_strstack(strstack, t, $1->tk_type);
 
         infer_type_initialization($2, tktype_to_type($1->tk_type));

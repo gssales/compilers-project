@@ -186,6 +186,30 @@ void destroy_iloc_program(iloc_program_t* program) {
   }
 }
 
+int new_label() {
+  static int count_label = 0;
+  return count_label++;
+}
+
+int new_reg() {
+  static int count_reg = 0;
+  return count_reg++;
+}
+
+int rfp_displacement(int disp) {
+  static int count_rfp = 0;
+  int temp = count_rfp;
+  count_rfp += disp;
+  return temp;
+}
+
+int rbss_displacement(int disp) {
+  static int count_rbss = 0;
+  int temp = count_rbss;
+  count_rbss += disp;
+  return temp;
+}
+
 void print_program(iloc_program_t* program) {
   if (program != NULL) {
     iloc_code_t* code = program->head;

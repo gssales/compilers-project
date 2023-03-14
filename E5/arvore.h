@@ -11,9 +11,14 @@ struct node {
 	symbol_type_t sym_type;
 	char *label;
 	lexvalue_t *value;
-	iloc_program_t code;
 	int count_children;
 	node_t **children;
+
+	// campos aux. geracao de codigo
+	int tmp;
+	int tl;
+	int fl;
+	iloc_program_t code;
 };
 
 node_t* create_node(char* label);

@@ -6,11 +6,13 @@
 
 #include "tabela.h"
 #include "iloc.h"
-
+#include "parser.tab.h"
 extern int yyparse(void);
 extern int yylex_destroy(void);
 
 void *arvore = NULL;
+void* table_stack;
+void* strstack;
 
 void exporta (void *arvore);
 void libera (void *arvore);
@@ -20,10 +22,16 @@ int main (int argc, char **argv)
   iloc_program_t* program = create_iloc_program();
 
   iloc_code_t* code_nop = create_iloc_code(NOP);
-  code_nop->label = 10;
+  int l0 = new_label();
+  int l1 = new_label();
+  code_nop->label = l1;
   push_iloc_code(program, code_nop);
 
-  iloc_code_t* code_add = create_iloc_code3op(ADD, IMMEDIATE, 1, TEMPORARY, 2, LABEL, 3);
+  int r0 = new_reg();
+  int r1 = new_reg();
+  int r2 = new_reg();
+  int r3 = new_reg();
+  iloc_code_t* code_add = create_iloc_code3op(ADD, TEMPORARY, r1, TEMPORARY, r2, TEMPORARY, r3);
   push_iloc_code(program, code_add);
 
   iloc_code_t* code_store_ai = create_iloc_code3op(STORE_AI, IMMEDIATE, 12312, TEMPORARY, 3262, LABEL, 134135);
