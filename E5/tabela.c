@@ -1,4 +1,3 @@
-
 #include <string.h>
 #include "tabela.h"
 #include "parser.tab.h"
@@ -70,7 +69,7 @@ void destroy_symbol(symbol_t* symbol) {
 void print_symbol(symbol_t* symbol) {
   if (symbol != NULL) {
     printf("l:%d\t", symbol->lineno);
-    printf("nat: %s\ttipo: %s\ttam: %d\t",sym_nature_to_string(symbol->sym_nature),sym_type_to_string(symbol->sym_type),symbol->sizeB);
+    printf("nat: %s\ttipo: %s\ttam: %d\tdisp: %d\t",sym_nature_to_string(symbol->sym_nature),sym_type_to_string(symbol->sym_type),symbol->sizeB,symbol->disp);
     if (symbol->value) {
       printf("lex: ");
       print_lexvalue(symbol->value);
@@ -335,7 +334,7 @@ void destroy_stack(stack_t* stack) {
   }
 }
 
-void add_types_to_strstack(strstack_t *strstack, table_t* table, int tk_type) {
+void add_types_to_strstack(strstack_t *strstack, table_t* table, int tk_type, int global) {
   if (strstack && table) {
     tk_type = tktype_to_type(tk_type);
     
@@ -349,7 +348,16 @@ void add_types_to_strstack(strstack_t *strstack, table_t* table, int tk_type) {
         semantic_error(ERR_CHAR_VECTOR, s->lineno, str, s);
       }
       // adiciona tamanho
-      s->sizeB = calculate_size(s, tk_type);
+      int tam = calculate_size(s, tk_type);
+      s->sizeB = tam;
+
+      // adiciona deslocamento
+      if (global) {
+        s->disp = rbss_displacement(tam);
+      }
+      else {
+        s->disp = rfp_displacement(tam);
+      }
 
       // adiciona tipo
       s->sym_type = tk_type;

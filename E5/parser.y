@@ -93,6 +93,10 @@ void yyerror(char const *s);
 programa: 
     escopo_global lista_elementos  {
         arvore = $2;
+        
+        table_t *to = pop_table(table_stack);
+        print_table(to);
+
         destroy_stack(table_stack);
         destroy_strstack(strstack);
     } 
@@ -136,7 +140,7 @@ var_global: tipo lista_ident_var ';' {
     // desempilha strstack adicionando tipo a todos
     stack_t* ts = table_stack;
     table_t *t = get_table(ts, ts->count-1);
-    add_types_to_strstack(strstack, t, $1->tk_type);
+    add_types_to_strstack(strstack, t, $1->tk_type, 1);
 
     destroy_lexvalue($1);
 };
@@ -209,6 +213,7 @@ funcao:
         $$ = funcao;
 
         table_t *to = pop_table(table_stack);
+        print_table(to);
         destroy_table(to);
         
         destroy_lexvalue($1);
@@ -247,7 +252,7 @@ command_block:
         $$ = $3;
         // desempilha escopo do bloco de comando
         table_t *to = pop_table(table_stack);
-        //print_table(to);
+        print_table(to);
         destroy_table(to);
     };
 
@@ -304,7 +309,7 @@ declara_var:
         // desempilha strstack adicionando tipo a todos
         stack_t *ts = table_stack;
         table_t *t = get_table(ts, ts->count-1);
-        add_types_to_strstack(strstack, t, $1->tk_type);
+        add_types_to_strstack(strstack, t, $1->tk_type, 0);
 
         infer_type_initialization($2, tktype_to_type($1->tk_type));
 

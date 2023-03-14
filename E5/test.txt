@@ -1,0 +1,5 @@
+int aGlobal,bGlobal,cGlobal;
+
+int main(){
+  int aLocal,bLocal,cLocal;
+}

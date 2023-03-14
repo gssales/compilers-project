@@ -19,6 +19,7 @@ void libera (void *arvore);
 
 int main (int argc, char **argv)
 {
+  /*
   iloc_program_t* program = create_iloc_program();
 
   iloc_code_t* code_nop = create_iloc_code(NOP);
@@ -51,13 +52,13 @@ int main (int argc, char **argv)
 
   print_program(program);
 
-  destroy_iloc_program(program);
+  destroy_iloc_program(program);*/
   
-  // int ret = yyparse();
-  // //exporta(arvore);
-  // libera(arvore);
-  // arvore = NULL;
-  // yylex_destroy();
+  int ret = yyparse();
+  exporta(arvore);
+  libera(arvore);
+  arvore = NULL;
+  yylex_destroy();
   //return ret;
   return 0; // Na ausencia de qualquer erro, o programa deve retornar o valor zero.
 }

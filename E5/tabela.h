@@ -24,6 +24,7 @@ typedef struct symbol {
 	symbol_type_t sym_type;
 	int sizeB;
 	lexvalue_t* value;
+	int disp; // deslocamento a partir de rfp (var local) ou rbss (var global)
 	// ... outros argumentos/função; dimensões/arranjo
 } symbol_t;
 
@@ -78,7 +79,7 @@ table_t* pop_table(stack_t* stack);
 table_t* get_table(stack_t* stack, int index);
 void destroy_stack(stack_t* stack);
 
-void add_types_to_strstack(strstack_t *strstack, table_t* table, int tk_type);
+void add_types_to_strstack(strstack_t *strstack, table_t* table, int tk_type, int global);
 int tktype_to_type(int tk_type);
 int calculate_size(symbol_t* s, symbol_type_t type);
 
