@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "lexvalue.h"
+#include "iloc.h"
 
 typedef struct node node_t;
 struct node {
@@ -10,6 +11,7 @@ struct node {
 	symbol_type_t sym_type;
 	char *label;
 	lexvalue_t *value;
+	iloc_program_t code;
 	int count_children;
 	node_t **children;
 };
