@@ -18,7 +18,7 @@ struct node {
 	int tmp;
 	int tl;
 	int fl;
-	iloc_program_t code;
+	iloc_program_t *code;
 };
 
 node_t* create_node(char* label);

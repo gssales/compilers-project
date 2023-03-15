@@ -6,13 +6,15 @@
 
 #include "tabela.h"
 #include "iloc.h"
-#include "parser.tab.h"
+//#include "parser.tab.h"
 extern int yyparse(void);
 extern int yylex_destroy(void);
 
 void *arvore = NULL;
 void* table_stack;
 void* strstack;
+int rfp;
+int rbss;
 
 void exporta (void *arvore);
 void libera (void *arvore);
@@ -53,12 +55,16 @@ int main (int argc, char **argv)
   print_program(program);
 
   destroy_iloc_program(program);*/
+
+  rbss = 7;
+  rfp = 1024;
   
   int ret = yyparse();
-  exporta(arvore);
+  //exporta(arvore);
   libera(arvore);
   arvore = NULL;
   yylex_destroy();
   //return ret;
+
   return 0; // Na ausencia de qualquer erro, o programa deve retornar o valor zero.
 }

@@ -24,6 +24,7 @@ typedef struct symbol {
 	symbol_type_t sym_type;
 	int sizeB;
 	lexvalue_t* value;
+	int global;
 	int disp; // deslocamento a partir de rfp (var local) ou rbss (var global)
 	// ... outros argumentos/função; dimensões/arranjo
 } symbol_t;

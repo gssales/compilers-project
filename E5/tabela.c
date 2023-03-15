@@ -353,9 +353,11 @@ void add_types_to_strstack(strstack_t *strstack, table_t* table, int tk_type, in
 
       // adiciona deslocamento
       if (global) {
+        s->global = 1;
         s->disp = rbss_displacement(tam);
       }
       else {
+        s->global = 0;
         s->disp = rfp_displacement(tam);
       }
 

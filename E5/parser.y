@@ -22,6 +22,8 @@ void yyerror(char const *s);
     extern void* table_stack;
     //strstack_t* strstack;
     extern void* strstack;
+    extern int rfp;
+    extern int rbss;
 }
 
 %union {
@@ -93,12 +95,16 @@ void yyerror(char const *s);
 programa: 
     escopo_global lista_elementos  {
         arvore = $2;
-        
+
         table_t *to = pop_table(table_stack);
-        print_table(to);
+        //print_table(to);
 
         destroy_stack(table_stack);
         destroy_strstack(strstack);
+
+        print_program($2->code);
+        destroy_iloc_program($2->code);
+
     } 
     | {
         arvore = NULL;
@@ -213,7 +219,7 @@ funcao:
         $$ = funcao;
 
         table_t *to = pop_table(table_stack);
-        print_table(to);
+        //print_table(to);
         destroy_table(to);
         
         destroy_lexvalue($1);
@@ -252,7 +258,7 @@ command_block:
         $$ = $3;
         // desempilha escopo do bloco de comando
         table_t *to = pop_table(table_stack);
-        print_table(to);
+        //print_table(to);
         destroy_table(to);
     };
 
@@ -727,8 +733,21 @@ expr_terminais:
         symbol_t* s = get_symbol_stack($1->line_number, table_stack, $1->tk_value.s)->symbol;
         check_correct_use($1->line_number, s, SYM_VARIAVEL);
 
-        $$ = create_leaf($1->tk_value.s, $1);
+        node_t* id = create_leaf($1->tk_value.s, $1);
+        $$ = id;
         $$->sym_type = s->sym_type;
+
+        iloc_code_t* code_loadAI;
+        int r = new_reg();
+        // se global usa rbss, senao rfp
+        if (s->global == 1) {
+            code_loadAI = create_iloc_code3op(LOAD_AI, IMMEDIATE, rbss, IMMEDIATE, s->disp, TEMPORARY, r);
+        } else {
+            code_loadAI = create_iloc_code3op(LOAD_AI, IMMEDIATE, rfp, IMMEDIATE, s->disp, TEMPORARY, r);
+        }
+        id->code = create_iloc_program();
+        push_iloc_code(id->code, code_loadAI);
+        print_program(id->code);
 
         //destroy_lexvalue($1);
     }

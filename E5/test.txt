@@ -1,5 +1,7 @@
 int aGlobal,bGlobal,cGlobal;
 
 int main(){
-  int aLocal,bLocal,cLocal;
+  int aLocal,cLocal;
+  int bLocal <= 10;
+  aLocal = bLocal * 5;
 }
