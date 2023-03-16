@@ -4,4 +4,5 @@ int main(){
   int aLocal,cLocal;
   int bLocal <= 10;
   aLocal = bLocal;
+  cLocal = 100;
 }

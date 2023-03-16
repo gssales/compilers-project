@@ -219,7 +219,7 @@ funcao:
         $$ = funcao;
 
         table_t *to = pop_table(table_stack);
-        //print_table(to);
+        print_table(to);
         destroy_table(to);
         
         destroy_lexvalue($1);
@@ -789,7 +789,23 @@ expr_terminais:
 
         //destroy_lexvalue($1);
     }
-    | literal  { $$ = $1; }
+    | literal  { 
+        
+        $$ = $1;
+
+        // geracao de codigo
+        iloc_code_t* code_loadI;
+        int r = new_reg();
+        int val = $$->value->tk_value.i;
+        code_loadI = create_iloc_code2op(LOAD_I, IMMEDIATE, val, TEMPORARY, r);
+        // add codigo no node
+        $$->code = create_iloc_program();
+        push_iloc_code($$->code, code_loadI);
+        // add temporario do literal como resultado expr
+        $$->tmp = r;
+        //print_program($$->code); // debug
+
+    }
     | '(' expr ')'  { $$ = $2; }
     | chamada_func  { $$ = $1; };
 
@@ -803,6 +819,3 @@ void yyerror(char const *s) {
 
 
 }
-
-
-
