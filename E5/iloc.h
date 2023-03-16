@@ -70,6 +70,8 @@ void push_iloc_code(iloc_program_t* program, iloc_code_t* code);
 void unshift_iloc_code(iloc_program_t* program, iloc_code_t* code);
 void destroy_iloc_program(iloc_program_t* program);
 
+void concat_iloc_program(iloc_program_t* program1, iloc_program_t* program2);
+
 int new_label();
 int new_reg();
 int rfp_displacement(int disp);

@@ -146,6 +146,8 @@ iloc_program_t* create_iloc_program() {
   return program;
 }
 
+
+
 void push_iloc_code(iloc_program_t* program, iloc_code_t* code) {
   if (program != NULL && code != NULL) {
     if (program->count == 0) {
@@ -183,6 +185,21 @@ void destroy_iloc_program(iloc_program_t* program) {
       code = next;
     }
     free(program);
+  }
+}
+
+void concat_iloc_program(iloc_program_t* program1, iloc_program_t* program2) {
+  if (program1 != NULL && program2 != NULL) {
+    while (program2->head != NULL) {
+      program1->tail->next = program2->head;
+      program2->head->previous = program1->tail;
+      program1->tail = program2->head;
+
+      program2->head = program2->head->next;
+
+      program2->count--;
+      program1->count++;
+    }
   }
 }
 

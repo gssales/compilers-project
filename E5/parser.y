@@ -102,7 +102,8 @@ programa:
         destroy_stack(table_stack);
         destroy_strstack(strstack);
 
-        print_program($2->code);
+        //print_program($2->code);
+
         destroy_iloc_program($2->code);
 
     } 
@@ -466,8 +467,7 @@ atrib:
         // concatena codigo da expr com codigo gerado
         $$->code = $3->code;
         push_iloc_code($$->code, code_storeAI);
-        print_program($$->code); // debug
-
+        //print_program($$->code); // debug
     };
 
 ident_atrib:
@@ -703,6 +703,19 @@ expr_preced4:
         $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
+        
+        // geracao de codigo
+        iloc_code_t* code_add;
+        int r = new_reg();
+        code_add = create_iloc_code3op(ADD, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+
+        // concatena codigo das expr e adiciona codigo gerado
+        concat_iloc_program($1->code, $3->code);
+        push_iloc_code($1->code, code_add);
+        $$->code = $1->code;
+        
+        //print_program($$->code); // debug
+
     }
     | expr_preced4 '-' expr_preced5  { 
         $$ = create_node("-");

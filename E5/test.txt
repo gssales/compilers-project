@@ -1,8 +1,9 @@
 int aGlobal,bGlobal,cGlobal;
 
 int main(){
-  int aLocal,cLocal;
-  int bLocal <= 10;
-  aLocal = bLocal;
-  cLocal = 100;
+  int aLocal,bLocal,cLocal,dLocal; // TODO: REFATORAR add_types_to_strstack PRA USAR LISTA DE VARIAVEIS AO INVES DE PILHA
+  //int eLocal <= 10; // PRECISA IMPLEMENTAR?
+  //aLocal = bLocal;
+  //cLocal = 100;
+  dLocal = 10 + 10;
 }
