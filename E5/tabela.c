@@ -11,6 +11,8 @@ symbol_t* create_symbol(int lineno) {
     s->sizeB = 0;
     s->disp = 0;
     s->value = NULL;
+    s->disp = 0;
+    s->global = 0;
   }
   return s;
 }
@@ -88,10 +90,11 @@ u_int32_t hash_function32(char* str) {
   return hash;
 }
 
-table_t* create_symbol_table(int is_global_scope) {
+table_t* create_symbol_table(int is_global_scope, int initial_disp) {
   table_t* t = malloc(sizeof(table_t));
   if (t != NULL) {
     t->is_global_scope = is_global_scope;
+    t->disp = initial_disp;
     t->count_symbols = 0;
     t->size = HASH_TABLE_SIZE;
     t->hashes = malloc(t->size * sizeof(int));
@@ -149,6 +152,11 @@ int insert_symbol(table_t* table, char* key, symbol_t* symbol) {
     if (pseudoindex >= 0) { // KEY_ALREADY_INSERTED
       insert_pair_t *par = malloc(sizeof(insert_pair_t));
       par->key = strdup(key);
+      symbol->global = table->is_global_scope;
+      if (symbol->sym_nature == SYM_VARIAVEL || symbol->sym_nature == SYM_ARRANJO) {
+        symbol->disp = table->disp;
+        table->disp += symbol->sizeB;
+      }
       par->symbol = symbol;
       table->count_symbols++;
       table->hashes[pseudoindex] = table->count_symbols-1;
@@ -335,7 +343,7 @@ void destroy_stack(stack_t* stack) {
   }
 }
 
-void add_types_to_strlist(strlist_t *strlist, table_t* table, int tk_type, int global) {
+void add_types_to_strlist(strlist_t *strlist, table_t* table, int tk_type) {
   if (strlist && table) {
     tk_type = tktype_to_type(tk_type);
     
@@ -353,14 +361,8 @@ void add_types_to_strlist(strlist_t *strlist, table_t* table, int tk_type, int g
       s->sizeB = tam;
 
       // adiciona deslocamento
-      if (global) {
-        s->global = 1;
-        s->disp = rbss_displacement(tam);
-      }
-      else {
-        s->global = 0;
-        s->disp = rfp_displacement(tam);
-      }
+      s->disp = table->disp;
+      table->disp += s->sizeB;
 
       // adiciona tipo
       s->sym_type = tk_type;

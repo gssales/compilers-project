@@ -44,6 +44,7 @@ typedef struct tabela_simbolo {
 	int count_symbols;
 	int* hashes;
 	int size;
+	int disp;
 	insert_pair_t** list;
 } table_t;
 
@@ -61,7 +62,7 @@ void destroy_symbol(symbol_t* symbol);
 // talvez uma funcão pra cada natureza de simbolo tipo "create_function_symbol" "create_array_symbol"...
 void print_symbol(symbol_t* symbol);
 
-table_t* create_symbol_table(int is_global_scope);
+table_t* create_symbol_table(int is_global_scope, int initial_disp);
 int insert_symbol(table_t* table, char* key, symbol_t* symbol);
 int is_inserted(int result);
 insert_pair_t* get_symbol(table_t* table, char* key);
@@ -80,7 +81,7 @@ table_t* pop_table(stack_t* stack);
 table_t* get_table(stack_t* stack, int index);
 void destroy_stack(stack_t* stack);
 
-void add_types_to_strlist(strlist_t *strlist, table_t* table, int tk_type, int global);
+void add_types_to_strlist(strlist_t *strlist, table_t* table, int tk_type);
 int tktype_to_type(int tk_type);
 int calculate_size(symbol_t* s, symbol_type_t type);
 

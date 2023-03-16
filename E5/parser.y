@@ -115,7 +115,7 @@ programa:
 escopo_global: {
     // cria pilha e empilha a tabela de escopo global
     table_stack = create_stack();
-    push_table(table_stack, create_symbol_table(1));
+    push_table(table_stack, create_symbol_table(1, 0));
 
     // cria lista de identificadores para receberem tipo/tamanho/deslocamento nas declaracoes
     strlist = create_strlist();
@@ -149,7 +149,7 @@ var_global: tipo lista_ident_var ';' {
     table_t *t = get_table(ts, ts->count-1);
 
     // adiciona tipo/tamanho/deslocamento a lista de declaracoes
-    add_types_to_strlist(strlist, t, $1->tk_type, 1);
+    add_types_to_strlist(strlist, t, $1->tk_type);
     clear_strlist(strlist);
 
     destroy_lexvalue($1);
@@ -232,7 +232,7 @@ funcao:
 
 empilha_escopo: { 
         // cria nova tabela de simbolos e empilha na pilha de escopos
-        push_table(table_stack, create_symbol_table(0));
+        push_table(table_stack, create_symbol_table(0, 20));
     };
 
 func_params: lista_params {} | {};
@@ -320,7 +320,7 @@ declara_var:
         table_t *t = get_table(ts, ts->count-1);
 
         // adiciona tipo/tamanho/deslocamento a lista de declaracoes
-        add_types_to_strlist(strlist, t, $1->tk_type, 0);
+        add_types_to_strlist(strlist, t, $1->tk_type);
         clear_strlist(strlist);
 
         infer_type_initialization($2, tktype_to_type($1->tk_type));
