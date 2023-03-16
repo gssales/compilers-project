@@ -448,6 +448,26 @@ atrib:
         add_child(atribuicao, $1);
         add_child(atribuicao, $3);
         $$ = atribuicao;
+
+        symbol_t* s = get_symbol_stack($1->value->line_number, table_stack, $1->value->tk_value.s)->symbol;
+
+        // geracao de codigo
+        iloc_code_t* code_storeAI; // codigo a ser gerado
+        int r = $3->tmp; // temporario com resultado da expr
+        // verifica se SYM_VARIAVEL (SYM_ARRANJO nao suportado)
+        if (s->sym_nature == SYM_VARIAVEL) {
+            // verifica se global (rbss) ou local (rfp)
+            if (s->global) {
+                code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, -1, IMMEDIATE, s->disp);
+            } else {
+                code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, -3, IMMEDIATE, s->disp);
+            }
+        }
+        // concatena codigo da expr com codigo gerado
+        $$->code = $3->code;
+        push_iloc_code($$->code, code_storeAI);
+        print_program($$->code); // debug
+
     };
 
 ident_atrib:
@@ -737,17 +757,19 @@ expr_terminais:
         $$ = id;
         $$->sym_type = s->sym_type;
 
+        // geracao de codigo
         iloc_code_t* code_loadAI;
         int r = new_reg();
-        // se global usa rbss, senao rfp
-        if (s->global == 1) {
-            code_loadAI = create_iloc_code3op(LOAD_AI, IMMEDIATE, rbss, IMMEDIATE, s->disp, TEMPORARY, r);
+        // global usa rbss, local usa rfp
+        if (s->global) {
+            code_loadAI = create_iloc_code3op(LOAD_AI, TEMPORARY, -1, IMMEDIATE, s->disp, TEMPORARY, r);
         } else {
-            code_loadAI = create_iloc_code3op(LOAD_AI, IMMEDIATE, rfp, IMMEDIATE, s->disp, TEMPORARY, r);
+            code_loadAI = create_iloc_code3op(LOAD_AI, TEMPORARY, -3, IMMEDIATE, s->disp, TEMPORARY, r);
         }
+        // add codigo no node
         id->code = create_iloc_program();
         push_iloc_code(id->code, code_loadAI);
-        print_program(id->code);
+        //print_program(id->code); // debug
 
         //destroy_lexvalue($1);
     }
