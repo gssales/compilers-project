@@ -709,12 +709,15 @@ expr_preced4:
         int r = new_reg();
         code_add = create_iloc_code3op(ADD, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
 
-        // concatena codigo das expr e adiciona codigo gerado
+        // concatena codigo das expr e add codigo gerado
         concat_iloc_program($1->code, $3->code);
         push_iloc_code($1->code, code_add);
         $$->code = $1->code;
+
+        // temporario com resultado
+        $$->tmp = r;
         
-        //print_program($$->code); // debug
+        print_program($$->code); // debug
 
     }
     | expr_preced4 '-' expr_preced5  { 
@@ -722,6 +725,21 @@ expr_preced4:
         $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
+
+        // geracao de codigo
+        iloc_code_t* code_sub;
+        int r = new_reg();
+        code_sub = create_iloc_code3op(SUB, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+
+        // concatena codigo das expr e add codigo gerado
+        concat_iloc_program($1->code, $3->code);
+        push_iloc_code($1->code, code_sub);
+        $$->code = $1->code;
+
+        // temporario com resultado
+        $$->tmp = r;
+
+        print_program($$->code); // debug
     }
     | expr_preced5  { $$ = $1; };
 
@@ -731,12 +749,41 @@ expr_preced5:
         $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
+
+        // geracao de codigo
+        iloc_code_t* code_mult;
+        int r = new_reg();
+        code_mult = create_iloc_code3op(MULT, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+
+        // concatena codigo das expr e add codigo gerado
+        concat_iloc_program($1->code, $3->code);
+        push_iloc_code($1->code, code_mult);
+        $$->code = $1->code;
+        
+        // temporario com resultado
+        $$->tmp = r;
+
+        print_program($$->code); // debug
     }
     | expr_preced5 '/' expr_preced6  { 
         $$ = create_node("/");
         $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
+
+        // geracao de codigo
+        iloc_code_t* code_div;
+        int r = new_reg();
+        code_div = create_iloc_code3op(DIV, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+
+        // concatena codigo das expr e add codigo gerado
+        concat_iloc_program($1->code, $3->code);
+        push_iloc_code($1->code, code_div);
+        $$->code = $1->code;
+        // temporario com resultado
+        $$->tmp = r;
+
+        print_program($$->code); // debug
     }
     | expr_preced5 '%' expr_preced6  { 
         $$ = create_node("%");
@@ -779,9 +826,14 @@ expr_terminais:
         } else {
             code_loadAI = create_iloc_code3op(LOAD_AI, TEMPORARY, -3, IMMEDIATE, s->disp, TEMPORARY, r);
         }
+
         // add codigo no node
-        id->code = create_iloc_program();
-        push_iloc_code(id->code, code_loadAI);
+        $$->code = create_iloc_program();
+        push_iloc_code($$->code, code_loadAI);
+
+        // temporario com resultado
+        $$->tmp = r;
+
         //print_program(id->code); // debug
 
         //destroy_lexvalue($1);
@@ -811,13 +863,15 @@ expr_terminais:
         int r = new_reg();
         int val = $$->value->tk_value.i;
         code_loadI = create_iloc_code2op(LOAD_I, IMMEDIATE, val, TEMPORARY, r);
+
         // add codigo no node
         $$->code = create_iloc_program();
         push_iloc_code($$->code, code_loadI);
-        // add temporario do literal como resultado expr
-        $$->tmp = r;
-        //print_program($$->code); // debug
 
+        // temporario com resultado
+        $$->tmp = r;
+
+        //print_program($$->code); // debug
     }
     | '(' expr ')'  { $$ = $2; }
     | chamada_func  { $$ = $1; };
