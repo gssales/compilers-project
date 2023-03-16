@@ -494,9 +494,9 @@ atrib:
         if (s->sym_nature == SYM_VARIAVEL) {
             // verifica se global (rbss) ou local (rfp)
             if (s->global) {
-                code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, -1, IMMEDIATE, s->disp);
+                code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, ILOC_RBSS, IMMEDIATE, s->disp);
             } else {
-                code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, -3, IMMEDIATE, s->disp);
+                code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, ILOC_RFP, IMMEDIATE, s->disp);
             }
         }
 
@@ -1275,9 +1275,9 @@ expr_terminais:
         int r = new_reg();
         // global usa rbss, local usa rfp
         if (s->global) {
-            code_loadAI = create_iloc_code3op(LOAD_AI, TEMPORARY, -1, IMMEDIATE, s->disp, TEMPORARY, r);
+            code_loadAI = create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RBSS, IMMEDIATE, s->disp, TEMPORARY, r);
         } else {
-            code_loadAI = create_iloc_code3op(LOAD_AI, TEMPORARY, -3, IMMEDIATE, s->disp, TEMPORARY, r);
+            code_loadAI = create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, s->disp, TEMPORARY, r);
         }
 
         // add codigo no node
@@ -1303,6 +1303,11 @@ expr_terminais:
         indexador->sym_type = s->sym_type;
         add_child(indexador, id_lista_expr);
         add_child(indexador, $3);
+
+        destroy_iloc_program($3->code);
+        indexador->code = create_iloc_program();
+        push_iloc_code(indexador->code, create_iloc_code(NOP));
+
         $$ = indexador;
 
         //destroy_lexvalue($1);

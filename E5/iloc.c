@@ -16,12 +16,12 @@ const char* map_iloc_op(iloc_op_t op) {
 
 const char* map_iloc_format(iloc_op_t op) {
   const char* iloc_code_formats[] = {
-    " %c%d, %c%d => %c%d",
-    " %c%d => %c%d",
-    " %c%d => %c%d, %c%d",
-    " -> %c%d",
-    " %c%d -> %c%d, %c%d",
-    " %c%d, %c%d -> %c%d"
+    " %s, %s => %s",
+    " %s => %s",
+    " %s => %s, %s",
+    " -> %s",
+    " %s -> %s, %s",
+    " %s, %s -> %s"
   };
   iloc_code_format_t format = -1;
   switch (op)
@@ -52,13 +52,22 @@ const char* map_iloc_format(iloc_op_t op) {
   return iloc_code_formats[format];
 }
 
-char map_arg_type(arg_type_t type) {
-  char c = ' ';
-  if (type == TEMPORARY)
-    c = 'r';
-  else if (type == LABEL)
-    c = 'l';
-  return c;
+char* map_arg_type(arg_type_t type, int reg) {
+  const char* regs[] = { "rfp", "rsp", "rbss" };
+  if (reg >= 0) {
+    char* c = malloc(10 * sizeof(char));
+    if (type == TEMPORARY)
+      snprintf(c, 10, "r%d", reg);
+    else if (type == LABEL)
+      snprintf(c, 10, "l%d", reg);
+    else
+      snprintf(c, 10, "%d", reg);
+    return c;
+  } 
+  if (type == TEMPORARY && reg >= -3) {
+    return regs[reg +3];
+  }
+  return "";
 }
 
 iloc_code_t* create_iloc_code(iloc_op_t op) {
@@ -118,11 +127,18 @@ char* iloc_code_to_string(iloc_code_t* code) {
       if (code->label > 0)
         length += snprintf(buffer, ILOC_CODE_BUFFER_SIZE, "l%d: ", code->label);
       length += snprintf(buffer+length, ILOC_CODE_BUFFER_SIZE-length, "%s", map_iloc_op(code->op));
-      if (code->op != NOP)
+      if (code->op != NOP) {
+        char* arg0 = map_arg_type(code->arg_types[0], code->args[0]);
+        char* arg1 = map_arg_type(code->arg_types[1], code->args[1]);
+        char* arg2 = map_arg_type(code->arg_types[2], code->args[2]);
         snprintf(buffer+length, ILOC_CODE_BUFFER_SIZE-length, map_iloc_format(code->op), 
-            map_arg_type(code->arg_types[0]), code->args[0],
-            map_arg_type(code->arg_types[1]), code->args[1],
-            map_arg_type(code->arg_types[2]), code->args[2]);
+            arg0,
+            arg1,
+            arg2);
+        if (code->args[0] >= 0) free(arg0);
+        if (code->args[1] >= 0) free(arg1);
+        if (code->args[2] >= 0) free(arg2);
+      }
     }
   }
   return buffer;
@@ -231,7 +247,9 @@ void print_program(iloc_program_t* program) {
   if (program != NULL) {
     iloc_code_t* code = program->head;
     while (code != NULL) {
-      printf("%s\n", iloc_code_to_string(code));
+      char* str = iloc_code_to_string(code);
+      printf("%s\n", str);
+      free(str);
       code = code->next;
     }
   }

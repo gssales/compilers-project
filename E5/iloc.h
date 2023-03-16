@@ -3,6 +3,10 @@
 
 #define ILOC_CODE_BUFFER_SIZE 100
 
+#define ILOC_RBSS -1
+#define ILOC_RSP -2
+#define ILOC_RFP -3
+
 typedef enum {
   NOP,
   ADD,  ADD_I,
