@@ -26,6 +26,7 @@ typedef struct symbol {
 	lexvalue_t* value;
 	int global;
 	int disp; // deslocamento a partir de rfp (var local) ou rbss (var global)
+	int label; // rotulo para o jump na chamada de função
 	// ... outros argumentos/função; dimensões/arranjo
 } symbol_t;
 
@@ -44,7 +45,7 @@ typedef struct tabela_simbolo {
 	int count_symbols;
 	int* hashes;
 	int size;
-	int disp;
+	int disp; // deslocamento total da tabela
 	insert_pair_t** list;
 } table_t;
 

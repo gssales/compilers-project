@@ -95,7 +95,7 @@ programa:
         arvore = $2;
 
         table_t *to = pop_table(table_stack);
-        print_table(to);
+        //print_table(to);
 
         destroy_stack(table_stack);
 
@@ -223,7 +223,21 @@ funcao:
         $$ = funcao;
 
         table_t *to = pop_table(table_stack);
-        print_table(to);
+        symbol_t *s = get_symbol_stack($2->line_number, table_stack, $2->tk_value.s)->symbol;
+
+        int rot = new_label();
+        s->label = rot;
+
+        iloc_program_t* p = create_iloc_program();
+        push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RFP));
+        push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RSP, IMMEDIATE, to->disp, TEMPORARY, ILOC_RSP));
+        push_iloc_code(p, $8->code->head);
+        p->head->label = rot;
+        $$->code = p;
+
+        print_program(p);
+
+        //print_table(to);
         destroy_table(to);
         
         destroy_lexvalue($1);
@@ -255,6 +269,8 @@ param: tipo TK_IDENTIFICADOR  {
 command_block_no_new_scope:
     '{' lista_commands '}'  { 
         $$ = $2;
+        $$->code = create_iloc_program();
+        push_iloc_code($$->code, create_iloc_code(NOP));
     };
 
 command_block: 
@@ -262,7 +278,7 @@ command_block:
         $$ = $3;
         // desempilha escopo do bloco de comando
         table_t *to = pop_table(table_stack);
-        print_table(to);
+        //print_table(to);
         destroy_table(to);
     };
 

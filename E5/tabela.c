@@ -13,6 +13,7 @@ symbol_t* create_symbol(int lineno) {
     s->value = NULL;
     s->disp = 0;
     s->global = 0;
+    s->label = -1;
   }
   return s;
 }
