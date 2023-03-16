@@ -13,6 +13,7 @@ extern int yylex_destroy(void);
 void *arvore = NULL;
 void* table_stack;
 void* strstack;
+void* strlist;
 int rfp;
 int rbss;
 

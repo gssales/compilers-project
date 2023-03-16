@@ -16,12 +16,10 @@ void yyerror(char const *s);
     #include "arvore.h"
     #include "tabela.h"
     #include "inference.h"
-    #include "stringstack.h"
+    #include "stringlist.h"
     extern void* arvore;
-    //stack_t* table_stack;
     extern void* table_stack;
-    //strstack_t* strstack;
-    extern void* strstack;
+    extern void* strlist;
     extern int rfp;
     extern int rbss;
 }
@@ -97,10 +95,12 @@ programa:
         arvore = $2;
 
         table_t *to = pop_table(table_stack);
-        //print_table(to);
+        print_table(to);
 
         destroy_stack(table_stack);
-        destroy_strstack(strstack);
+
+        clear_strlist(strlist);
+        free(strlist);
 
         //print_program($2->code);
 
@@ -116,8 +116,8 @@ escopo_global: {
     table_stack = create_stack();
     push_table(table_stack, create_symbol_table(1));
 
-    // cria pilha de string simples pra adicionar tipos aos id de declaracoes
-    strstack = create_strstack();
+    // cria lista de identificadores para receberem tipo/tamanho/deslocamento nas declaracoes
+    strlist = create_strlist();
 }
 
 lista_elementos: 
@@ -144,10 +144,12 @@ elemento:
 /* Variável Global */
 var_global: tipo lista_ident_var ';' {
 
-    // desempilha strstack adicionando tipo a todos
     stack_t* ts = table_stack;
     table_t *t = get_table(ts, ts->count-1);
-    add_types_to_strstack(strstack, t, $1->tk_type, 1);
+
+    // adiciona tipo/tamanho/deslocamento a lista de declaracoes
+    add_types_to_strlist(strlist, t, $1->tk_type, 1);
+    clear_strlist(strlist);
 
     destroy_lexvalue($1);
 };
@@ -167,8 +169,8 @@ lista_ident_var: lista_ident_var ',' ident_var | ident_var;
 ident_var: 
     TK_IDENTIFICADOR  { 
 
-        // adiciona id na strstack para receber tipo depois
-        push_strstack(strstack,$1->tk_value.s);
+        // adiciona id na strlist para receber tipo/tam/deslocamento depois
+        add_strlist(strlist,$1->tk_value.s);
 
         // adiciona simbolo na tabela de escopo global
         symbol_t *s = create_symbol_id($1->line_number, $1, TYPE_UNDEFINED);
@@ -178,11 +180,11 @@ ident_var:
         destroy_lexvalue($1); 
     } 
     | TK_IDENTIFICADOR'['lista_arranjo']'  { 
-        // adiciona id na strstack para receber tipo depois
-        push_strstack(strstack,$1->tk_value.s);
+        // adiciona id na strlist para receber tipo/tam/deslocamento depois
+        add_strlist(strlist,$1->tk_value.s);
 
         // adiciona arranjo na tabela de escopo global
-        symbol_t *s = create_symbol_array($1->line_number, $1, $3->tk_value.i); // dimensao total (multiplicada dependendo do tipo na add_tipos_strstack)
+        symbol_t *s = create_symbol_array($1->line_number, $1, $3->tk_value.i);
         int result = push_symbol_into_table(table_stack, $1->tk_value.s, s);
         if (!is_inserted(result)) destroy_symbol(s);
 
@@ -259,7 +261,7 @@ command_block:
         $$ = $3;
         // desempilha escopo do bloco de comando
         table_t *to = pop_table(table_stack);
-        //print_table(to);
+        print_table(to);
         destroy_table(to);
     };
 
@@ -313,10 +315,12 @@ command:
 declara_var: 
     tipo lista_local_var  {
 
-        // desempilha strstack adicionando tipo a todos
         stack_t *ts = table_stack;
         table_t *t = get_table(ts, ts->count-1);
-        add_types_to_strstack(strstack, t, $1->tk_type, 0);
+
+        // adiciona tipo/tamanho/deslocamento a lista de declaracoes
+        add_types_to_strlist(strlist, t, $1->tk_type, 1);
+        clear_strlist(strlist);
 
         infer_type_initialization($2, tktype_to_type($1->tk_type));
 
@@ -350,8 +354,8 @@ local_var:
     TK_IDENTIFICADOR  {
         $$ = NULL;
 
-        // adiciona id na strstack para receber tipo depois
-        push_strstack(strstack,$1->tk_value.s);
+        // adiciona id na strlist para receber tipo/tam/deslocamento depois
+        add_strlist(strlist,$1->tk_value.s);
 
         // adiciona var na tabela de escopo atual
         symbol_t *s = create_symbol_id($1->line_number, $1, TYPE_UNDEFINED);
@@ -362,8 +366,8 @@ local_var:
     } | 
     TK_IDENTIFICADOR TK_OC_LE literal {
 
-        // adiciona id na strstack para receber tipo depois
-        push_strstack(strstack,$1->tk_value.s);
+        // adiciona id na strlist para receber tipo/tam/deslocamento depois
+        add_strlist(strlist,$1->tk_value.s);
 
         // adiciona var na tabela de escopo atual
         symbol_t *s = create_symbol_id($1->line_number, $1, TYPE_UNDEFINED);

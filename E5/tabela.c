@@ -334,13 +334,13 @@ void destroy_stack(stack_t* stack) {
   }
 }
 
-void add_types_to_strstack(strstack_t *strstack, table_t* table, int tk_type, int global) {
-  if (strstack && table) {
+void add_types_to_strlist(strlist_t *strlist, table_t* table, int tk_type, int global) {
+  if (strlist && table) {
     tk_type = tktype_to_type(tk_type);
     
-    char *str;
-    str = top_strstack(strstack);
-    while (str != NULL) {
+    strlist_node_t* node = strlist->head;
+    char *str = node->str;
+    while (node != NULL) {
       symbol_t* s = get_symbol(table, str)->symbol;
 
       // ERR_CHAR_VECTOR
@@ -364,9 +364,12 @@ void add_types_to_strstack(strstack_t *strstack, table_t* table, int tk_type, in
       // adiciona tipo
       s->sym_type = tk_type;
 
-      pop_strstack(strstack);
-      str = top_strstack(strstack);
+      node = node->next;
+      if (node != NULL) {
+        str = node->str;
+      }
     }
+    //clear_strlist(strlist);
   }
 }
 
