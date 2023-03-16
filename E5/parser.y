@@ -647,6 +647,21 @@ expr_preced0:
         $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
+
+        // geracao de codigo
+        iloc_code_t* code_or;
+        int r = new_reg();
+        code_or = create_iloc_code3op(OR, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+
+        // concatena codigo das expr e add codigo gerado
+        concat_iloc_program($1->code, $3->code);
+        push_iloc_code($1->code, code_or);
+        $$->code = $1->code;
+
+        // temporario com resultado
+        $$->tmp = r;
+
+        print_program($$->code); // debug
     }
     | expr_preced1  { $$ = $1; };
 
@@ -656,6 +671,21 @@ expr_preced1:
         $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
+
+        // geracao de codigo
+        iloc_code_t* code_and;
+        int r = new_reg();
+        code_and = create_iloc_code3op(AND, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+
+        // concatena codigo das expr e add codigo gerado
+        concat_iloc_program($1->code, $3->code);
+        push_iloc_code($1->code, code_and);
+        $$->code = $1->code;
+
+        // temporario com resultado
+        $$->tmp = r;
+
+        print_program($$->code); // debug
     } 
     | expr_preced2  { $$ = $1; };
 
