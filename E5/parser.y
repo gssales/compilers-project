@@ -102,7 +102,8 @@ programa:
         clear_strlist(strlist);
         free(strlist);
 
-        //print_program($2->code);
+        printf("\nPRINT_PROGRAM NA RAIZ:\n");
+        print_program($2->code);
 
         destroy_iloc_program($2->code);
 
@@ -386,6 +387,22 @@ local_var:
 
         $$ = inicializa;
 
+        // geracao de codigo
+        iloc_code_t* code_storeAI; // codigo a ser gerado
+        int r = new_reg(); // temporario pra variavel
+        int r2 = $3->tmp; // temporario com literal
+        // verifica se global (rbss) ou local (rfp)
+        if (s->global) {
+            code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, -1, IMMEDIATE, s->disp);
+        } else {
+            code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, -3, IMMEDIATE, s->disp);
+        }
+
+        // concatena codigo do literal com codigo gerado
+        $$->code = $3->code;
+        push_iloc_code($$->code, code_storeAI);
+        //print_program($$->code); // debug
+
         //destroy_lexvalue($1);
     };
 
@@ -399,6 +416,8 @@ literal:
         $$ = create_leaf($1->lexema, $1); 
         $$->sym_type = TYPE_INT;
 
+        $$->code = create_iloc_program(); // apenas int suportado
+
         //destroy_lexvalue($1);
     }
     | TK_LIT_FLOAT  {
@@ -409,6 +428,9 @@ literal:
 
         $$ = create_leaf($1->lexema, $1); 
         $$->sym_type = TYPE_FLOAT;
+
+        $$->code = NULL; // tipo nao suportado na geracao de codigo
+
         //destroy_lexvalue($1);
     }
     | TK_LIT_FALSE  {
@@ -419,6 +441,9 @@ literal:
 
         $$ = create_leaf($1->lexema, $1); 
         $$->sym_type = TYPE_BOOL;
+
+        $$->code = NULL; // tipo nao suportado na geracao de codigo
+
         //destroy_lexvalue($1);
     }
     | TK_LIT_TRUE   {
@@ -429,6 +454,9 @@ literal:
 
         $$ = create_leaf($1->lexema, $1); 
         $$->sym_type = TYPE_BOOL;
+
+        $$->code = NULL; // tipo nao suportado na geracao de codigo
+
         //destroy_lexvalue($1);
     }
     | TK_LIT_CHAR  { 
@@ -441,6 +469,9 @@ literal:
         label[0] = $1->tk_value.c;
         $$ = create_leaf(label, $1); 
         $$->sym_type = TYPE_CHAR;
+
+        $$->code = NULL; // tipo nao suportado na geracao de codigo
+
         //destroy_lexvalue($1);
     };
 
@@ -468,6 +499,7 @@ atrib:
                 code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, -3, IMMEDIATE, s->disp);
             }
         }
+
         // concatena codigo da expr com codigo gerado
         $$->code = $3->code;
         push_iloc_code($$->code, code_storeAI);
@@ -892,20 +924,22 @@ expr_terminais:
         
         $$ = $1;
 
-        // geracao de codigo
-        iloc_code_t* code_loadI;
-        int r = new_reg();
-        int val = $$->value->tk_value.i;
-        code_loadI = create_iloc_code2op(LOAD_I, IMMEDIATE, val, TEMPORARY, r);
+        if ($$->code != NULL) {
+            // geracao de codigo
+            iloc_code_t* code_loadI;
+            int r = new_reg();
+            int val = $$->value->tk_value.i;
+            code_loadI = create_iloc_code2op(LOAD_I, IMMEDIATE, val, TEMPORARY, r);
 
-        // add codigo no node
-        $$->code = create_iloc_program();
-        push_iloc_code($$->code, code_loadI);
+            // add codigo no node
+            $$->code = create_iloc_program();
+            push_iloc_code($$->code, code_loadI);
 
-        // temporario com resultado
-        $$->tmp = r;
+            // temporario com resultado
+            $$->tmp = r;
 
-        //print_program($$->code); // debug
+            //print_program($$->code); // debug
+        }
     }
     | '(' expr ')'  { $$ = $2; }
     | chamada_func  { $$ = $1; };

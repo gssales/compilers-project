@@ -9,6 +9,7 @@ symbol_t* create_symbol(int lineno) {
     s->sym_nature = SYM_UNKNOWN;
     s->sym_type = TYPE_UNDEFINED;
     s->sizeB = 0;
+    s->disp = 0;
     s->value = NULL;
   }
   return s;

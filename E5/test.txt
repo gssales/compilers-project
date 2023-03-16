@@ -1,9 +1,15 @@
 int aGlobal,bGlobal,cGlobal;
 
 int main(){
+  int x <= 1;
+  int y <= 1;
+  bool b <= true; // testando tipo nao suportado
+  char c <= 'c'; // testando tipo nao suportado
+  float f <= 5.0; // testando tipo nao suportado
+
   //int aLocal,bLocal,cLocal;
   //int dLocal,eLocal,fLocal,gLocal,hLocal;
-  int logUm, logDois;
+  //int logUm, logDois;
 
   //int eLocal <= 10; // PRECISA IMPLEMENTAR?
 
