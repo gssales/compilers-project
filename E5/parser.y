@@ -858,7 +858,7 @@ iteracao:
         push_iloc_code($$->code, code_cbr);
         push_iloc_code($$->code, code_nopd); // lb_depois
 
-        print_program($$->code); // debug
+        // print_program($$->code); // debug
 
     };
 
