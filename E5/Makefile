@@ -43,3 +43,6 @@ scanner-debug: scanner.l
 clean: 
 	rm etapa* lex.yy.c parser.tab.c parser.tab.h
 	rm *.o
+
+package:
+	tar cvzf etapa5.tgz .
