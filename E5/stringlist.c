@@ -4,7 +4,7 @@
 #include "stringlist.h"
 
 strlist_t* create_strlist() {
-  strlist_t* strlist = (strlist_t*) malloc(sizeof(strlist_t*));
+  strlist_t* strlist = malloc(sizeof(strlist_t));
   if (strlist != NULL) {
     strlist->head = NULL;
     strlist->tail = NULL;
@@ -15,7 +15,7 @@ strlist_t* create_strlist() {
 
 void add_strlist(strlist_t* strlist, char* str) {
   if (strlist != NULL && str != NULL) {
-    strlist_node_t* node = (strlist_node_t*) malloc(sizeof(strlist_node_t*));
+    strlist_node_t* node = malloc(sizeof(strlist_node_t));
     if (node != NULL) {
       node->str = copy_str(str);
       node->next = NULL;
@@ -49,6 +49,7 @@ void clear_strlist(strlist_t* strlist) {
   strlist_node_t* node = strlist->head;
   while (node != NULL) {
     strlist->head = node->next;
+    node->next = NULL;
     free(node->str);
     free(node);
     node = strlist->head;

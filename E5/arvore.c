@@ -21,6 +21,7 @@ node_t* create_node(char* label) {
     node->children = NULL;
     node->ast_type = AST_NONE;
     node->sym_type = SYM_UNKNOWN;
+    node->code = NULL;
     node->count_tmpList = 0;
     node->tmpList = NULL;
     node->tmp = 0;
@@ -72,6 +73,7 @@ void _print_debug(node_t *tree, int depth) {
   if (tree != NULL) {
     for (int d = 0; d < depth; d++) printf("| ");
     print_node(tree);
+    print_program(tree->code);
     printf("\n");
     for (int i = 0; i < tree->count_children; i++) {
       _print_debug(tree->children[i], depth + 1);
@@ -102,8 +104,8 @@ void libera(void* root) {
 		  destroy_lexvalue(node->value);
 		free(node->label);
 		free(node->children);
-    // if (node->code)
-    //   destroy_iloc_program(node->code);
+    if (node->code)
+      destroy_iloc_program(node->code);
     if (node->tmpList)
       free(node->tmpList);
 		free(node);

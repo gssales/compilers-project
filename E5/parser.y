@@ -102,6 +102,8 @@ programa:
 
         symbol_t* main = get_symbol_stack(0, table_stack, "main")->symbol;
 
+        // print_debug(arvore);
+
         // printf("\nPRINT_PROGRAM NA RAIZ:\n");
         iloc_program_t* program = create_iloc_program();
         push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RFP));
@@ -240,8 +242,10 @@ funcao:
         iloc_program_t* p = create_iloc_program();
         push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RFP));
         push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RSP, IMMEDIATE, to->disp, TEMPORARY, ILOC_RSP));
-        if ($8->code && $8->code->count > 0)
+        if ($8 && $8->code && $8->code->count > 0) {
           concat_iloc_program(p, $8->code);
+          // destroy_iloc_program($8->code);
+        }
         p->head->label = rot;
         $$->code = p;
 
@@ -413,17 +417,17 @@ local_var:
 
         // geracao de codigo
         iloc_code_t* code_storeAI; // codigo a ser gerado
-        int r = new_reg(); // temporario pra variavel
         int r2 = $3->tmp; // temporario com literal
         // verifica se global (rbss) ou local (rfp)
         if (s->global) {
-            code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, ILOC_RBSS, IMMEDIATE, s->disp);
+            code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r2, TEMPORARY, ILOC_RBSS, IMMEDIATE, s->disp);
         } else {
-            code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, ILOC_RFP, IMMEDIATE, s->disp);
+            code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r2, TEMPORARY, ILOC_RFP, IMMEDIATE, s->disp);
         }
 
         // concatena codigo do literal com codigo gerado
-        $$->code = $3->code;
+        $$->code = create_iloc_program();
+        concat_iloc_program($$->code, $3->code);
         push_iloc_code($$->code, code_storeAI);
         //print_program($$->code); // debug
 
@@ -441,6 +445,8 @@ literal:
         $$->sym_type = TYPE_INT;
 
         $$->code = create_iloc_program(); // apenas int suportado
+        $$->tmp = new_reg();
+        push_iloc_code($$->code, create_iloc_code2op(LOAD_I, IMMEDIATE, $1->tk_value.i, TEMPORARY, $$->tmp));
 
         //destroy_lexvalue($1);
     }
@@ -466,8 +472,10 @@ literal:
         $$ = create_leaf($1->lexema, $1); 
         $$->sym_type = TYPE_BOOL;
 
-        $$->code = NULL; // tipo nao suportado na geracao de codigo
-
+        $$->code = create_iloc_program(); // apenas int suportado
+        $$->tmp = new_reg();
+        push_iloc_code($$->code, create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, $$->tmp));
+        
         //destroy_lexvalue($1);
     }
     | TK_LIT_TRUE   {
@@ -479,7 +487,9 @@ literal:
         $$ = create_leaf($1->lexema, $1); 
         $$->sym_type = TYPE_BOOL;
 
-        $$->code = NULL; // tipo nao suportado na geracao de codigo
+        $$->code = create_iloc_program(); // apenas int suportado
+        $$->tmp = new_reg();
+        push_iloc_code($$->code, create_iloc_code2op(LOAD_I, IMMEDIATE, 1, TEMPORARY, $$->tmp));
 
         //destroy_lexvalue($1);
     }
@@ -525,7 +535,8 @@ atrib:
         }
 
         // concatena codigo da expr com codigo gerado
-        $$->code = $3->code;
+        $$->code = create_iloc_program();
+        concat_iloc_program($$->code, $3->code);
         push_iloc_code($$->code, code_storeAI);
         //print_program($$->code); // debug
     };
@@ -712,7 +723,7 @@ condicional:
         // $6.code
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_nopd;
         code_nopd = create_iloc_code(NOP);
@@ -721,6 +732,7 @@ condicional:
         // concatena codigo gerado e blocos
         $$->code = create_iloc_program();
 
+        concat_iloc_program($$->code, $3->code);
         push_iloc_code($$->code, code_loadi);
         push_iloc_code($$->code, code_cmpne);
         push_iloc_code($$->code, code_cbr);
@@ -768,7 +780,7 @@ condicional:
         // $6.code
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_nopf;
         code_nopf = create_iloc_code(NOP);
@@ -783,6 +795,7 @@ condicional:
         // concatena codigo gerado e blocos
         $$->code = create_iloc_program();
 
+        concat_iloc_program($$->code, $3->code);
         push_iloc_code($$->code, code_loadi);
         push_iloc_code($$->code, code_cmpne);
         push_iloc_code($$->code, code_cbr);
@@ -819,16 +832,10 @@ iteracao:
         int lb_block = new_label(); // lb_codigo
         int lb_depois = new_label(); // lb_depois
 
-        // jump inicial pra lb_cond
-        iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, lb_cond);
-
         // lb_codigo: nop + codigo do command_block ($5->code)
         iloc_code_t* code_block_nop;
         code_block_nop = create_iloc_code(NOP);
         code_block_nop->label = lb_block;
-
-        // add jump pra lb_cond pós execucao do bloco
 
         // lb_cond: codigo do teste condicao expr (loadi+cmpne+cbr)
         iloc_code_t* code_loadi;
@@ -837,7 +844,7 @@ iteracao:
         iloc_code_t* code_cmpne;
         code_cmpne = create_iloc_code3op(CMP_NE, TEMPORARY, $3->tmp, TEMPORARY, r, TEMPORARY, r2);
         iloc_code_t* code_cbr;
-        code_cbr = create_iloc_code3op(CBR, TEMPORARY, r2, LABEL, lb_block, LABEL, lb_depois);
+        code_cbr = create_iloc_code3op(CBR, TEMPORARY, $3->tmp, LABEL, lb_block, LABEL, lb_depois);
 
         // lb_depois: nop
         iloc_code_t* code_nopd;
@@ -847,15 +854,17 @@ iteracao:
         // concatena codigo gerado e bloco
         $$->code = create_iloc_program();
 
-        push_iloc_code($$->code, create_iloc_code1op(JUMP, LABEL, lb_cond));
+        push_iloc_code($$->code, create_iloc_code1op(JUMP_I, LABEL, lb_cond));
 
         // TODO: DEBUG CODE_BLOCK NAO SENDO INSERIDO?
         push_iloc_code($$->code, code_block_nop); // lb_block
         concat_iloc_program($$->code, $5->code);
 
-        push_iloc_code($$->code, create_iloc_code1op(JUMP, LABEL, lb_cond));
-        push_iloc_code($$->code, code_loadi); // lb_cond
-        push_iloc_code($$->code, code_cmpne);
+        push_iloc_code($$->code, create_iloc_code1op(JUMP_I, LABEL, lb_cond));
+        // push_iloc_code($$->code, code_loadi); // lb_cond
+        $3->code->head->label = lb_cond;
+        concat_iloc_program($$->code, $3->code);
+        // push_iloc_code($$->code, code_cmpne);
         push_iloc_code($$->code, code_cbr);
         push_iloc_code($$->code, code_nopd); // lb_depois
 
@@ -884,9 +893,6 @@ expr:
     expr_preced0  {
         $$ = $1;
         $$->ast_type = AST_EXPRESSION;
-        // $$->code = create_iloc_program();
-        // push_iloc_code($$->code, create_iloc_code(NOP));
-        // $$->tmp = new_reg();
     };
 
 expr_preced0: 
@@ -902,9 +908,10 @@ expr_preced0:
         code_or = create_iloc_code3op(OR, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
-        push_iloc_code($1->code, code_or);
-        $$->code = $1->code;
+        $$->code = create_iloc_program();
+        concat_iloc_program($$->code, $1->code);
+        concat_iloc_program($$->code, $3->code);
+        push_iloc_code($$->code, code_or);
 
         // temporario com resultado
         $$->tmp = r;
@@ -926,9 +933,10 @@ expr_preced1:
         code_and = create_iloc_code3op(AND, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
-        push_iloc_code($1->code, code_and);
-        $$->code = $1->code;
+        $$->code = create_iloc_program();
+        concat_iloc_program($$->code, $1->code);
+        concat_iloc_program($$->code, $3->code);
+        push_iloc_code($$->code, code_and);
 
         // temporario com resultado
         $$->tmp = r;
@@ -961,7 +969,7 @@ expr_preced2:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
@@ -972,16 +980,19 @@ expr_preced2:
         code_nop->label = ld;
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $1->code);
+        concat_iloc_program(p, $3->code);
 
-        push_iloc_code($1->code, code_cmpeq);
-        push_iloc_code($1->code, code_cbr);
-        push_iloc_code($1->code, code_loadi_lt);
-        push_iloc_code($1->code, code_jumpI);
-        push_iloc_code($1->code, code_loadi_lf);
-        push_iloc_code($1->code, code_nop);
+        push_iloc_code(p, code_cmpeq);
+        push_iloc_code(p, code_cbr);
+        push_iloc_code(p, code_loadi_lt);
+        push_iloc_code(p, code_jumpI);
+        push_iloc_code(p, code_loadi_lf);
+        push_iloc_code(p, code_nop);
 
-        $$->code = $1->code;
+        $$->code = p;
+        $$->tmp = r;
 
         //print_program($$->code); // debug
     }
@@ -1008,7 +1019,7 @@ expr_preced2:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
@@ -1019,16 +1030,19 @@ expr_preced2:
         code_nop->label = ld;
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $1->code);
+        concat_iloc_program(p, $3->code);
 
-        push_iloc_code($1->code, code_cmpne);
-        push_iloc_code($1->code, code_cbr);
-        push_iloc_code($1->code, code_loadi_lt);
-        push_iloc_code($1->code, code_jumpI);
-        push_iloc_code($1->code, code_loadi_lf);
-        push_iloc_code($1->code, code_nop);
+        push_iloc_code(p, code_cmpne);
+        push_iloc_code(p, code_cbr);
+        push_iloc_code(p, code_loadi_lt);
+        push_iloc_code(p, code_jumpI);
+        push_iloc_code(p, code_loadi_lf);
+        push_iloc_code(p, code_nop);
 
-        $$->code = $1->code;
+        $$->code = p;
+        $$->tmp = r;
 
         //print_program($$->code); // debug
     }
@@ -1058,7 +1072,7 @@ expr_preced3:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
@@ -1069,16 +1083,19 @@ expr_preced3:
         code_nop->label = ld;
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $1->code);
+        concat_iloc_program(p, $3->code);
 
-        push_iloc_code($1->code, code_cmplt);
-        push_iloc_code($1->code, code_cbr);
-        push_iloc_code($1->code, code_loadi_lt);
-        push_iloc_code($1->code, code_jumpI);
-        push_iloc_code($1->code, code_loadi_lf);
-        push_iloc_code($1->code, code_nop);
+        push_iloc_code(p, code_cmplt);
+        push_iloc_code(p, code_cbr);
+        push_iloc_code(p, code_loadi_lt);
+        push_iloc_code(p, code_jumpI);
+        push_iloc_code(p, code_loadi_lf);
+        push_iloc_code(p, code_nop);
 
-        $$->code = $1->code;
+        $$->code = p;
+        $$->tmp = r;
 
         //print_program($$->code); // debug
     } 
@@ -1105,7 +1122,7 @@ expr_preced3:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
@@ -1116,16 +1133,19 @@ expr_preced3:
         code_nop->label = ld;
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $1->code);
+        concat_iloc_program(p, $3->code);
 
-        push_iloc_code($1->code, code_cmpgt);
-        push_iloc_code($1->code, code_cbr);
-        push_iloc_code($1->code, code_loadi_lt);
-        push_iloc_code($1->code, code_jumpI);
-        push_iloc_code($1->code, code_loadi_lf);
-        push_iloc_code($1->code, code_nop);
+        push_iloc_code(p, code_cmpgt);
+        push_iloc_code(p, code_cbr);
+        push_iloc_code(p, code_loadi_lt);
+        push_iloc_code(p, code_jumpI);
+        push_iloc_code(p, code_loadi_lf);
+        push_iloc_code(p, code_nop);
 
-        $$->code = $1->code;
+        $$->code = p;
+        $$->tmp = r;
 
         //print_program($$->code); // debug
     } 
@@ -1152,7 +1172,7 @@ expr_preced3:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
@@ -1163,16 +1183,19 @@ expr_preced3:
         code_nop->label = ld;
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $1->code);
+        concat_iloc_program(p, $3->code);
 
-        push_iloc_code($1->code, code_cmple);
-        push_iloc_code($1->code, code_cbr);
-        push_iloc_code($1->code, code_loadi_lt);
-        push_iloc_code($1->code, code_jumpI);
-        push_iloc_code($1->code, code_loadi_lf);
-        push_iloc_code($1->code, code_nop);
+        push_iloc_code(p, code_cmple);
+        push_iloc_code(p, code_cbr);
+        push_iloc_code(p, code_loadi_lt);
+        push_iloc_code(p, code_jumpI);
+        push_iloc_code(p, code_loadi_lf);
+        push_iloc_code(p, code_nop);
 
-        $$->code = $1->code;
+        $$->code = p;
+        $$->tmp = r;
 
         //print_program($$->code); // debug
     }
@@ -1199,7 +1222,7 @@ expr_preced3:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
@@ -1210,16 +1233,19 @@ expr_preced3:
         code_nop->label = ld;
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $1->code);
+        concat_iloc_program(p, $3->code);
 
-        push_iloc_code($1->code, code_cmpge);
-        push_iloc_code($1->code, code_cbr);
-        push_iloc_code($1->code, code_loadi_lt);
-        push_iloc_code($1->code, code_jumpI);
-        push_iloc_code($1->code, code_loadi_lf);
-        push_iloc_code($1->code, code_nop);
+        push_iloc_code(p, code_cmpge);
+        push_iloc_code(p, code_cbr);
+        push_iloc_code(p, code_loadi_lt);
+        push_iloc_code(p, code_jumpI);
+        push_iloc_code(p, code_loadi_lf);
+        push_iloc_code(p, code_nop);
 
-        $$->code = $1->code;
+        $$->code = p;
+        $$->tmp = r;
 
         //print_program($$->code); // debug
     } 
@@ -1238,9 +1264,11 @@ expr_preced4:
         code_add = create_iloc_code3op(ADD, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
-        push_iloc_code($1->code, code_add);
-        $$->code = $1->code;
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $1->code);
+        concat_iloc_program(p, $3->code);
+        push_iloc_code(p, code_add);
+        $$->code = p;
 
         // temporario com resultado
         $$->tmp = r;
@@ -1260,9 +1288,11 @@ expr_preced4:
         code_sub = create_iloc_code3op(SUB, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
-        push_iloc_code($1->code, code_sub);
-        $$->code = $1->code;
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $1->code);
+        concat_iloc_program(p, $3->code);
+        push_iloc_code(p, code_sub);
+        $$->code = p;
 
         // temporario com resultado
         $$->tmp = r;
@@ -1284,9 +1314,11 @@ expr_preced5:
         code_mult = create_iloc_code3op(MULT, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
-        push_iloc_code($1->code, code_mult);
-        $$->code = $1->code;
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $1->code);
+        concat_iloc_program(p, $3->code);
+        push_iloc_code(p, code_mult);
+        $$->code = p;
         
         // temporario com resultado
         $$->tmp = r;
@@ -1305,9 +1337,11 @@ expr_preced5:
         code_div = create_iloc_code3op(DIV, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
 
         // concatena codigo das expr e add codigo gerado
-        concat_iloc_program($1->code, $3->code);
-        push_iloc_code($1->code, code_div);
-        $$->code = $1->code;
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $1->code);
+        concat_iloc_program(p, $3->code);
+        push_iloc_code(p, code_div);
+        $$->code = p;
         // temporario com resultado
         $$->tmp = r;
 
@@ -1318,6 +1352,8 @@ expr_preced5:
         $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
+        destroy_iloc_program($1->code);
+        destroy_iloc_program($3->code);
     }
     | expr_preced6  { $$ = $1; };
 
@@ -1326,11 +1362,13 @@ expr_preced6:
         $$ = create_node("-");
         $$->sym_type = $2->sym_type;
         add_child($$, $2);
+        destroy_iloc_program($2->code);
     }
     | '!' expr_terminais  { 
         $$ = create_node("!");
         $$->sym_type = $2->sym_type;
         add_child($$, $2);
+        destroy_iloc_program($2->code);
     }
     | expr_terminais { $$ = $1; };
 
@@ -1379,35 +1417,11 @@ expr_terminais:
         add_child(indexador, id_lista_expr);
         add_child(indexador, $3);
 
-        destroy_iloc_program($3->code);
-        indexador->code = create_iloc_program();
-        push_iloc_code(indexador->code, create_iloc_code(NOP));
-
         $$ = indexador;
 
         //destroy_lexvalue($1);
     }
-    | literal  { 
-        
-        $$ = $1;
-
-        if ($$->code != NULL) {
-            // geracao de codigo
-            iloc_code_t* code_loadI;
-            int r = new_reg();
-            int val = $$->value->tk_value.i;
-            code_loadI = create_iloc_code2op(LOAD_I, IMMEDIATE, val, TEMPORARY, r);
-
-            // add codigo no node
-            $$->code = create_iloc_program();
-            push_iloc_code($$->code, code_loadI);
-
-            // temporario com resultado
-            $$->tmp = r;
-
-            //print_program($$->code); // debug
-        }
-    }
+    | literal       { $$ = $1; }
     | '(' expr ')'  { $$ = $2; }
     | chamada_func  { $$ = $1; };
 

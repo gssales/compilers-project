@@ -232,6 +232,7 @@ void destroy_iloc_program(iloc_program_t* program) {
       destroy_iloc_code(code);
       code = next;
     }
+    empty_iloc_program(program);
     free(program);
   }
 }
