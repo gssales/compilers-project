@@ -102,7 +102,6 @@ programa:
 
         symbol_t* main = get_symbol_stack(0, table_stack, "main")->symbol;
 
-        printf("\nPRINT_PROGRAM NA RAIZ:\n");
         iloc_program_t* program = create_iloc_program();
         push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RFP));
         push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RSP));
@@ -712,7 +711,7 @@ condicional:
         // $6.code
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_nopd;
         code_nopd = create_iloc_code(NOP);
@@ -768,7 +767,7 @@ condicional:
         // $6.code
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_nopf;
         code_nopf = create_iloc_code(NOP);
@@ -821,7 +820,7 @@ iteracao:
 
         // jump inicial pra lb_cond
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, lb_cond);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, lb_cond);
 
         // lb_codigo: nop + codigo do command_block ($5->code)
         iloc_code_t* code_block_nop;
@@ -847,13 +846,13 @@ iteracao:
         // concatena codigo gerado e bloco
         $$->code = create_iloc_program();
 
-        push_iloc_code($$->code, create_iloc_code1op(JUMP, LABEL, lb_cond));
+        push_iloc_code($$->code, create_iloc_code1op(JUMP_I, LABEL, lb_cond));
 
         // TODO: DEBUG CODE_BLOCK NAO SENDO INSERIDO?
         push_iloc_code($$->code, code_block_nop); // lb_block
         concat_iloc_program($$->code, $5->code);
 
-        push_iloc_code($$->code, create_iloc_code1op(JUMP, LABEL, lb_cond));
+        push_iloc_code($$->code, create_iloc_code1op(JUMP_I, LABEL, lb_cond));
         push_iloc_code($$->code, code_loadi); // lb_cond
         push_iloc_code($$->code, code_cmpne);
         push_iloc_code($$->code, code_cbr);
@@ -961,7 +960,7 @@ expr_preced2:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
@@ -1008,7 +1007,7 @@ expr_preced2:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
@@ -1058,7 +1057,7 @@ expr_preced3:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
@@ -1105,7 +1104,7 @@ expr_preced3:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
@@ -1152,7 +1151,7 @@ expr_preced3:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
@@ -1199,7 +1198,7 @@ expr_preced3:
         code_loadi_lt->label = lt;
 
         iloc_code_t* code_jumpI;
-        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+        code_jumpI = create_iloc_code1op(JUMP_I, LABEL, ld);
 
         iloc_code_t* code_loadi_lf;
         code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
