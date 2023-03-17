@@ -53,7 +53,7 @@ void clear_strlist(strlist_t* strlist) {
     free(node);
     node = strlist->head;
   }
-  strlist = create_strlist();
+  strlist->size = 0;
 }
 
 char* copy_str(char *str)

@@ -231,11 +231,16 @@ funcao:
         iloc_program_t* p = create_iloc_program();
         push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RFP));
         push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RSP, IMMEDIATE, to->disp, TEMPORARY, ILOC_RSP));
-        push_iloc_code(p, $8->code->head);
+        if ($8->code && $8->code->count > 0) {
+          concat_iloc_program(p, $8->code);
+          // empty_iloc_program($8->code);
+          // destroy_iloc_program($8->code);
+          // $8->code = NULL;
+        }
         p->head->label = rot;
         $$->code = p;
 
-        // print_program(p);
+        print_program(p);
 
         //print_table(to);
         destroy_table(to);
@@ -269,8 +274,6 @@ param: tipo TK_IDENTIFICADOR  {
 command_block_no_new_scope:
     '{' lista_commands '}'  { 
         $$ = $2;
-        $$->code = create_iloc_program();
-        push_iloc_code($$->code, create_iloc_code(NOP));
     };
 
 command_block: 
@@ -289,6 +292,10 @@ lista_commands:
             if ($1 != NULL) {
                 node_t* last_cmd = get_last_of($1, AST_COMMAND);
                 add_child(last_cmd, $2);
+                concat_iloc_program($1->code, $2->code);
+                // empty_iloc_program($2->code);
+                // destroy_iloc_program($2->code);
+                // $2->code = NULL;
                 $$ = $1;
             } else {
                 $$ = $2;
@@ -590,7 +597,7 @@ chamada_func:
         int jump_rpc = 0;
         if ($3 != NULL) {
           jump_rpc = $3->count_tmpList;
-          push_iloc_code(p, $3->code->head);
+          concat_iloc_program(p, $3->code);
         }
         push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RPC, IMMEDIATE, jump_rpc + 5/* endereço de retorno */, TEMPORARY, tmp));
         push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, tmp, TEMPORARY, ILOC_RSP, IMMEDIATE, 0));
@@ -618,7 +625,7 @@ chamada_lista_params:
     chamada_lista_params ',' expr  {
         node_t* last_expr = get_last_of($1, AST_EXPRESSION);
         add_child(last_expr, $3);
-        push_iloc_code($1->code, $3->code->head);
+        concat_iloc_program($1->code, $3->code);
         if ($1->count_tmpList == 0) {
           $1->count_tmpList = 2;
           $1->tmpList = malloc($1->count_tmpList * sizeof(int));
@@ -647,6 +654,21 @@ retorno:
         cmd_ret->sym_type = $2->sym_type;
 
         add_child(cmd_ret, $2);
+
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $2->code);
+        push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, $2->tmp, TEMPORARY, ILOC_RFP, IMMEDIATE, 12));
+        int end_retorno = new_reg();
+        push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 0, TEMPORARY, end_retorno));
+        int rsp_restore = new_reg();
+        push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 4, TEMPORARY, rsp_restore));
+        int rfp_restore = new_reg();
+        push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 8, TEMPORARY, rfp_restore));
+        push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, rsp_restore, TEMPORARY, ILOC_RSP));
+        push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, rfp_restore, TEMPORARY, ILOC_RFP));
+        push_iloc_code(p, create_iloc_code1op(JUMP, TEMPORARY, end_retorno));
+        cmd_ret->code = p;
+
         $$ = cmd_ret;
     };
 

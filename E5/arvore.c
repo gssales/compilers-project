@@ -102,6 +102,8 @@ void libera(void* root) {
 		  destroy_lexvalue(node->value);
 		free(node->label);
 		free(node->children);
+    // if (node->code)
+    //   destroy_iloc_program(node->code);
     if (node->tmpList)
       free(node->tmpList);
 		free(node);
