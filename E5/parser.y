@@ -617,6 +617,47 @@ condicional:
         add_child(cmd_if, $3);
         add_child(cmd_if, $6);
         $$ = cmd_if;
+
+        // geracao de codigo
+        int r = new_reg();    // temporario
+        int r2 = new_reg();   // temporario opaco
+        int lt = new_label(); // label_verdade
+        int ld = new_label(); // label_depois
+
+        iloc_code_t* code_loadi;
+        code_loadi = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
+
+        iloc_code_t* code_cmpne;
+        code_cmpne = create_iloc_code3op(CMP_NE, TEMPORARY, $3->tmp, TEMPORARY, r, TEMPORARY, r2);
+
+        iloc_code_t* code_cbr;
+        code_cbr = create_iloc_code3op(CBR, TEMPORARY, r2, LABEL, lt, LABEL, ld);
+
+        iloc_code_t* code_nopt;
+        code_nopt = create_iloc_code(NOP);
+        code_nopt->label = lt;
+
+        // $6.code
+
+        iloc_code_t* code_jumpI;
+        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+
+        iloc_code_t* code_nopd;
+        code_nopd = create_iloc_code(NOP);
+        code_nopd->label = ld;
+
+        // concatena codigo gerado e blocos
+        $$->code = create_iloc_program();
+
+        push_iloc_code($$->code, code_loadi);
+        push_iloc_code($$->code, code_cmpne);
+        push_iloc_code($$->code, code_cbr);
+        push_iloc_code($$->code, code_nopt);
+        concat_iloc_program($$->code, $6->code);
+        push_iloc_code($$->code, code_jumpI);
+        push_iloc_code($$->code, code_nopd);
+
+        print_program($$->code); // debug
     } 
     | TK_PR_IF '('expr')' TK_PR_THEN command_block TK_PR_ELSE command_block  {
         node_t* cmd_if = create_node("if");
@@ -631,6 +672,56 @@ condicional:
         add_child(cmd_if, $6);
         add_child(cmd_if, $8);
         $$ = cmd_if;
+
+        // geracao de codigo
+        int r = new_reg();    // temporario
+        int r2 = new_reg();   // temporario opaco
+        int lt = new_label(); // label_verdade
+        int lf = new_label(); // label_falso
+        int ld = new_label(); // label_depois
+
+        iloc_code_t* code_loadi;
+        code_loadi = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
+
+        iloc_code_t* code_cmpne;
+        code_cmpne = create_iloc_code3op(CMP_NE, TEMPORARY, $3->tmp, TEMPORARY, r, TEMPORARY, r2);
+
+        iloc_code_t* code_cbr;
+        code_cbr = create_iloc_code3op(CBR, TEMPORARY, r2, LABEL, lt, LABEL, lf);
+
+        iloc_code_t* code_nopt;
+        code_nopt = create_iloc_code(NOP);
+        code_nopt->label = lt;
+
+        // $6.code
+
+        iloc_code_t* code_jumpI;
+        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+
+        iloc_code_t* code_nopf;
+        code_nopf = create_iloc_code(NOP);
+        code_nopf->label = lf;
+
+        // $8.code
+
+        iloc_code_t* code_nopd;
+        code_nopd = create_iloc_code(NOP);
+        code_nopd->label = ld;
+
+        // concatena codigo gerado e blocos
+        $$->code = create_iloc_program();
+
+        push_iloc_code($$->code, code_loadi);
+        push_iloc_code($$->code, code_cmpne);
+        push_iloc_code($$->code, code_cbr);
+        push_iloc_code($$->code, code_nopt);
+        concat_iloc_program($$->code, $6->code);
+        push_iloc_code($$->code, code_jumpI);
+        push_iloc_code($$->code, code_nopf);
+        concat_iloc_program($$->code, $8->code);
+        push_iloc_code($$->code, code_nopd);
+
+        //print_program($$->code); // debug
     };
 
 /* Iteração */

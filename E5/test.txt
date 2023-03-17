@@ -4,6 +4,8 @@ int main(){
   int x;
   int y;
   int z;
+  //if (x) then {y=10;} else {z=11;};
+  //if (x) then {y=10;};
   //z = x < y;
   //z = x <= y;
 
