@@ -4,7 +4,14 @@ int main(){
   int x;
   int y;
   int z;
-  z = x <= y;
+  //z = x < y;
+  //z = x <= y;
+
+  //z = x > y;
+  //z = x >= y;
+
+  //z = x == y;
+  //z = x != y;
 
   //bool b <= true; // testando tipo nao suportado
   //char c <= 'c'; // testando tipo nao suportado
