@@ -53,7 +53,7 @@ const char* map_iloc_format(iloc_op_t op) {
 }
 
 char* map_arg_type(arg_type_t type, int reg) {
-  const char* regs[] = { "rfp", "rsp", "rbss" };
+  const char* regs[] = { "rpc", "rfp", "rsp", "rbss" };
   if (reg >= 0) {
     char* c = malloc(10 * sizeof(char));
     if (type == TEMPORARY)
@@ -64,8 +64,8 @@ char* map_arg_type(arg_type_t type, int reg) {
       snprintf(c, 10, "%d", reg);
     return c;
   } 
-  if (type == TEMPORARY && reg >= -3) {
-    return regs[reg +3];
+  if (type == TEMPORARY && reg >= -4) {
+    return regs[reg +4];
   }
   return "";
 }

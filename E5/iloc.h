@@ -6,6 +6,7 @@
 #define ILOC_RBSS -1
 #define ILOC_RSP -2
 #define ILOC_RFP -3
+#define ILOC_RPC -4
 
 typedef enum {
   NOP,

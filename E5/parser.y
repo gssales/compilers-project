@@ -587,9 +587,12 @@ chamada_func:
         
         iloc_program_t* p = create_iloc_program();
         int tmp = new_reg();
-        if ($3 != NULL)
+        int jump_rpc = 0;
+        if ($3 != NULL) {
+          jump_rpc = $3->count_tmpList;
           push_iloc_code(p, $3->code->head);
-        push_iloc_code(p, create_iloc_code2op(LOAD_I, IMMEDIATE, 0/* endereço de retorno */, TEMPORARY, tmp));
+        }
+        push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RPC, IMMEDIATE, jump_rpc + 5/* endereço de retorno */, TEMPORARY, tmp));
         push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, tmp, TEMPORARY, ILOC_RSP, IMMEDIATE, 0));
         push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RSP, IMMEDIATE, 4));
         push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RSP, IMMEDIATE, 8));
