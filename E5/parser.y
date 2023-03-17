@@ -657,7 +657,7 @@ condicional:
         push_iloc_code($$->code, code_jumpI);
         push_iloc_code($$->code, code_nopd);
 
-        print_program($$->code); // debug
+        //print_program($$->code); // debug
     } 
     | TK_PR_IF '('expr')' TK_PR_THEN command_block TK_PR_ELSE command_block  {
         node_t* cmd_if = create_node("if");
@@ -739,6 +739,56 @@ iteracao:
         add_child(cmd_while, $3);
         add_child(cmd_while, $5);
         $$ = cmd_while;
+        
+        // geracao de codigo
+        int r = new_reg();    // temporario
+        int r2 = new_reg();   // temporario opaco
+        int lb_cond = new_label(); // lb_condicao
+        int lb_block = new_label(); // lb_codigo
+        int lb_depois = new_label(); // lb_depois
+
+        // jump inicial pra lb_cond
+        iloc_code_t* code_jumpI;
+        code_jumpI = create_iloc_code1op(JUMP, LABEL, lb_cond);
+
+        // lb_codigo: nop + codigo do command_block ($5->code)
+        iloc_code_t* code_block_nop;
+        code_block_nop = create_iloc_code(NOP);
+        code_block_nop->label = lb_block;
+
+        // add jump pra lb_cond pós execucao do bloco
+
+        // lb_cond: codigo do teste condicao expr (loadi+cmpne+cbr)
+        iloc_code_t* code_loadi;
+        code_loadi = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
+        code_loadi->label = lb_cond;
+        iloc_code_t* code_cmpne;
+        code_cmpne = create_iloc_code3op(CMP_NE, TEMPORARY, $3->tmp, TEMPORARY, r, TEMPORARY, r2);
+        iloc_code_t* code_cbr;
+        code_cbr = create_iloc_code3op(CBR, TEMPORARY, r2, LABEL, lb_block, LABEL, lb_depois);
+
+        // lb_depois: nop
+        iloc_code_t* code_nopd;
+        code_nopd = create_iloc_code(NOP);
+        code_nopd->label = lb_depois;
+
+        // concatena codigo gerado e bloco
+        $$->code = create_iloc_program();
+
+        push_iloc_code($$->code, code_jumpI);
+
+        // TODO: DEBUG CODE_BLOCK NAO SENDO INSERIDO?
+        push_iloc_code($$->code, code_block_nop); // lb_block
+        concat_iloc_program($$->code, $5->code);
+
+        push_iloc_code($$->code, code_jumpI);
+        push_iloc_code($$->code, code_loadi); // lb_cond
+        push_iloc_code($$->code, code_cmpne);
+        push_iloc_code($$->code, code_cbr);
+        push_iloc_code($$->code, code_nopd); // lb_depois
+
+        print_program($$->code); // debug
+
     };
 
 /* Expressão */

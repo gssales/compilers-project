@@ -204,7 +204,7 @@ void concat_iloc_program(iloc_program_t* program1, iloc_program_t* program2) {
 }
 
 int new_label() {
-  static int count_label = 0;
+  static int count_label = 1;
   return count_label++;
 }
 
