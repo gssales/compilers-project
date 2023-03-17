@@ -102,7 +102,7 @@ programa:
 
         symbol_t* main = get_symbol_stack(0, table_stack, "main")->symbol;
 
-        printf("\nPRINT_PROGRAM NA RAIZ:\n");
+        // printf("\nPRINT_PROGRAM NA RAIZ:\n");
         iloc_program_t* program = create_iloc_program();
         push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RFP));
         push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RSP));
@@ -859,7 +859,7 @@ iteracao:
         push_iloc_code($$->code, code_cbr);
         push_iloc_code($$->code, code_nopd); // lb_depois
 
-        print_program($$->code); // debug
+        // print_program($$->code); // debug
 
     };
 
