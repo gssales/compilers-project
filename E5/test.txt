@@ -31,7 +31,7 @@ int main(){
   int dLocal,eLocal <= 10,fLocal,gLocal,hLocal;
   int logUm, logDois;
 
-  //int eLocal <= 10; // PRECISA IMPLEMENTAR?
+  int zLocal <= 10;
 
   aLocal = bLocal;
   cLocal = 100;

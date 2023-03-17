@@ -102,9 +102,6 @@ programa:
 
         symbol_t* main = get_symbol_stack(0, table_stack, "main")->symbol;
 
-        // print_debug(arvore);
-
-        // printf("\nPRINT_PROGRAM NA RAIZ:\n");
         iloc_program_t* program = create_iloc_program();
         push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RFP));
         push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RSP));
