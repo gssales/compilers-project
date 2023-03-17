@@ -320,7 +320,7 @@ declara_var:
         table_t *t = get_table(ts, ts->count-1);
 
         // adiciona tipo/tamanho/deslocamento a lista de declaracoes
-        add_types_to_strlist(strlist, t, $1->tk_type, 1);
+        add_types_to_strlist(strlist, t, $1->tk_type, 0);
         clear_strlist(strlist);
 
         infer_type_initialization($2, tktype_to_type($1->tk_type));
@@ -754,6 +754,47 @@ expr_preced3:
         $$->sym_type = infer_type($1, $3);
         add_child($$, $1);
         add_child($$, $3);
+
+        // geracao de codigo
+        int r = new_reg();    // temporario
+        int lt = new_label(); // label_verdade
+        int lf = new_label(); // label_falso
+        int ld = new_label(); // label_depois
+
+        iloc_code_t* code_cmple;
+        code_cmple = create_iloc_code3op(CMP_LE, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+
+        iloc_code_t* code_cbr;
+        code_cbr = create_iloc_code3op(CBR, TEMPORARY, r, LABEL, lt, LABEL, lf);
+
+        iloc_code_t* code_loadi_lt;
+        code_loadi_lt = create_iloc_code2op(LOAD_I, IMMEDIATE, 1, TEMPORARY, r);
+        code_loadi_lt->label = lt;
+
+        iloc_code_t* code_jumpI;
+        code_jumpI = create_iloc_code1op(JUMP, LABEL, ld);
+
+        iloc_code_t* code_loadi_lf;
+        code_loadi_lf = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
+        code_loadi_lf->label = lf;
+
+        iloc_code_t* code_nop;
+        code_nop = create_iloc_code(NOP);
+        code_nop->label = ld;
+
+        // concatena codigo das expr e add codigo gerado
+        concat_iloc_program($1->code, $3->code);
+
+        push_iloc_code($1->code, code_cmple);
+        push_iloc_code($1->code, code_cbr);
+        push_iloc_code($1->code, code_loadi_lt);
+        push_iloc_code($1->code, code_jumpI);
+        push_iloc_code($1->code, code_loadi_lf);
+        push_iloc_code($1->code, code_nop);
+
+        $$->code = $1->code;
+
+        print_program($$->code); // debug
     }
     | expr_preced3 TK_OC_GE expr_preced4  { 
         $$ = create_node(">=");
@@ -783,7 +824,7 @@ expr_preced4:
         // temporario com resultado
         $$->tmp = r;
         
-        print_program($$->code); // debug
+        //print_program($$->code); // debug
 
     }
     | expr_preced4 '-' expr_preced5  { 
