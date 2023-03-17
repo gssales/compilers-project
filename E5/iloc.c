@@ -162,33 +162,57 @@ iloc_program_t* create_iloc_program() {
   return program;
 }
 
+iloc_code_t* get_last_iloc_code(iloc_code_t* code) {
+  iloc_code_t* last = code;
+  while (last->next != NULL) 
+    last = last->next;
+  return last;
+}
 
+iloc_code_t* get_first_iloc_code(iloc_code_t* code) {
+  iloc_code_t* first = code;
+  while (first->previous != NULL)
+    first = first->previous;
+  return first;
+}
+
+int length_iloc_code(iloc_code_t* code) {
+  iloc_code_t* c = get_first_iloc_code(code);
+  int count = 1;
+  while (c->next != NULL) {
+    count++;
+    c = c->next;
+  }
+  return count;
+}
 
 void push_iloc_code(iloc_program_t* program, iloc_code_t* code) {
   if (program != NULL && code != NULL) {
     if (program->count == 0) {
-      program->head = code;
-      program->tail = code;
+      program->head = get_first_iloc_code(code);
+      program->tail = get_last_iloc_code(code);
     } else {
-      code->previous = program->tail;
-      program->tail->next = code;
-      program->tail = code;
+      iloc_code_t* first = get_first_iloc_code(code);
+      first->previous = program->tail;
+      program->tail->next = first;
+      program->tail = first;
     }
-    program->count++;
+    program->count += length_iloc_code(code);
   }
 }
 
 void unshift_iloc_code(iloc_program_t* program, iloc_code_t* code) {
   if (program != NULL && code != NULL) {
     if (program->count == 0) {
-      program->head = code;
-      program->tail = code;
+      program->head = get_first_iloc_code(code);
+      program->tail = get_last_iloc_code(code);
     } else {
-      code->next = program->head;
-      program->head->previous = code;
-      program->head = code;
+      iloc_code_t* last = get_last_iloc_code(code);
+      last->next = program->head;
+      program->head->previous = last;
+      program->head = last;
     }
-    program->count++;
+    program->count += length_iloc_code(code);
   }
 }
 

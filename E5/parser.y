@@ -235,7 +235,7 @@ funcao:
         p->head->label = rot;
         $$->code = p;
 
-        print_program(p);
+        // print_program(p);
 
         //print_table(to);
         destroy_table(to);
@@ -584,6 +584,25 @@ chamada_func:
             add_child(funcao, $3);
         funcao->sym_type = s->sym_type;
         $$ = funcao;
+        
+        iloc_program_t* p = create_iloc_program();
+        int tmp = new_reg();
+        if ($3 != NULL)
+          push_iloc_code(p, $3->code->head);
+        push_iloc_code(p, create_iloc_code2op(LOAD_I, IMMEDIATE, 0/* endereço de retorno */, TEMPORARY, tmp));
+        push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, tmp, TEMPORARY, ILOC_RSP, IMMEDIATE, 0));
+        push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RSP, IMMEDIATE, 4));
+        push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RSP, IMMEDIATE, 8));
+        if ($3 != NULL)
+          for (int i = 0; i < $3->count_tmpList; i++)
+            push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, $3->tmpList[i], TEMPORARY, ILOC_RSP, IMMEDIATE, 16 + i*4));
+        push_iloc_code(p, create_iloc_code1op(JUMP_I, LABEL, s->label));
+        push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RSP, IMMEDIATE, 12, TEMPORARY, tmp));
+
+        $$->code = p;
+        $$->tmp = tmp;
+
+        print_program(p);
 
         destroy_lexvalue($1);
     };
@@ -596,6 +615,16 @@ chamada_lista_params:
     chamada_lista_params ',' expr  {
         node_t* last_expr = get_last_of($1, AST_EXPRESSION);
         add_child(last_expr, $3);
+        push_iloc_code($1->code, $3->code->head);
+        if ($1->count_tmpList == 0) {
+          $1->count_tmpList = 2;
+          $1->tmpList = malloc($1->count_tmpList * sizeof(int));
+          $1->tmpList[0] = $1->tmp;
+        } else {
+          $1->count_tmpList++;
+          $1->tmpList = realloc($1->tmpList, $1->count_tmpList * sizeof(int));
+        }
+        $1->tmpList[$1->count_tmpList-1] = $3->tmp;
         $$ = $1;
     } | 
     expr  {
@@ -828,6 +857,9 @@ expr:
     expr_preced0  {
         $$ = $1;
         $$->ast_type = AST_EXPRESSION;
+        $$->code = create_iloc_program();
+        push_iloc_code($$->code, create_iloc_code(NOP));
+        $$->tmp = new_reg();
     };
 
 expr_preced0: 

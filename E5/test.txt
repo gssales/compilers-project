@@ -1,5 +1,9 @@
 int aGlobal,bGlobal,cGlobal;
 
+int foo() {
+  return 0;
+}
+
 int main(){
   int x;
   int y;
@@ -35,6 +39,9 @@ int main(){
   //eLocal = 3 - 4;
   //fLocal = 5 * 6;
   //gLocal = 7 / 8;
+
+  foo(1, 2, 3);
+  foo();
 
   //hLocal = aLocal + bLocal;
 

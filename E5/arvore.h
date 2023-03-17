@@ -15,6 +15,8 @@ struct node {
 	node_t **children;
 
 	// campos aux. geracao de codigo
+	int count_tmpList;
+	int *tmpList;
 	int tmp;
 	int tl;
 	int fl;
