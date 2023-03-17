@@ -847,13 +847,13 @@ iteracao:
         // concatena codigo gerado e bloco
         $$->code = create_iloc_program();
 
-        push_iloc_code($$->code, code_jumpI);
+        push_iloc_code($$->code, create_iloc_code1op(JUMP, LABEL, lb_cond));
 
         // TODO: DEBUG CODE_BLOCK NAO SENDO INSERIDO?
         push_iloc_code($$->code, code_block_nop); // lb_block
         concat_iloc_program($$->code, $5->code);
 
-        push_iloc_code($$->code, code_jumpI);
+        push_iloc_code($$->code, create_iloc_code1op(JUMP, LABEL, lb_cond));
         push_iloc_code($$->code, code_loadi); // lb_cond
         push_iloc_code($$->code, code_cmpne);
         push_iloc_code($$->code, code_cbr);
