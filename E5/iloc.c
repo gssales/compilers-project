@@ -4,7 +4,7 @@
 
 const char* map_iloc_op(iloc_op_t op) {
   const char* iloc_op_consts[] = {
-    "nop", "add", "addI", "sub", "subI", "rsubI", "mult", "multI", "div", "divI",
+    "nop", "halt", "add", "addI", "sub", "subI", "rsubI", "mult", "multI", "div", "divI",
     "rdivI", "lshift", "lshiftI", "rshift", "rshiftI", "and", "andI", "or", "orI",
     "xor", "xorI", "load", "loadI", "loadAI", "loadA0", "cload", "cloadAI",
     "cloadA0", "store", "storeAI", "storeAO", "cstore", "cstoreAI", "cstoreAO",
@@ -127,7 +127,7 @@ char* iloc_code_to_string(iloc_code_t* code) {
       if (code->label > 0)
         length += snprintf(buffer, ILOC_CODE_BUFFER_SIZE, "l%d: ", code->label);
       length += snprintf(buffer+length, ILOC_CODE_BUFFER_SIZE-length, "%s", map_iloc_op(code->op));
-      if (code->op != NOP) {
+      if (code->op != NOP && code->op != HALT) {
         char* arg0 = map_arg_type(code->arg_types[0], code->args[0]);
         char* arg1 = map_arg_type(code->arg_types[1], code->args[1]);
         char* arg2 = map_arg_type(code->arg_types[2], code->args[2]);
@@ -195,9 +195,9 @@ void push_iloc_code(iloc_program_t* program, iloc_code_t* code) {
       iloc_code_t* first = get_first_iloc_code(code);
       first->previous = program->tail;
       program->tail->next = first;
-      program->tail = first;
+      program->tail = get_last_iloc_code(code);
     }
-    program->count += length_iloc_code(code);
+    program->count = length_iloc_code(code);
   }
 }
 
@@ -210,9 +210,9 @@ void unshift_iloc_code(iloc_program_t* program, iloc_code_t* code) {
       iloc_code_t* last = get_last_iloc_code(code);
       last->next = program->head;
       program->head->previous = last;
-      program->head = last;
+      program->head = get_first_iloc_code(code);
     }
-    program->count += length_iloc_code(code);
+    program->count = length_iloc_code(code);
   }
 }
 

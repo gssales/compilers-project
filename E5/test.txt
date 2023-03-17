@@ -5,7 +5,7 @@ int foo() {
 }
 
 int main(){
-  int x;
+  int x <= 1;
   int y;
   int z;
 
@@ -40,17 +40,11 @@ int main(){
   //fLocal = 5 * 6;
   //gLocal = 7 / 8;
 
-  foo(1, 2, 3);
-  foo();
+  //foo(1, 2, 3);
+  //foo();
 
   //hLocal = aLocal + bLocal;
 
   //logUm = 9 && 9;
   //logDois = 10 || 10;
-
-  dLocal = 1 + 2;
-  eLocal = 3 - 4;
-  fLocal = 5 * 6;
-  gLocal = 7 / 8;
-  hLocal = aLocal + bLocal;
 }

@@ -94,18 +94,26 @@ programa:
     escopo_global lista_elementos  {
         arvore = $2;
 
-        table_t *to = pop_table(table_stack);
+        // table_t *to = pop_table(table_stack);
         //print_table(to);
-
-        destroy_stack(table_stack);
 
         clear_strlist(strlist);
         free(strlist);
 
-        printf("\nPRINT_PROGRAM NA RAIZ:\n");
-        print_program($2->code);
+        symbol_t* main = get_symbol_stack(0, table_stack, "main")->symbol;
 
-        destroy_iloc_program($2->code);
+        printf("\nPRINT_PROGRAM NA RAIZ:\n");
+        iloc_program_t* program = create_iloc_program();
+        push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RFP));
+        push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RSP));
+        push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, $2->code->count + 5, TEMPORARY, ILOC_RBSS));
+        push_iloc_code(program, create_iloc_code1op(JUMP_I, LABEL, main->label));
+        concat_iloc_program(program, $2->code);
+        push_iloc_code(program, create_iloc_code(HALT));
+        print_program(program);
+
+        destroy_stack(table_stack);
+        destroy_iloc_program(program);
 
     } 
     | {
@@ -127,6 +135,7 @@ lista_elementos:
             if ($1 != NULL) {
                 node_t* last_function = get_last_of($1, AST_FUNCTION);
                 add_child(last_function, $2);
+                concat_iloc_program($1->code, $2->code);
                 $$ = $1;
             } else {
                 $$ = $2;
@@ -231,16 +240,10 @@ funcao:
         iloc_program_t* p = create_iloc_program();
         push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RFP));
         push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RSP, IMMEDIATE, to->disp, TEMPORARY, ILOC_RSP));
-        if ($8->code && $8->code->count > 0) {
+        if ($8->code && $8->code->count > 0)
           concat_iloc_program(p, $8->code);
-          // empty_iloc_program($8->code);
-          // destroy_iloc_program($8->code);
-          // $8->code = NULL;
-        }
         p->head->label = rot;
         $$->code = p;
-
-        print_program(p);
 
         //print_table(to);
         destroy_table(to);
@@ -251,7 +254,7 @@ funcao:
 
 empilha_escopo: { 
         // cria nova tabela de simbolos e empilha na pilha de escopos
-        push_table(table_stack, create_symbol_table(0, 20));
+        push_table(table_stack, create_symbol_table(0, 16));
     };
 
 func_params: lista_params {} | {};
@@ -293,9 +296,6 @@ lista_commands:
                 node_t* last_cmd = get_last_of($1, AST_COMMAND);
                 add_child(last_cmd, $2);
                 concat_iloc_program($1->code, $2->code);
-                // empty_iloc_program($2->code);
-                // destroy_iloc_program($2->code);
-                // $2->code = NULL;
                 $$ = $1;
             } else {
                 $$ = $2;
@@ -309,9 +309,9 @@ lista_commands:
 command:  
     command_block  { $$ = $1; }
     | declara_var  { 
-	if ($1 != NULL)
-	    $1->ast_type = AST_COMMAND;
-	$$ = $1;
+        if ($1 != NULL)
+            $1->ast_type = AST_COMMAND;
+        $$ = $1;
     } 
     | atrib {   
         $1->ast_type = AST_COMMAND;
@@ -358,6 +358,7 @@ lista_local_var:
             if ($1 != NULL) {
                 node_t* last_cmd = get_last_of($1, AST_COMMAND);
                 add_child(last_cmd, $3);
+                concat_iloc_program($1->code, $3->code);
                 $$ = $1;
             } else {
                 $$ = $3;
@@ -416,9 +417,9 @@ local_var:
         int r2 = $3->tmp; // temporario com literal
         // verifica se global (rbss) ou local (rfp)
         if (s->global) {
-            code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, -1, IMMEDIATE, s->disp);
+            code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, ILOC_RBSS, IMMEDIATE, s->disp);
         } else {
-            code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, -3, IMMEDIATE, s->disp);
+            code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, ILOC_RFP, IMMEDIATE, s->disp);
         }
 
         // concatena codigo do literal com codigo gerado
@@ -612,7 +613,7 @@ chamada_func:
         $$->code = p;
         $$->tmp = tmp;
 
-        print_program(p);
+        // print_program(p);
 
         destroy_lexvalue($1);
     };
@@ -668,6 +669,7 @@ retorno:
         push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, rfp_restore, TEMPORARY, ILOC_RFP));
         push_iloc_code(p, create_iloc_code1op(JUMP, TEMPORARY, end_retorno));
         cmd_ret->code = p;
+        // print_program(p);
 
         $$ = cmd_ret;
     };
@@ -882,9 +884,9 @@ expr:
     expr_preced0  {
         $$ = $1;
         $$->ast_type = AST_EXPRESSION;
-        $$->code = create_iloc_program();
-        push_iloc_code($$->code, create_iloc_code(NOP));
-        $$->tmp = new_reg();
+        // $$->code = create_iloc_program();
+        // push_iloc_code($$->code, create_iloc_code(NOP));
+        // $$->tmp = new_reg();
     };
 
 expr_preced0: 

@@ -9,7 +9,7 @@
 #define ILOC_RPC -4
 
 typedef enum {
-  NOP,
+  NOP,  HALT,
   ADD,  ADD_I,
   SUB,  SUB_I,  R_SUB_I,
   MULT, MULT_I,
