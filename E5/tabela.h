@@ -27,6 +27,7 @@ typedef struct symbol {
 	int global;
 	int disp; // deslocamento a partir de rfp (var local) ou rbss (var global)
 	int label; // rotulo para o jump na chamada de função
+	int end_label; // rotulo para o fim do programa
 	// ... outros argumentos/função; dimensões/arranjo
 } symbol_t;
 

@@ -23,10 +23,17 @@ struct node {
 	iloc_program_t *code;
 };
 
+typedef struct list_of_nodes {
+	int count;
+	node_t** nodes;
+} list_node_t;
+
 node_t* create_node(char* label);
 node_t* create_leaf(char* label, lexvalue_t *value);
 
 node_t* get_last_of(node_t *list, ast_type_t ast_type);
+list_node_t* get_all_of(node_t *list, char* label);
+void destroy_list_node(list_node_t* r);
 
 void add_child(node_t *node, node_t *child); // adiciona um nodo no final da lista
 void unshift_child(node_t *node, node_t *child); // adiciona um nodo no inicio da lista

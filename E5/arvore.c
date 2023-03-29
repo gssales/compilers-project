@@ -51,6 +51,37 @@ node_t* get_last_of(node_t *list, ast_type_t ast_type) {
   return NULL;
 }
 
+list_node_t* _get_all_of(list_node_t* r, node_t *list, char* label) {
+  if (r != NULL) {
+    if (strcmp(list->label, label) == 0) {
+      r->count = r->count + 1;
+      r->nodes = realloc(r->nodes, r->count * sizeof(node_t*));
+      r->nodes[r->count-1] = list;
+    }
+
+    for (int i = 0; i < list->count_children; i++)
+      r = _get_all_of(r, list->children[i], label);
+  }
+  return r;
+}
+
+list_node_t* get_all_of(node_t *list, char* label) {
+  list_node_t* results = malloc(sizeof(list_node_t));
+  if (results != NULL) {
+    results->count = 0;
+    results->nodes = malloc(0);
+    results = _get_all_of(results, list, label);
+  }
+  return results;
+}
+
+void destroy_list_node(list_node_t* r) {
+  if (r != NULL) {
+    free(r->nodes);
+    free(r);
+  }
+}
+
 void add_child(node_t *node, node_t *child) {
   if (node != NULL && child != NULL){
     node->count_children++;

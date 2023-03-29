@@ -1,9 +1,9 @@
 //int w, z;
 
-int foo() {
-  int x <= 9;
-  return x;
-}
+//int foo() {
+  //int x <= 9;
+  //return x;
+//}
 
 int main() {
   int y;
@@ -19,6 +19,8 @@ int main() {
   //  z = 24/4;
   //};
 
-  //y = 1;
-  y = foo();
+  y = 1;
+  //y = foo();
+
+  return 9;
 }

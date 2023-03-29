@@ -236,6 +236,20 @@ funcao:
         int rot = new_label();
         s->label = rot;
 
+        printf("teste\n");
+        if (strcmp($2->tk_value.s, "main") == 0) {
+            list_node_t* returns = get_all_of($8, "return");
+            //print_debug($8);
+            printf("teste %d\n", returns->count);
+            for (int i = 0; i < returns->count; i++) {
+                printf("teste\n");
+                node_t* ret = returns->nodes[i];
+                destroy_iloc_program(ret->code);
+                ret->code = NULL;
+            }
+            destroy_list_node(returns);
+        }
+
         iloc_program_t* p = create_iloc_program();
         push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RFP));
         push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RSP, IMMEDIATE, to->disp, TEMPORARY, ILOC_RSP));
@@ -663,6 +677,9 @@ retorno:
         cmd_ret->sym_type = $2->sym_type;
 
         add_child(cmd_ret, $2);
+
+        //print_pilha(table_stack);
+        //print_debug(arvore);
 
         iloc_program_t* p = create_iloc_program();
         concat_iloc_program(p, $2->code);

@@ -7,7 +7,7 @@ typedef enum {
 	AST_COMMAND, 
 	AST_EXPRESSION, 
 	AST_VAR_INITIALIZED, 
-	AST_LIT_DECLARED 
+	AST_LIT_DECLARED
 } ast_type_t;
 
 typedef enum { 
