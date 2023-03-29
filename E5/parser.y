@@ -835,11 +835,11 @@ iteracao:
         code_block_nop->label = lb_block;
 
         // lb_cond: codigo do teste condicao expr (loadi+cmpne+cbr)
-        iloc_code_t* code_loadi;
-        code_loadi = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
-        code_loadi->label = lb_cond;
-        iloc_code_t* code_cmpne;
-        code_cmpne = create_iloc_code3op(CMP_NE, TEMPORARY, $3->tmp, TEMPORARY, r, TEMPORARY, r2);
+        // iloc_code_t* code_loadi;
+        // code_loadi = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, r);
+        // code_loadi->label = lb_cond;
+        // iloc_code_t* code_cmpne;
+        // code_cmpne = create_iloc_code3op(CMP_NE, TEMPORARY, $3->tmp, TEMPORARY, r, TEMPORARY, r2);
         iloc_code_t* code_cbr;
         code_cbr = create_iloc_code3op(CBR, TEMPORARY, $3->tmp, LABEL, lb_block, LABEL, lb_depois);
 
