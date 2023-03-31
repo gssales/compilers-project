@@ -27,7 +27,6 @@ typedef struct symbol {
 	int global;
 	int disp; // deslocamento a partir de rfp (var local) ou rbss (var global)
 	int label; // rotulo para o jump na chamada de função
-	int end_label; // rotulo para o fim do programa
 	// ... outros argumentos/função; dimensões/arranjo
 } symbol_t;
 
@@ -43,6 +42,8 @@ typedef struct insert_pair {
 
 typedef struct tabela_simbolo {
 	int is_global_scope;
+	int is_main_function;
+	int end_label; // rótulo para o fim da função main
 	int count_symbols;
 	int* hashes;
 	int size;
@@ -64,7 +65,7 @@ void destroy_symbol(symbol_t* symbol);
 // talvez uma funcão pra cada natureza de simbolo tipo "create_function_symbol" "create_array_symbol"...
 void print_symbol(symbol_t* symbol);
 
-table_t* create_symbol_table(int is_global_scope, int initial_disp);
+table_t* create_symbol_table(int is_global_scope, int is_main_function, int initial_disp);
 int insert_symbol(table_t* table, char* key, symbol_t* symbol);
 int is_inserted(int result);
 insert_pair_t* get_symbol(table_t* table, char* key);

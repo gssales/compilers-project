@@ -105,7 +105,8 @@ programa:
         iloc_program_t* program = create_iloc_program();
         push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RFP));
         push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RSP));
-        push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, $2->code->count + 5, TEMPORARY, ILOC_RBSS));
+        push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, $2->code->count + 6, TEMPORARY, ILOC_RBSS));
+        push_iloc_code(program, create_iloc_code2op(I2I, TEMPORARY, ILOC_RFP, TEMPORARY, ILOC_RSP));
         push_iloc_code(program, create_iloc_code1op(JUMP_I, LABEL, main->label));
         concat_iloc_program(program, $2->code);
         push_iloc_code(program, create_iloc_code(HALT));
@@ -122,7 +123,7 @@ programa:
 escopo_global: {
     // cria pilha e empilha a tabela de escopo global
     table_stack = create_stack();
-    push_table(table_stack, create_symbol_table(1, 0));
+    push_table(table_stack, create_symbol_table(1, 0, 0));
 
     // cria lista de identificadores para receberem tipo/tamanho/deslocamento nas declaracoes
     strlist = create_strlist();
@@ -218,46 +219,47 @@ funcao:
     tipo TK_IDENTIFICADOR '(' {
         // add funcao na tabela de escopo atual
         symbol_t *s = create_symbol_function($2->line_number, $2, tktype_to_type($1->tk_type));
+        int rot = new_label();
+        s->label = rot;
         int result = push_symbol_into_table(table_stack, $2->tk_value.s, s);
         if (!is_inserted(result)) destroy_symbol(s);
 
-    } empilha_escopo func_params ')' command_block_no_new_scope  {
+        if (strcmp($2->tk_value.s, "main") == 0) {
+            table_t* new_table = create_symbol_table(0, 1, 0);
+            new_table->end_label = new_label();
+            push_table(table_stack, new_table);
+        }
+        else
+            push_table(table_stack, create_symbol_table(0, 0, 16));
+
+
+    } func_params ')' command_block_no_new_scope  {
         // desempilha escopo do bloco de corpo da funcao
 
         node_t* funcao = create_node($2->tk_value.s);
         funcao->ast_type = AST_FUNCTION;
-        if ($8 != NULL)
-            add_child(funcao, $8);
+        if ($7 != NULL)
+            add_child(funcao, $7);
         $$ = funcao;
 
         table_t *to = pop_table(table_stack);
         symbol_t *s = get_symbol_stack($2->line_number, table_stack, $2->tk_value.s)->symbol;
 
-        int rot = new_label();
-        s->label = rot;
-
-        printf("teste\n");
-        if (strcmp($2->tk_value.s, "main") == 0) {
-            list_node_t* returns = get_all_of($8, "return");
-            //print_debug($8);
-            printf("teste %d\n", returns->count);
-            for (int i = 0; i < returns->count; i++) {
-                printf("teste\n");
-                node_t* ret = returns->nodes[i];
-                destroy_iloc_program(ret->code);
-                ret->code = NULL;
-            }
-            destroy_list_node(returns);
-        }
-
         iloc_program_t* p = create_iloc_program();
-        push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RFP));
-        push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RSP, IMMEDIATE, to->disp, TEMPORARY, ILOC_RSP));
-        if ($8 && $8->code && $8->code->count > 0) {
-          concat_iloc_program(p, $8->code);
-          // destroy_iloc_program($8->code);
+        if (!to->is_main_function) {
+            push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RFP));
         }
-        p->head->label = rot;
+        push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RSP, IMMEDIATE, to->disp, TEMPORARY, ILOC_RSP));
+        if ($7 && $7->code && $7->code->count > 0) {
+          concat_iloc_program(p, $7->code);
+          // destroy_iloc_program($7->code);
+        }
+        if (to->is_main_function) {
+            iloc_code_t* end = create_iloc_code(NOP);
+            end->label = to->end_label;
+            push_iloc_code(p, end);
+        }
+        p->head->label = s->label;
         $$->code = p;
 
         //print_table(to);
@@ -269,7 +271,7 @@ funcao:
 
 empilha_escopo: { 
         // cria nova tabela de simbolos e empilha na pilha de escopos
-        push_table(table_stack, create_symbol_table(0, 16));
+        push_table(table_stack, create_symbol_table(0, 0, 16));
     };
 
 func_params: lista_params {} | {};
@@ -625,10 +627,12 @@ chamada_func:
         push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RPC, IMMEDIATE, jump_rpc + 5/* endereço de retorno */, TEMPORARY, tmp));
         push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, tmp, TEMPORARY, ILOC_RSP, IMMEDIATE, 0));
         push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RSP, IMMEDIATE, 4));
-        push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RSP, IMMEDIATE, 8));
-        if ($3 != NULL)
-          for (int i = 0; i < $3->count_tmpList; i++)
+        push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, ILOC_RFP, TEMPORARY, ILOC_RSP, IMMEDIATE, 8));
+        if ($3 != NULL) {
+          for (int i = 0; i < $3->count_tmpList; i++) {
             push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, $3->tmpList[i], TEMPORARY, ILOC_RSP, IMMEDIATE, 16 + i*4));
+          }
+        }
         push_iloc_code(p, create_iloc_code1op(JUMP_I, LABEL, s->label));
         push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RSP, IMMEDIATE, 12, TEMPORARY, tmp));
 
@@ -649,18 +653,15 @@ chamada_lista_params:
         node_t* last_expr = get_last_of($1, AST_EXPRESSION);
         add_child(last_expr, $3);
         concat_iloc_program($1->code, $3->code);
-        if ($1->count_tmpList == 0) {
-          $1->count_tmpList = 2;
-          $1->tmpList = malloc($1->count_tmpList * sizeof(int));
-          $1->tmpList[0] = $1->tmp;
-        } else {
-          $1->count_tmpList++;
-          $1->tmpList = realloc($1->tmpList, $1->count_tmpList * sizeof(int));
-        }
+        $1->count_tmpList++;
+        $1->tmpList = realloc($1->tmpList, $1->count_tmpList * sizeof(int));
         $1->tmpList[$1->count_tmpList-1] = $3->tmp;
         $$ = $1;
     } | 
     expr  {
+        $1->count_tmpList = 1;
+        $1->tmpList = malloc($1->count_tmpList * sizeof(int));
+        $1->tmpList[0] = $1->tmp;
         $$ = $1;
     };
 
@@ -678,21 +679,25 @@ retorno:
 
         add_child(cmd_ret, $2);
 
-        //print_pilha(table_stack);
-        //print_debug(arvore);
-
+        stack_t *ts = table_stack;
+        table_t* current_table = get_table(ts, ts->count-1);
         iloc_program_t* p = create_iloc_program();
         concat_iloc_program(p, $2->code);
         push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, $2->tmp, TEMPORARY, ILOC_RFP, IMMEDIATE, 12));
-        int end_retorno = new_reg();
-        push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 0, TEMPORARY, end_retorno));
-        int rsp_restore = new_reg();
-        push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 4, TEMPORARY, rsp_restore));
-        int rfp_restore = new_reg();
-        push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 8, TEMPORARY, rfp_restore));
-        push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, rsp_restore, TEMPORARY, ILOC_RSP));
-        push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, rfp_restore, TEMPORARY, ILOC_RFP));
-        push_iloc_code(p, create_iloc_code1op(JUMP, TEMPORARY, end_retorno));
+
+        if (current_table->is_main_function) {
+            push_iloc_code(p, create_iloc_code1op(JUMP_I, LABEL, current_table->end_label));
+        } else {
+            int end_retorno = new_reg();
+            push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 0, TEMPORARY, end_retorno));
+            int rsp_restore = new_reg();
+            push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 4, TEMPORARY, rsp_restore));
+            int rfp_restore = new_reg();
+            push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 8, TEMPORARY, rfp_restore));
+            push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, rsp_restore, TEMPORARY, ILOC_RSP));
+            push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, rfp_restore, TEMPORARY, ILOC_RFP));
+            push_iloc_code(p, create_iloc_code1op(JUMP, TEMPORARY, end_retorno));
+        }
         cmd_ret->code = p;
         // print_program(p);
 

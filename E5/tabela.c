@@ -91,10 +91,12 @@ u_int32_t hash_function32(char* str) {
   return hash;
 }
 
-table_t* create_symbol_table(int is_global_scope, int initial_disp) {
+table_t* create_symbol_table(int is_global_scope, int is_main_function, int initial_disp) {
   table_t* t = malloc(sizeof(table_t));
   if (t != NULL) {
     t->is_global_scope = is_global_scope;
+    t->is_main_function = is_main_function;
+    t->end_label = -1;
     t->disp = initial_disp;
     t->count_symbols = 0;
     t->size = HASH_TABLE_SIZE;
@@ -218,15 +220,13 @@ insert_pair_t* get_symbol_stack(int lineno, stack_t* table_stack, char* key) {
 
 void check_declared(int lineno, stack_t* table_stack, char* key) {
   insert_pair_t* par = NULL;
-  for (int i = table_stack->count-1; i >= 0; i--) {
-    table_t* t = table_stack->tables[i];
-    par = get_symbol(table_stack->tables[i], key);
-    // ERR_DECLARED: JA EXISTE SIMBOLO COM ESSE IDENTIFICADOR
-    if (par != NULL) { 
-      symbol_t *s = par->symbol;
-      if (s->sym_nature != SYM_LITERAL) {
-        semantic_error(ERR_DECLARED, s->lineno, key, s);
-      }
+  table_t* t = get_table(table_stack, table_stack->count-1);
+  par = get_symbol(t, key);
+  // ERR_DECLARED: JA EXISTE SIMBOLO COM ESSE IDENTIFICADOR
+  if (par != NULL) { 
+    symbol_t *s = par->symbol;
+    if (s->sym_nature != SYM_LITERAL) {
+      semantic_error(ERR_DECLARED, s->lineno, key, s);
     }
   }
 }
