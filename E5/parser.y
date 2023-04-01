@@ -682,12 +682,14 @@ retorno:
         stack_t *ts = table_stack;
         table_t* current_table = get_table(ts, ts->count-1);
         iloc_program_t* p = create_iloc_program();
-        concat_iloc_program(p, $2->code);
-        push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, $2->tmp, TEMPORARY, ILOC_RFP, IMMEDIATE, 12));
 
         if (current_table->is_main_function) {
+            destroy_iloc_program($2->code);
+            //push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, $2->tmp, TEMPORARY, ILOC_RFP, IMMEDIATE, 0));
             push_iloc_code(p, create_iloc_code1op(JUMP_I, LABEL, current_table->end_label));
         } else {
+            concat_iloc_program(p, $2->code);
+            push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, $2->tmp, TEMPORARY, ILOC_RFP, IMMEDIATE, 12));
             int end_retorno = new_reg();
             push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 0, TEMPORARY, end_retorno));
             int rsp_restore = new_reg();
@@ -1381,13 +1383,41 @@ expr_preced6:
         $$ = create_node("-");
         $$->sym_type = $2->sym_type;
         add_child($$, $2);
-        destroy_iloc_program($2->code);
+
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $2->code);
+        push_iloc_code(p, create_iloc_code3op(R_SUB_I, TEMPORARY, $2->tmp, IMMEDIATE, 0, TEMPORARY, $2->tmp));
+        $$->tmp = $2->tmp;
+        $$->code = p;
+        //destroy_iloc_program($2->code);
     }
     | '!' expr_terminais  { 
         $$ = create_node("!");
         $$->sym_type = $2->sym_type;
         add_child($$, $2);
-        destroy_iloc_program($2->code);
+
+        iloc_program_t* p = create_iloc_program();
+        concat_iloc_program(p, $2->code);
+        int ltrue = new_label();
+        int lfalse = new_label();
+        int lcontinue = new_label();
+        push_iloc_code(p, create_iloc_code3op(CBR, TEMPORARY, $2->tmp, LABEL, ltrue, LABEL, lfalse));
+
+        iloc_code_t* code_true = create_iloc_code2op(LOAD_I, IMMEDIATE, 0, TEMPORARY, $2->tmp);
+        code_true->label = ltrue;
+        push_iloc_code(p, code_true);
+        push_iloc_code(p, create_iloc_code1op(JUMP_I, LABEL, lcontinue));        
+
+        iloc_code_t* code_false = create_iloc_code2op(LOAD_I, IMMEDIATE, 1, TEMPORARY, $2->tmp);
+        code_false->label = lfalse;
+        push_iloc_code(p, code_false);
+
+        iloc_code_t* code_continue = create_iloc_code(NOP);
+        code_continue->label = lcontinue;
+        push_iloc_code(p, code_continue);
+
+        $$->tmp = $2->tmp;
+        $$->code = p;
     }
     | expr_terminais { $$ = $1; };
 
