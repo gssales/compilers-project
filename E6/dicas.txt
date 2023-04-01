@@ -1,0 +1,17 @@
+- ver video no moodle
+
+- se fizer os 2 exemplos da spec funcionarem ja e praticamente nota 10
+
+- nao precisa fazer coloracao de grafo pra decidir se tem registradores suficientes (casos de teste simples, sem muitas variaveis)
+
+- casos de teste no estilo da spec: expressoes aritmeticas e return de valores ate ~256
+
+- 3 etapas de teste: gerar assembly + codigo assembly ser reconhecido gcc pra gerar executavel + executavel realizar tarefa esperada
+
+- assembly com comentarios é bem vindo
+
+- nao precisa constantes literais assembly, pode transformar em instrucoes loadI
+
+- mapeamento iloc->asm normalmente 1:1 instrucoes
+
+- para testes, compilar programas C simples com -S e analisar assembly gerado
