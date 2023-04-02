@@ -1,13 +1,5 @@
 	.file	"ex1.c"
 	.text
-	.globl	a
-	.data
-	.align 4
-	.type	a, @object
-	.size	a, 4
-a:
-	.long	3
-	.text
 	.globl	main
 	.type	main, @function
 main:
@@ -19,9 +11,16 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	movl	a(%rip), %eax
-	movl	%eax, -4(%rbp)
-	movl	$0, %eax
+	movl	$1, -8(%rbp)
+	movl	$6, -4(%rbp)
+	jmp	.L2
+.L3:
+	addl	$1, -8(%rbp)
+.L2:
+	movl	-8(%rbp), %eax
+	cmpl	-4(%rbp), %eax
+	jl	.L3
+	movl	-8(%rbp), %eax
 	popq	%rbp
 	.cfi_def_cfa 7, 8
 	ret

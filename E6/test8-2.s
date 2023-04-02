@@ -1,12 +1,4 @@
-	.file	"ex0.c"
-	.text
-	.globl	a
-	.data
-	.align 4
-	.type	a, @object
-	.size	a, 4
-a:
-	.long	1
+	.file	"test8-2.c"
 	.text
 	.globl	main
 	.type	main, @function
@@ -19,7 +11,12 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	movl	$2, -4(%rbp)
+	movl	$100, -12(%rbp)
+	movl	$200, -8(%rbp)
+	movl	$300, -4(%rbp)
+	movl	-8(%rbp), %eax
+	imull	$500, %eax, %eax
+	movl	%eax, -12(%rbp)
 	movl	$0, %eax
 	popq	%rbp
 	.cfi_def_cfa 7, 8

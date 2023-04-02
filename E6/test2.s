@@ -1,12 +1,12 @@
-	.file	"ex2.c"
+	.file	"test2.c"
 	.text
 	.globl	a
-	.data
+	.bss
 	.align 4
 	.type	a, @object
 	.size	a, 4
 a:
-	.long	3
+	.zero	4
 	.text
 	.globl	main
 	.type	main, @function
@@ -19,8 +19,6 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	movl	a(%rip), %eax
-	movl	%eax, -4(%rbp)
 	movl	$0, %eax
 	popq	%rbp
 	.cfi_def_cfa 7, 8
