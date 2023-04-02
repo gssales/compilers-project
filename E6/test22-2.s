@@ -1,8 +1,8 @@
-	.file	"test3.c"
+	.file	"test22-2.c"
 	.text
-	.globl	main
-	.type	main, @function
-main:
+	.globl	foo
+	.type	foo, @function
+foo:
 .LFB0:
 	.cfi_startproc
 	endbr64
@@ -14,12 +14,40 @@ main:
 	movl	%edi, -4(%rbp)
 	movl	%esi, -8(%rbp)
 	movl	%edx, -12(%rbp)
-	movl	$0, %eax
+	nop
 	popq	%rbp
 	.cfi_def_cfa 7, 8
 	ret
 	.cfi_endproc
 .LFE0:
+	.size	foo, .-foo
+	.globl	main
+	.type	main, @function
+main:
+.LFB1:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$16, %rsp
+	movl	$100, -12(%rbp)
+	movl	$200, -8(%rbp)
+	movl	$300, -4(%rbp)
+	movl	-4(%rbp), %edx
+	movl	-8(%rbp), %ecx
+	movl	-12(%rbp), %eax
+	movl	%ecx, %esi
+	movl	%eax, %edi
+	call	foo
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE1:
 	.size	main, .-main
 	.ident	"GCC: (Ubuntu 11.3.0-1ubuntu1~22.04) 11.3.0"
 	.section	.note.GNU-stack,"",@progbits

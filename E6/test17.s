@@ -1,4 +1,4 @@
-	.file	"test3.c"
+	.file	"test17.c"
 	.text
 	.globl	main
 	.type	main, @function
@@ -11,9 +11,20 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	movl	%edi, -4(%rbp)
-	movl	%esi, -8(%rbp)
-	movl	%edx, -12(%rbp)
+	movl	$100, -12(%rbp)
+	movl	$200, -8(%rbp)
+	movl	$300, -4(%rbp)
+	cmpl	$0, -8(%rbp)
+	jne	.L2
+	cmpl	$0, -4(%rbp)
+	je	.L3
+.L2:
+	movl	$1, %eax
+	jmp	.L4
+.L3:
+	movl	$0, %eax
+.L4:
+	movl	%eax, -12(%rbp)
 	movl	$0, %eax
 	popq	%rbp
 	.cfi_def_cfa 7, 8
