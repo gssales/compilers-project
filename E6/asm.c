@@ -99,4 +99,26 @@ const char* map_asm_op(iloc_op_t op) {
 
 const char* map_asm_format(iloc_op_t op);
 char* map_arg_type_asm(arg_type_t type, int reg);
-void generateAsm(table_t* data, iloc_program_t* code);
+
+
+
+void generateAsm(table_t* data, iloc_program_t* code) {
+	if (data != NULL && code != NULL) {
+
+		// generate data section
+		printf("\t.bss\n");
+		for (int i = 0; i < data->count_symbols; i++) {
+			symbol_t* s = data->list[i]->symbol;
+			if (s->sym_nature == SYM_VARIAVEL) {
+				printf("\t.globl\t%s\n", s->value->tk_value.s);
+				printf("\t.align %d\n", s->sizeB);
+				printf("\t.type\t%s, @object\n", s->value->tk_value.s);
+				printf("\t.size\t%s, %d\n", s->value->tk_value.s, s->sizeB);
+				printf("%s:\n", s->value->tk_value.s);
+				printf("\t.zero\t%d\n", s->sizeB);
+
+			}
+		}
+	}
+
+}

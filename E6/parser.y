@@ -110,10 +110,11 @@ programa:
         push_iloc_code(program, create_iloc_code1op(JUMP_I, LABEL, main->label));
         concat_iloc_program(program, $2->code);
         push_iloc_code(program, create_iloc_code(HALT));
-        print_program(program);
+        $2->code = program;
+        //print_program(program);
 
-        destroy_stack(table_stack);
-        destroy_iloc_program(program);
+        //destroy_stack(table_stack);
+        //destroy_iloc_program(program);
 
     } 
     | {
