@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "asm.h"
 
-
+// https://web.stanford.edu/class/cs107/guide/x86-64.html
 
 const char* map_asm_op(iloc_op_t op) {
     switch(op) {
@@ -13,21 +13,32 @@ const char* map_asm_op(iloc_op_t op) {
         case NOP:
         case I2I:
 
+        // jmp   *%eax
         case JUMP:
+
+        // jmp	.L3
         case JUMP_I:
 
+        //addl	%edx, %eax
         case ADD:
+
         case SUB:
         case MULT:
         case DIV:
         case AND:
         case OR:
         
+
         case ADD_I:
 
+        //movl	$100, -12(%rbp)
         case LOAD_I:
-        case STORE_AI:
+
+        //movl	-4(%rbp), %eax
         case LOAD_AI:
+
+        //movl	%eax, -12(%rbp)
+        case STORE_AI:
 
         case CBR:
 
