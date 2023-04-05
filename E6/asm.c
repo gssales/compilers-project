@@ -11,6 +11,7 @@ const char* map_asm_op(iloc_op_t op) {
             NOP, I2I, JUMP, JUMP_I, ADD, SUB, MULT, DIV, AND, OR, ADD_I, LOAD_I, STORE_AI, LOAD_AI, 
             CBR, CMP_EQ, CMP_NE, CMP_LT, CMP_GT, CMP_LE, CMP_GE
         */
+       
         case NOP:
         case I2I:
 
@@ -21,21 +22,35 @@ const char* map_asm_op(iloc_op_t op) {
         case JUMP_I:
 
         //addl	%edx, %eax
-        //addl	$500, %eax // imediato
+        //addl	$500, %eax
         case ADD:
         case ADD_I:
 
-        // subl	-4(%rbp), %eax // deslocamento
-        // subl	$500, %eax // imediato
+        // subl	-4(%rbp), %eax
+        // subl	$500, %eax
         case SUB:
         
+        // imull	-4(%rbp), %eax
+        // imull	$500, %eax, %eax
         case MULT:
-        case DIV:
-        case AND:
-        case OR:
-        
 
-        
+        // https://stackoverflow.com/questions/17170388/trying-to-understand-the-assembly-instruction-cltd-on-x86
+        // https://stackoverflow.com/questions/60010410/understanding-the-x86-idivl-instruction
+        // 1. load pra eax
+        // 2. cltd (extende edx para edx:eax)
+        // 3. idivl ____ (divide edx:eax pelo operando) (resultado: quociente @eax, resto @edx)
+        //movl	-8(%rbp), %eax
+	    //cltd
+	    //idivl	-4(%rbp)
+        case DIV:
+
+        // ignorar .s de teste (usa comparacao e jumps), tentar instr. 'and':
+        // and src, dst       # dst &= src
+        case AND:
+
+        // ignorar .s de teste (usa comparacao e jumps), tentar instr. 'or':
+        // or src, dst        # dst |= src
+        case OR:
 
         //movl	$100, -12(%rbp)
         case LOAD_I:
