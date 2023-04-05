@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "asm.h"
 
+// REFERENCIA BOA:
 // https://web.stanford.edu/class/cs107/guide/x86-64.html
 
 const char* map_asm_op(iloc_op_t op) {
@@ -20,16 +21,21 @@ const char* map_asm_op(iloc_op_t op) {
         case JUMP_I:
 
         //addl	%edx, %eax
+        //addl	$500, %eax // imediato
         case ADD:
+        case ADD_I:
 
+        // subl	-4(%rbp), %eax // deslocamento
+        // subl	$500, %eax // imediato
         case SUB:
+        
         case MULT:
         case DIV:
         case AND:
         case OR:
         
 
-        case ADD_I:
+        
 
         //movl	$100, -12(%rbp)
         case LOAD_I:
