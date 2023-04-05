@@ -1,0 +1,8 @@
+loadI 1024 => rfp
+loadI 1024 => rsp
+loadI 8 => rbss
+i2i rfp => rsp
+jumpI -> l1
+l1: addI rsp, 4 => rsp
+l2: nop
+halt

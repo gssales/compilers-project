@@ -1,0 +1,30 @@
+loadI 1024 => rfp
+loadI 1024 => rsp
+loadI 30 => rbss
+i2i rfp => rsp
+jumpI -> l1
+l1: addI rsp, 12 => rsp
+loadI 100 => r0
+storeAI r0 => rfp, 0
+loadI 200 => r1
+storeAI r1 => rfp, 4
+loadI 300 => r2
+storeAI r2 => rfp, 8
+loadAI rfp, 0 => r3
+loadAI rfp, 4 => r4
+cmp_EQ r3, r4 -> r5
+cbr r5 -> l3, l4
+l3: loadI 1 => r5
+jumpI -> l5
+l4: loadI 0 => r5
+l5: nop
+loadI 0 => r7
+cmp_NE r5, r7 -> r8
+cbr r8 -> l6, l7
+l6: nop
+loadI 1 => r6
+storeAI r6 => rfp, 4
+jumpI -> l7
+l7: nop
+l2: nop
+halt
