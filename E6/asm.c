@@ -104,44 +104,6 @@ const char* map_asm_op(iloc_code_t* code) {
     }
 }
 
-char* map_asm_format(iloc_op_t op) {
-	const char* code_formats[] = {
-		" %s",
-		" %s, %s",
-		" %s, -%d(%s)"
-		" -%d(%s), %s"
-	};
-	asm_code_format_t format = -1;
-    /* INSTRUCOES ILOC POSSIVEIS (IMPLEMENTADAS NO PARSER):
-        NOP, I2I, JUMP, JUMP_I, ADD, SUB, MULT, DIV, AND, OR, ADD_I, LOAD_I, STORE_AI, LOAD_AI, 
-        CBR, CMP_EQ, CMP_NE, CMP_LT, CMP_GT, CMP_LE, CMP_GE
-    */
-	switch (op)
-	{
-	case JUMP:  case JUMP_I:
-		format = ONE;
-		break;
-	case STORE_AI: case STORE_A0:
-	case C_STORE_AI: case C_STORE_A0:
-		format = ONE_TO_ONE_INST;
-		break;
-	case CMP_LT: case CMP_LE:
-	case CMP_EQ: case CMP_NE:
-	case CMP_GT: case CMP_GE:
-		format = ONE_TO_DISP_INST;
-		break;
-	case LOAD: case LOAD_I: case C_LOAD:
-	case STORE: case C_STORE:
-	case I2I:  case C2C:  case C2I:  case I2C:
-		format = DISP_TO_ONE_INST;
-		break;
-	default:
-		format = TWO_TO_ONE_INST;
-	}
-	return code_formats[format];
-
-}
-
 char* map_arg_type_asm(arg_type_t type, int reg) {
 	const char* base_regs[] = { "rpc", "%%rbp", "%%rsp", "%%rip" };
 	const char* regs[] = { "%%ebx", "%%ecx", "%%edx", "%%esi", "%%edi",
