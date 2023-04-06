@@ -5,7 +5,7 @@
 // REFERENCIA BOA:
 // https://web.stanford.edu/class/cs107/guide/x86-64.html
 
-const char* map_asm_op(iloc_code_t* code) {
+void map_asm_op(iloc_code_t* code) {
     switch(code->op) {
         /* INSTRUCOES ILOC POSSIVEIS (IMPLEMENTADAS NO PARSER):
             NOP, I2I, JUMP, JUMP_I, ADD, SUB, MULT, DIV, AND, OR, ADD_I, LOAD_I, STORE_AI, LOAD_AI, 
@@ -19,6 +19,8 @@ const char* map_asm_op(iloc_code_t* code) {
         // mov src, dst              # general form of instruction dst = src
         // mov %eax, %ebx
         case I2I:
+        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	break;
 
         // jmp   *%eax
         // jmp	.L3
@@ -45,6 +47,9 @@ const char* map_asm_op(iloc_code_t* code) {
         // imull	-4(%rbp), %eax
         // imull	$500, %eax, %eax
         case MULT:
+        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	printf("\timull\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
 
         // https://stackoverflow.com/questions/17170388/trying-to-understand-the-assembly-instruction-cltd-on-x86
         // https://stackoverflow.com/questions/60010410/understanding-the-x86-idivl-instruction
@@ -62,6 +67,9 @@ const char* map_asm_op(iloc_code_t* code) {
         // and "r1", "r2"   # resultado fica em "r2"
         // movl "r2", "r3"
         case AND:
+        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	printf("\tandl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
 
         // ignorar .s de teste (usa comparacao e jumps), tentar instr. 'or':
         // or src, dst        # dst |= src
@@ -69,15 +77,24 @@ const char* map_asm_op(iloc_code_t* code) {
         // or "r1", "r2"   # resultado fica em "r2"
         // movl "r2", "r3"
         case OR:
+        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	printf("\torl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
 
         //movl	$100, -12(%rbp)
         case LOAD_I:
+        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	break;
 
         //movl	-4(%rbp), %eax
         case LOAD_AI:
+        	printf("\tmovl\t-%d(%s), %s\n", code->args[1], map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
 
         //movl	%eax, -12(%rbp)
         case STORE_AI:
+        	printf("\tmovl\t%s, -%d(%s)\n", map_arg_type_asm(code->arg_types[0], code->args[0]), code->args[2], map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	break;
 
         // movl "r1", %eax  # carrega r1 p/ eax
         // cmpl	"r2", %eax  # compara r2 com r1(eax) + set flags de condicao
@@ -105,9 +122,9 @@ const char* map_asm_op(iloc_code_t* code) {
 }
 
 char* map_arg_type_asm(arg_type_t type, int reg) {
-	const char* base_regs[] = { "rpc", "%%rbp", "%%rsp", "%%rip" };
-	const char* regs[] = { "%%ebx", "%%ecx", "%%edx", "%%esi", "%%edi",
-			"%%r8d", "%%r9d", "%%r10d", "%%r11d", "%%r12d", "%%r13d", "%%r14d", "%%r15d" };
+	const char* base_regs[] = { "rpc", "%rbp", "%rsp", "%rip" };
+	const char* regs[] = { "%ebx", "%ecx", "%edx", "%esi", "%edi",
+			"%r8d", "%r9d", "%r10d", "%r11d", "%r12d", "%r13d", "%r14d", "%r15d" };
 	if (reg >= 0) {
 		if (type == TEMPORARY)
 			return regs[asm_reg(reg)];
@@ -177,7 +194,7 @@ void generateAsm(table_t* data, iloc_program_t* program) {
 				printf("\tret\n");
 			} 
 			else {
-				// map code
+				map_asm_op(code);
 			}
 
 			if (code->is_end_function) {
