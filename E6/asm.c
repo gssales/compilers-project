@@ -11,8 +11,13 @@ const char* map_asm_op(iloc_op_t op) {
             NOP, I2I, JUMP, JUMP_I, ADD, SUB, MULT, DIV, AND, OR, ADD_I, LOAD_I, STORE_AI, LOAD_AI, 
             CBR, CMP_EQ, CMP_NE, CMP_LT, CMP_GT, CMP_LE, CMP_GE
         */
-       
+
+        // nop
         case NOP:
+
+        // (nao tenho certeza):
+        // mov src, dst              # general form of instruction dst = src
+        // mov %eax, %ebx
         case I2I:
 
         // jmp   *%eax
@@ -46,10 +51,16 @@ const char* map_asm_op(iloc_op_t op) {
 
         // ignorar .s de teste (usa comparacao e jumps), tentar instr. 'and':
         // and src, dst       # dst &= src
+        // HACK PRA TRANSFORMAR AND DE 2 REG EM 3 DO ILOC (r1,r2 -> r3): MOVL EXTRA PRA POR RESULTADO EM R3
+        // and "r1", "r2"   # resultado fica em "r2"
+        // movl "r2", "r3"
         case AND:
 
         // ignorar .s de teste (usa comparacao e jumps), tentar instr. 'or':
         // or src, dst        # dst |= src
+        // HACK PRA TRANSFORMAR OR DE 2 REG EM 3 DO ILOC (r1,r2 -> r3): MOVL EXTRA PRA POR RESULTADO EM R3
+        // or "r1", "r2"   # resultado fica em "r2"
+        // movl "r2", "r3"
         case OR:
 
         //movl	$100, -12(%rbp)
@@ -61,14 +72,28 @@ const char* map_asm_op(iloc_op_t op) {
         //movl	%eax, -12(%rbp)
         case STORE_AI:
 
+        // movl "r1", %eax  # carrega r1 p/ eax
+        // cmpl	"r2", %eax  # compara r2 com r1(eax) + set flags de condicao
+        case CMP_EQ:
+            // sete %al
+        case CMP_NE:
+            // setne %al
+        case CMP_LT:
+            // setl %al
+        case CMP_GT:
+            // setg %al
+        case CMP_LE:
+            // setle %al
+        case CMP_GE:
+            // setge %al
+        // movzbl %al, "r3"     # resultado em "r3"
+
+        // ILOC: cbr "r1" -> l1, l2
+        // cmpl	$0, "r1"    
+	    // je   "l2"        # se == 0, jump pra lf
+        // jmp  "l1"        # se != 0, incondicional pra lt
         case CBR:
 
-        case CMP_EQ:
-        case CMP_NE:
-        case CMP_LT:
-        case CMP_GT:
-        case CMP_LE:
-        case CMP_GE:
     }
 }
 
