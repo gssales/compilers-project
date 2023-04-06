@@ -5,8 +5,8 @@
 // REFERENCIA BOA:
 // https://web.stanford.edu/class/cs107/guide/x86-64.html
 
-const char* map_asm_op(iloc_op_t op) {
-    switch(op) {
+const char* map_asm_op(iloc_code_t* code) {
+    switch(code->op) {
         /* INSTRUCOES ILOC POSSIVEIS (IMPLEMENTADAS NO PARSER):
             NOP, I2I, JUMP, JUMP_I, ADD, SUB, MULT, DIV, AND, OR, ADD_I, LOAD_I, STORE_AI, LOAD_AI, 
             CBR, CMP_EQ, CMP_NE, CMP_LT, CMP_GT, CMP_LE, CMP_GE
@@ -21,19 +21,26 @@ const char* map_asm_op(iloc_op_t op) {
         case I2I:
 
         // jmp   *%eax
-        case JUMP:
-
         // jmp	.L3
+        case JUMP:
         case JUMP_I:
+        	printf("\tjmp\t%s\n", map_arg_type_asm(code->arg_types[0], code->args[0]));
+        	break;
 
         //addl	%edx, %eax
         //addl	$500, %eax
         case ADD:
         case ADD_I:
+        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	printf("\taddl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
 
         // subl	-4(%rbp), %eax
         // subl	$500, %eax
         case SUB:
+        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	printf("\tsubl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
         
         // imull	-4(%rbp), %eax
         // imull	$500, %eax, %eax
@@ -97,10 +104,76 @@ const char* map_asm_op(iloc_op_t op) {
     }
 }
 
-const char* map_asm_format(iloc_op_t op);
-char* map_arg_type_asm(arg_type_t type, int reg);
+char* map_asm_format(iloc_op_t op) {
+	const char* code_formats[] = {
+		" %s",
+		" %s, %s",
+		" %s, -%d(%s)"
+		" -%d(%s), %s"
+	};
+	asm_code_format_t format = -1;
+    /* INSTRUCOES ILOC POSSIVEIS (IMPLEMENTADAS NO PARSER):
+        NOP, I2I, JUMP, JUMP_I, ADD, SUB, MULT, DIV, AND, OR, ADD_I, LOAD_I, STORE_AI, LOAD_AI, 
+        CBR, CMP_EQ, CMP_NE, CMP_LT, CMP_GT, CMP_LE, CMP_GE
+    */
+	switch (op)
+	{
+	case JUMP:  case JUMP_I:
+		format = ONE;
+		break;
+	case STORE_AI: case STORE_A0:
+	case C_STORE_AI: case C_STORE_A0:
+		format = ONE_TO_ONE_INST;
+		break;
+	case CMP_LT: case CMP_LE:
+	case CMP_EQ: case CMP_NE:
+	case CMP_GT: case CMP_GE:
+		format = ONE_TO_DISP_INST;
+		break;
+	case LOAD: case LOAD_I: case C_LOAD:
+	case STORE: case C_STORE:
+	case I2I:  case C2C:  case C2I:  case I2C:
+		format = DISP_TO_ONE_INST;
+		break;
+	default:
+		format = TWO_TO_ONE_INST;
+	}
+	return code_formats[format];
 
+}
 
+char* map_arg_type_asm(arg_type_t type, int reg) {
+	const char* base_regs[] = { "rpc", "%%rbp", "%%rsp", "%%rip" };
+	const char* regs[] = { "%%ebx", "%%ecx", "%%edx", "%%esi", "%%edi",
+			"%%r8d", "%%r9d", "%%r10d", "%%r11d", "%%r12d", "%%r13d", "%%r14d", "%%r15d" };
+	if (reg >= 0) {
+		if (type == TEMPORARY)
+			return regs[asm_reg(reg)];
+		else {
+			char* c = malloc(10 * sizeof(char));
+			if (type == LABEL)
+				snprintf(c, 10, ".L%d", reg);
+			else
+				snprintf(c, 10, "$%d", reg);
+			return c;
+		}
+	}
+	if (type == TEMPORARY && reg >= -4) {
+		return regs[reg +4];
+	}
+	return "";
+}
+
+int used_regs[13];
+asm_reg_t asm_reg(int iloc_reg) {
+	static int count_reg = 0;
+	for (int i = 0; i < 13; i++)
+		if (used_regs[i] == iloc_reg)
+			return i;
+	count_reg = (count_reg + 1) % 13;
+	used_regs[count_reg] = iloc_reg;
+	return count_reg;
+}
 
 void generateAsm(table_t* data, iloc_program_t* program) {
 	if (data != NULL && program != NULL) {
