@@ -937,8 +937,7 @@ expr_preced0:
 
         // geracao de codigo
         iloc_code_t* code_or;
-        int r = new_reg();
-        code_or = create_iloc_code3op(OR, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+        code_or = create_iloc_code3op(OR, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, $3->tmp);
 
         // concatena codigo das expr e add codigo gerado
         $$->code = create_iloc_program();
@@ -947,7 +946,7 @@ expr_preced0:
         push_iloc_code($$->code, code_or);
 
         // temporario com resultado
-        $$->tmp = r;
+        $$->tmp = $3->tmp;
 
         //print_program($$->code); // debug
     }
@@ -962,8 +961,7 @@ expr_preced1:
 
         // geracao de codigo
         iloc_code_t* code_and;
-        int r = new_reg();
-        code_and = create_iloc_code3op(AND, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+        code_and = create_iloc_code3op(AND, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, $3->tmp);
 
         // concatena codigo das expr e add codigo gerado
         $$->code = create_iloc_program();
@@ -972,7 +970,7 @@ expr_preced1:
         push_iloc_code($$->code, code_and);
 
         // temporario com resultado
-        $$->tmp = r;
+        $$->tmp = $3->tmp;
 
         //print_program($$->code); // debug
     } 
@@ -1293,8 +1291,7 @@ expr_preced4:
         
         // geracao de codigo
         iloc_code_t* code_add;
-        int r = new_reg();
-        code_add = create_iloc_code3op(ADD, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+        code_add = create_iloc_code3op(ADD, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, $3->tmp);
 
         // concatena codigo das expr e add codigo gerado
         iloc_program_t* p = create_iloc_program();
@@ -1304,7 +1301,7 @@ expr_preced4:
         $$->code = p;
 
         // temporario com resultado
-        $$->tmp = r;
+        $$->tmp = $3->tmp;
         
         //print_program($$->code); // debug
 
@@ -1317,8 +1314,7 @@ expr_preced4:
 
         // geracao de codigo
         iloc_code_t* code_sub;
-        int r = new_reg();
-        code_sub = create_iloc_code3op(SUB, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+        code_sub = create_iloc_code3op(SUB, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, $3->tmp);
 
         // concatena codigo das expr e add codigo gerado
         iloc_program_t* p = create_iloc_program();
@@ -1328,7 +1324,7 @@ expr_preced4:
         $$->code = p;
 
         // temporario com resultado
-        $$->tmp = r;
+        $$->tmp = $3->tmp;
 
         //print_program($$->code); // debug
     }
@@ -1343,8 +1339,7 @@ expr_preced5:
 
         // geracao de codigo
         iloc_code_t* code_mult;
-        int r = new_reg();
-        code_mult = create_iloc_code3op(MULT, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, r);
+        code_mult = create_iloc_code3op(MULT, TEMPORARY, $1->tmp, TEMPORARY, $3->tmp, TEMPORARY, $3->tmp);
 
         // concatena codigo das expr e add codigo gerado
         iloc_program_t* p = create_iloc_program();
@@ -1354,7 +1349,7 @@ expr_preced5:
         $$->code = p;
         
         // temporario com resultado
-        $$->tmp = r;
+        $$->tmp = $3->tmp;
 
         //print_program($$->code); // debug
     }

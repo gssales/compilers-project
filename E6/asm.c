@@ -14,12 +14,17 @@ void map_asm_op(iloc_code_t* code) {
 
         // nop
         case NOP:
+        	printf("\tnop\n");
+        	break;
 
         // (nao tenho certeza):
         // mov src, dst              # general form of instruction dst = src
         // mov %eax, %ebx
         case I2I:
-        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	if (code->args[1] < 0) 
+	        	printf("\tmovq\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+	        else
+	        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
         	break;
 
         // jmp   *%eax
@@ -33,22 +38,22 @@ void map_asm_op(iloc_code_t* code) {
         //addl	$500, %eax
         case ADD:
         case ADD_I:
-        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
-        	printf("\taddl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	if (code->args[1] < 0)  // se arg < 0, então é o reg da pilha, e no asm a gente subtrai, e nao soma
+	        	printf("\tsubl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+	        else
+	        	printf("\taddl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
 
         // subl	-4(%rbp), %eax
         // subl	$500, %eax
         case SUB:
-        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
-        	printf("\tsubl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	printf("\tsubl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
         
         // imull	-4(%rbp), %eax
         // imull	$500, %eax, %eax
         case MULT:
-        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
-        	printf("\timull\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	printf("\timull\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
 
         // https://stackoverflow.com/questions/17170388/trying-to-understand-the-assembly-instruction-cltd-on-x86
@@ -60,6 +65,24 @@ void map_asm_op(iloc_code_t* code) {
 	    //cltd
 	    //idivl	-4(%rbp)
         case DIV:
+        	// if alvo é edx
+        	// pushd edx
+        	// movl eax
+        	printf("\tpushl\t%%eax"); // salva %eax e %edx na pilha
+        	printf("\tpushl\t%%edx");
+        	printf("\tmovl\t%s, %%eax\n", map_arg_type_asm(code->arg_types[0], code->args[0])); // dividendo no %eax
+        	if (code->args[1] == EDX) {			// o r2 pode ser o próprio %edx, nesse caso não queremos apagar esse valor pois é o divisor
+        		printf("\tmovl\t%%edx, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2])); // copia o valor de %edx para o r3
+        		printf("\tmovl\t$0, %%edx\n");	// zera %edx
+        		printf("\tidivl\t%s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));	// divide com o r3
+        	} else { 		// se o divisor nao for o %edx
+        		printf("\tmovl\t$0, %%edx\n");	// zera %edx
+        		printf("\tidivl\t%s\n", map_arg_type_asm(code->arg_types[1], code->args[1])); 	// divide com o r2
+        	}
+        	printf("\tmovl\t%%eax, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));	// copia o resultado para r3
+        	printf("\tpopl\t%%edx");	// recupera os valores de %eax e %edx
+        	printf("\tpopl\t%%eax");
+        	break;
 
         // ignorar .s de teste (usa comparacao e jumps), tentar instr. 'and':
         // and src, dst       # dst &= src
@@ -67,8 +90,7 @@ void map_asm_op(iloc_code_t* code) {
         // and "r1", "r2"   # resultado fica em "r2"
         // movl "r2", "r3"
         case AND:
-        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
-        	printf("\tandl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	printf("\tandl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
 
         // ignorar .s de teste (usa comparacao e jumps), tentar instr. 'or':
@@ -77,8 +99,7 @@ void map_asm_op(iloc_code_t* code) {
         // or "r1", "r2"   # resultado fica em "r2"
         // movl "r2", "r3"
         case OR:
-        	printf("\tmovl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
-        	printf("\torl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	printf("\torl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
 
         //movl	$100, -12(%rbp)
@@ -100,16 +121,40 @@ void map_asm_op(iloc_code_t* code) {
         // cmpl	"r2", %eax  # compara r2 com r1(eax) + set flags de condicao
         case CMP_EQ:
             // sete %al
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tsete\t%%al\n");
+        	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
         case CMP_NE:
             // setne %al
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tsetne\t%%al\n");
+        	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
         case CMP_LT:
             // setl %al
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tsetl\t%%al\n");
+        	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
         case CMP_GT:
             // setg %al
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tsetg\t%%al\n");
+        	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
         case CMP_LE:
             // setle %al
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tsetle\t%%al\n");
+        	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
         case CMP_GE:
             // setge %al
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tsetge\t%%al\n");
+        	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	break;
         // movzbl %al, "r3"     # resultado em "r3"
 
         // ILOC: cbr "r1" -> l1, l2
@@ -117,6 +162,10 @@ void map_asm_op(iloc_code_t* code) {
 	    // je   "l2"        # se == 0, jump pra lf
         // jmp  "l1"        # se != 0, incondicional pra lt
         case CBR:
+        	printf("\tcmpl\t$0, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]));
+        	printf("\tje\t%s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	printf("\tjmp\t%s\n", map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	break;
 
     }
 }
@@ -138,7 +187,7 @@ char* map_arg_type_asm(arg_type_t type, int reg) {
 		}
 	}
 	if (type == TEMPORARY && reg >= -4) {
-		return regs[reg +4];
+		return base_regs[reg +4];
 	}
 	return "";
 }
@@ -184,10 +233,15 @@ void generateAsm(table_t* data, iloc_program_t* program) {
 				printf("\t.globl\t%s\n", asm_label);
 				printf("\t.type\t%s, @function\n", asm_label);
 				printf("%s:\n", asm_label);
+			}
+			if (code->label > 0) 
+				printf(".L%d:\n", code->label);
+			if (code->asm_label != NULL) {
 				printf("\tpushq\t%%rbp\n");
+				printf("\tmovq\t%%rsp, %%rbp\n");				
 			}
 			else if (code->is_retval) {
-				printf("\tmovl\t$%d, %%eax\n", 100);
+				printf("\tmovl\t%s, %%eax\n", map_arg_type_asm(code->arg_types[0], code->args[0]));
 			} 
 			else if (code->is_ret) {
 				printf("\tpopq\t%%rbp\n");
