@@ -50,11 +50,17 @@ typedef enum {
 typedef struct _iloc_code iloc_code_t;
 typedef struct _iloc_code {
   int label;
+  char* asm_label;
   iloc_op_t op;
   arg_type_t arg_types[3];
   int args[3];
   iloc_code_t* previous;  // não atribuir esse campo diretamente, apenas pelas funções push_iloc_code unshift_iloc_code
   iloc_code_t* next;      // não atribuir esse campo diretamente, apenas pelas funções push_iloc_code unshift_iloc_code
+
+  int discard; // descarta o comando na geração do asm
+  int is_end_function;
+  int is_ret;
+  int is_retval;
 } iloc_code_t;
 
 iloc_code_t* create_iloc_code(iloc_op_t op);

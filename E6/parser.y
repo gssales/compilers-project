@@ -100,22 +100,21 @@ programa:
         clear_strlist(strlist);
         free(strlist);
 
-        symbol_t* main = get_symbol_stack(0, table_stack, "main")->symbol;
+        //push_iloc_code($2->code, create_iloc_code(HALT));
 
-        iloc_program_t* program = create_iloc_program();
-        push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RFP));
-        push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RSP));
-        push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, $2->code->count + 6, TEMPORARY, ILOC_RBSS));
-        push_iloc_code(program, create_iloc_code2op(I2I, TEMPORARY, ILOC_RFP, TEMPORARY, ILOC_RSP));
-        push_iloc_code(program, create_iloc_code1op(JUMP_I, LABEL, main->label));
-        concat_iloc_program(program, $2->code);
-        push_iloc_code(program, create_iloc_code(HALT));
-        $2->code = program;
+        //symbol_t* main = get_symbol_stack(0, table_stack, "main")->symbol;
+        //iloc_program_t* program = create_iloc_program();
+        //push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RFP));
+        //push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RSP));
+        //push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, $2->code->count + 6, TEMPORARY, ILOC_RBSS));
+        //push_iloc_code(program, create_iloc_code2op(I2I, TEMPORARY, ILOC_RFP, TEMPORARY, ILOC_RSP));
+        //push_iloc_code(program, create_iloc_code1op(JUMP_I, LABEL, main->label));
+        //concat_iloc_program(program, $2->code);
+        //push_iloc_code(program, create_iloc_code(HALT));
         //print_program(program);
 
         //destroy_stack(table_stack);
         //destroy_iloc_program(program);
-
     } 
     | {
         arvore = NULL;
@@ -261,6 +260,8 @@ funcao:
             push_iloc_code(p, end);
         }
         p->head->label = s->label;
+        p->head->asm_label = s->value->tk_value.s;
+        p->tail->is_end_function = 1;
         $$->code = p;
 
         //print_table(to);
@@ -684,13 +685,20 @@ retorno:
         table_t* current_table = get_table(ts, ts->count-1);
         iloc_program_t* p = create_iloc_program();
 
+        concat_iloc_program(p, $2->code);
         if (current_table->is_main_function) {
-            destroy_iloc_program($2->code);
-            //push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, $2->tmp, TEMPORARY, ILOC_RFP, IMMEDIATE, 0));
-            push_iloc_code(p, create_iloc_code1op(JUMP_I, LABEL, current_table->end_label));
+            iloc_code_t* retval = create_iloc_code3op(STORE_AI, TEMPORARY, $2->tmp, TEMPORARY, ILOC_RFP, IMMEDIATE, 0);
+            retval->is_retval = 1;
+            push_iloc_code(p, retval);
+
+            iloc_code_t* ret = create_iloc_code1op(JUMP_I, LABEL, current_table->end_label);
+            ret->is_ret = 1;
+            push_iloc_code(p, ret);
         } else {
-            concat_iloc_program(p, $2->code);
-            push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, $2->tmp, TEMPORARY, ILOC_RFP, IMMEDIATE, 12));
+            iloc_code_t* retval = create_iloc_code3op(STORE_AI, TEMPORARY, $2->tmp, TEMPORARY, ILOC_RFP, IMMEDIATE, 12);
+            retval->is_retval = 1;
+            push_iloc_code(p, retval);
+            
             int end_retorno = new_reg();
             push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 0, TEMPORARY, end_retorno));
             int rsp_restore = new_reg();
@@ -699,7 +707,10 @@ retorno:
             push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 8, TEMPORARY, rfp_restore));
             push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, rsp_restore, TEMPORARY, ILOC_RSP));
             push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, rfp_restore, TEMPORARY, ILOC_RFP));
-            push_iloc_code(p, create_iloc_code1op(JUMP, TEMPORARY, end_retorno));
+
+            iloc_code_t* ret = create_iloc_code1op(JUMP, TEMPORARY, end_retorno);
+            ret->is_ret = 1;
+            push_iloc_code(p, ret);
         }
         cmd_ret->code = p;
         // print_program(p);

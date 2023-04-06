@@ -102,8 +102,8 @@ char* map_arg_type_asm(arg_type_t type, int reg);
 
 
 
-void generateAsm(table_t* data, iloc_program_t* code) {
-	if (data != NULL && code != NULL) {
+void generateAsm(table_t* data, iloc_program_t* program) {
+	if (data != NULL && program != NULL) {
 
 		// generate data section
 		printf("\t.bss\n");
@@ -116,8 +116,41 @@ void generateAsm(table_t* data, iloc_program_t* code) {
 				printf("\t.size\t%s, %d\n", s->value->tk_value.s, s->sizeB);
 				printf("%s:\n", s->value->tk_value.s);
 				printf("\t.zero\t%d\n", s->sizeB);
-
 			}
+		}
+
+		char* asm_label = NULL;
+
+		// generate code section
+		printf("\t.text\n");
+		iloc_code_t* code = program->head;
+		while (code != NULL) {
+			iloc_code_t* next = code->next;
+
+			if (code->asm_label != NULL) {
+				asm_label = code->asm_label;
+				printf("\t.globl\t%s\n", asm_label);
+				printf("\t.type\t%s, @function\n", asm_label);
+				printf("%s:\n", asm_label);
+				printf("\tpushq\t%%rbp\n");
+			}
+			else if (code->is_retval) {
+				printf("\tmovl\t$%d, %%eax\n", 100);
+			} 
+			else if (code->is_ret) {
+				printf("\tpopq\t%%rbp\n");
+				printf("\tret\n");
+			} 
+			else {
+				// map code
+			}
+
+			if (code->is_end_function) {
+				printf("\t.size\t%s, .-%s\n", asm_label, asm_label);
+				asm_label = NULL;
+			}
+
+			code = next;
 		}
 	}
 

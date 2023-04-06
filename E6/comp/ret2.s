@@ -84,7 +84,16 @@ main:
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
 	movl	$0, %eax
+	call	bar
+	cmpl	$1, %eax
+	jne	.L10
+	movl	$0, %eax
+	call	baz
+	jmp	.L11
+.L10:
+	movl	$0, %eax
 	call	foo
+.L11:
 	popq	%rbp
 	.cfi_def_cfa 7, 8
 	ret

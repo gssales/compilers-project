@@ -74,6 +74,7 @@ iloc_code_t* create_iloc_code(iloc_op_t op) {
   iloc_code_t* code = malloc(sizeof(iloc_code_t));
   if (code != NULL) {
     code->label = 0;
+    code->asm_label = NULL;
     code->op = op;
     code->arg_types[0] = NONE;
     code->arg_types[1] = NONE;
