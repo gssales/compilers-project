@@ -234,32 +234,46 @@ void generateAsm(table_t* data, iloc_program_t* program) {
 		while (code != NULL) {
 			iloc_code_t* next = code->next;
 
-			if (code->asm_label != NULL) {
-				asm_label = code->asm_label;
-				printf("\t.globl\t%s\n", asm_label);
-				printf("\t.type\t%s, @function\n", asm_label);
-				printf("%s:\n", asm_label);
-			}
-			if (code->label > 0) 
-				printf(".L%d:\n", code->label);
-			if (code->asm_label != NULL) {
-				printf("\tpushq\t%%rbp\n");
-				printf("\tmovq\t%%rsp, %%rbp\n");				
-			}
-			else if (code->is_retval) {
-				printf("\tmovl\t%s, %%eax\n", map_arg_type_asm(code->arg_types[0], code->args[0]));
-			} 
-			else if (code->is_ret) {
-				printf("\tpopq\t%%rbp\n");
-				printf("\tret\n");
-			} 
-			else {
-				map_asm_op(code);
-			}
+			if (!code->discard) {
+				if (code->is_start_function) {
+					asm_label = code->asm_label;
+					printf("\t.globl\t%s\n", asm_label);
+					printf("\t.type\t%s, @function\n", asm_label);
+					printf("%s:\n", asm_label);
+				}
+				if (code->label > 0) 
+					printf(".L%d:\n", code->label);
+				if (code->is_start_function) {
+					printf("\tpushq\t%%rbp\n");
+					printf("\tmovq\t%%rsp, %%rbp\n");
+					// if (code->is_move_sp)
+					// 	printf("\tsubq\t%s, %%rsp\n", map_arg_type_asm(code->arg_types[1], code->args[1]));
+				}
+				else if (code->is_move_sp) {
+					// falta só descobrir como mover o rsp sem dar segmentation fault
+					// printf("\tsubq\t%s, %%rsp\n", map_arg_type_asm(code->arg_types[1], code->args[1]));
+				}
+				else if (code->is_retval) {
+					printf("\tmovl\t%s, %%eax\n", map_arg_type_asm(code->arg_types[0], code->args[0]));
+				} 
+				else if (code->is_get_retval) {
+					printf("\tmovl\t%%eax, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
+				}
+				else if (code->is_call_function) {
+					printf("\tcall\t%s\n", code->asm_label);
+				}
+				else if (code->is_ret) {
+					printf("\tpopq\t%%rbp\n");
+					printf("\tret\n");
+				} 
+				else {
+					map_asm_op(code);
+				}
 
-			if (code->is_end_function) {
-				printf("\t.size\t%s, .-%s\n", asm_label, asm_label);
-				asm_label = NULL;
+				if (code->is_end_function) {
+					printf("\t.size\t%s, .-%s\n", asm_label, asm_label);
+					asm_label = NULL;
+				}
 			}
 
 			code = next;
