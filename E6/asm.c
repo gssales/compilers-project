@@ -109,49 +109,49 @@ void map_asm_op(iloc_code_t* code) {
 
         //movl	-4(%rbp), %eax
         case LOAD_AI:
-        	printf("\tmovl\t-%d(%s), %s\n", code->args[1], map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	printf("\tmovl\t-%d(%s), %s\n", code->args[1]+4, map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
 
         //movl	%eax, -12(%rbp)
         case STORE_AI:
-        	printf("\tmovl\t%s, -%d(%s)\n", map_arg_type_asm(code->arg_types[0], code->args[0]), code->args[2], map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tmovl\t%s, -%d(%s)\n", map_arg_type_asm(code->arg_types[0], code->args[0]), code->args[2]+4, map_arg_type_asm(code->arg_types[1], code->args[1]));
         	break;
 
         // movl "r1", %eax  # carrega r1 p/ eax
         // cmpl	"r2", %eax  # compara r2 com r1(eax) + set flags de condicao
         case CMP_EQ:
             // sete %al
-        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[0], code->args[0]));
         	printf("\tsete\t%%al\n");
         	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
         case CMP_NE:
             // setne %al
-        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[0], code->args[0]));
         	printf("\tsetne\t%%al\n");
         	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
         case CMP_LT:
             // setl %al
-        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[0], code->args[0]));
         	printf("\tsetl\t%%al\n");
         	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
         case CMP_GT:
             // setg %al
-        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[0], code->args[0]));
         	printf("\tsetg\t%%al\n");
         	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
         case CMP_LE:
             // setle %al
-        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[0], code->args[0]));
         	printf("\tsetle\t%%al\n");
         	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
         case CMP_GE:
             // setge %al
-        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	printf("\tcmpl\t%s, %s\n", map_arg_type_asm(code->arg_types[1], code->args[1]), map_arg_type_asm(code->arg_types[0], code->args[0]));
         	printf("\tsetge\t%%al\n");
         	printf("\tmovzbl\t%%al, %s\n", map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
