@@ -250,6 +250,7 @@ funcao:
             push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RFP));
         }
         push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RSP, IMMEDIATE, to->disp, TEMPORARY, ILOC_RSP));
+        p->tail->is_move_sp = 1;
         if ($7 && $7->code && $7->code->count > 0) {
           concat_iloc_program(p, $7->code);
           // destroy_iloc_program($7->code);
@@ -260,6 +261,7 @@ funcao:
             push_iloc_code(p, end);
         }
         p->head->label = s->label;
+        p->head->is_start_function = 1;
         p->head->asm_label = s->value->tk_value.s;
         p->tail->is_end_function = 1;
         $$->code = p;
@@ -436,6 +438,8 @@ local_var:
         // verifica se global (rbss) ou local (rfp)
         if (s->global) {
             code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r2, TEMPORARY, ILOC_RBSS, IMMEDIATE, s->disp);
+            code_storeAI->is_global_var = 1;
+            code_storeAI->asm_label = s->value->tk_value.s;
         } else {
             code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r2, TEMPORARY, ILOC_RFP, IMMEDIATE, s->disp);
         }
@@ -544,6 +548,8 @@ atrib:
             // verifica se global (rbss) ou local (rfp)
             if (s->global) {
                 code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, ILOC_RBSS, IMMEDIATE, s->disp);
+                code_storeAI->is_global_var = 1;
+                code_storeAI->asm_label = s->value->tk_value.s;
             } else {
                 code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, ILOC_RFP, IMMEDIATE, s->disp);
             }
@@ -627,16 +633,23 @@ chamada_func:
           concat_iloc_program(p, $3->code);
         }
         push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RPC, IMMEDIATE, jump_rpc + 5/* endereço de retorno */, TEMPORARY, tmp));
+        p->tail->discard = 1;
         push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, tmp, TEMPORARY, ILOC_RSP, IMMEDIATE, 0));
+        p->tail->discard = 1;
         push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RSP, IMMEDIATE, 4));
+        p->tail->discard = 1;
         push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, ILOC_RFP, TEMPORARY, ILOC_RSP, IMMEDIATE, 8));
+        p->tail->discard = 1;
         if ($3 != NULL) {
           for (int i = 0; i < $3->count_tmpList; i++) {
             push_iloc_code(p, create_iloc_code3op(STORE_AI, TEMPORARY, $3->tmpList[i], TEMPORARY, ILOC_RSP, IMMEDIATE, 16 + i*4));
           }
         }
         push_iloc_code(p, create_iloc_code1op(JUMP_I, LABEL, s->label));
+        p->tail->is_call_function = 1;
+        p->tail->asm_label = s->value->tk_value.s;
         push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RSP, IMMEDIATE, 12, TEMPORARY, tmp));
+        p->tail->is_get_retval = 1;
 
         $$->code = p;
         $$->tmp = tmp;
@@ -701,12 +714,17 @@ retorno:
             
             int end_retorno = new_reg();
             push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 0, TEMPORARY, end_retorno));
+            p->tail->discard = 1;
             int rsp_restore = new_reg();
             push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 4, TEMPORARY, rsp_restore));
+            p->tail->discard = 1;
             int rfp_restore = new_reg();
             push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, 8, TEMPORARY, rfp_restore));
+            p->tail->discard = 1;
             push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, rsp_restore, TEMPORARY, ILOC_RSP));
+            p->tail->discard = 1;
             push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, rfp_restore, TEMPORARY, ILOC_RFP));
+            p->tail->discard = 1;
 
             iloc_code_t* ret = create_iloc_code1op(JUMP, TEMPORARY, end_retorno);
             ret->is_ret = 1;
@@ -1443,6 +1461,8 @@ expr_terminais:
         // global usa rbss, local usa rfp
         if (s->global) {
             code_loadAI = create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RBSS, IMMEDIATE, s->disp, TEMPORARY, r);
+            code_loadAI->is_global_var = 1;
+            code_loadAI->asm_label = s->value->tk_value.s;
         } else {
             code_loadAI = create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, s->disp, TEMPORARY, r);
         }

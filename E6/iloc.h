@@ -58,9 +58,14 @@ typedef struct _iloc_code {
   iloc_code_t* next;      // não atribuir esse campo diretamente, apenas pelas funções push_iloc_code unshift_iloc_code
 
   int discard; // descarta o comando na geração do asm
+  int is_start_function;
+  int is_move_sp;
   int is_end_function;
   int is_ret;
   int is_retval;
+  int is_call_function;
+  int is_get_retval;
+  int is_global_var;
 } iloc_code_t;
 
 iloc_code_t* create_iloc_code(iloc_op_t op);

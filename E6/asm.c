@@ -109,12 +109,18 @@ void map_asm_op(iloc_code_t* code) {
 
         //movl	-4(%rbp), %eax
         case LOAD_AI:
-        	printf("\tmovl\t-%d(%s), %s\n", code->args[1]+4, map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+        	if (code->args[0] == ILOC_RBSS)
+	        	printf("\tmovl\t%s(%s), %s\n", code->asm_label, map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
+	        else
+	        	printf("\tmovl\t-%d(%s), %s\n", code->args[1]+4, map_arg_type_asm(code->arg_types[0], code->args[0]), map_arg_type_asm(code->arg_types[2], code->args[2]));
         	break;
 
         //movl	%eax, -12(%rbp)
         case STORE_AI:
-        	printf("\tmovl\t%s, -%d(%s)\n", map_arg_type_asm(code->arg_types[0], code->args[0]), code->args[2]+4, map_arg_type_asm(code->arg_types[1], code->args[1]));
+        	if (code->args[1] == ILOC_RBSS)
+	        	printf("\tmovl\t%s, %s(%s)\n", map_arg_type_asm(code->arg_types[0], code->args[0]), code->asm_label, map_arg_type_asm(code->arg_types[1], code->args[1]));
+	        else
+	        	printf("\tmovl\t%s, -%d(%s)\n", map_arg_type_asm(code->arg_types[0], code->args[0]), code->args[2]+4, map_arg_type_asm(code->arg_types[1], code->args[1]));
         	break;
 
         // movl "r1", %eax  # carrega r1 p/ eax
