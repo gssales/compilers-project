@@ -13,6 +13,8 @@ etapa4
 etapa4-dbg
 etapa5
 etapa5-dbg
+etapa6
+etapa6-dbg
 
 
 testes
@@ -24,5 +26,5 @@ TESTES*
 Receita.org
 ilocsim.py
 exemplo*.iloc
-dicas.txt
 o.iloc
+todo.txt
