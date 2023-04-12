@@ -2,7 +2,7 @@
 int mult (int z, int w)
 {
     int x;
-    if (z > 0) {
+    if (z > 0) then {
         x = z * w;
     } else{
         x = w;
@@ -15,5 +15,5 @@ int main()
     int y;
     x = 2;
     y = mult (x, x);
-    return 0;
+    return y;
 }

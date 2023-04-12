@@ -43,6 +43,7 @@ typedef struct insert_pair {
 typedef struct tabela_simbolo {
 	int is_global_scope;
 	int is_main_function;
+	int has_call;
 	int end_label; // rótulo para o fim da função main
 	int count_symbols;
 	int* hashes;

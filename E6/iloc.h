@@ -65,7 +65,7 @@ typedef struct _iloc_code {
   int is_retval;
   int is_call_function;
   int is_get_retval;
-  int is_global_var;
+  int has_call;
 } iloc_code_t;
 
 iloc_code_t* create_iloc_code(iloc_op_t op);

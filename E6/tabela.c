@@ -326,8 +326,11 @@ table_t* pop_table(stack_t* stack) {
 
 table_t* get_table(stack_t* stack, int index) {
   table_t* t = NULL;
-  if (stack != NULL && index < stack->count) {
-    t = stack->tables[index];
+  if (stack != NULL && index < stack->count && index >= -1) {
+    if (index == -1)
+      t = stack->tables[stack->count-1];
+    else
+      t = stack->tables[index];
   }
   return t;
 }

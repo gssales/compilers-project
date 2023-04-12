@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <stdbool.h>
 
 extern int yylineno;
 
@@ -250,7 +251,9 @@ funcao:
             push_iloc_code(p, create_iloc_code2op(I2I, TEMPORARY, ILOC_RSP, TEMPORARY, ILOC_RFP));
         }
         push_iloc_code(p, create_iloc_code3op(ADD_I, TEMPORARY, ILOC_RSP, IMMEDIATE, to->disp, TEMPORARY, ILOC_RSP));
-        p->tail->is_move_sp = 1;
+        p->tail->is_move_sp = true;
+        p->tail->has_call = to->has_call;
+
         if ($7 && $7->code && $7->code->count > 0) {
           concat_iloc_program(p, $7->code);
           // destroy_iloc_program($7->code);
@@ -438,7 +441,6 @@ local_var:
         // verifica se global (rbss) ou local (rfp)
         if (s->global) {
             code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r2, TEMPORARY, ILOC_RBSS, IMMEDIATE, s->disp);
-            code_storeAI->is_global_var = 1;
             code_storeAI->asm_label = s->value->tk_value.s;
         } else {
             code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r2, TEMPORARY, ILOC_RFP, IMMEDIATE, s->disp);
@@ -548,7 +550,6 @@ atrib:
             // verifica se global (rbss) ou local (rfp)
             if (s->global) {
                 code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, ILOC_RBSS, IMMEDIATE, s->disp);
-                code_storeAI->is_global_var = 1;
                 code_storeAI->asm_label = s->value->tk_value.s;
             } else {
                 code_storeAI = create_iloc_code3op(STORE_AI, TEMPORARY, r, TEMPORARY, ILOC_RFP, IMMEDIATE, s->disp);
@@ -613,6 +614,9 @@ lista_arranjo_atrib:
 
 chamada_func:
     TK_IDENTIFICADOR'('chamada_params')'  {
+
+        table_t* t = get_table(table_stack, -1);
+        t->has_call = true;
 
         // consulta a tabela pra saber se id->sym_nature == SYM_FUNCAO
         symbol_t* s = get_symbol_stack($1->line_number, table_stack, $1->tk_value.s)->symbol;
@@ -695,7 +699,7 @@ retorno:
         add_child(cmd_ret, $2);
 
         stack_t *ts = table_stack;
-        table_t* current_table = get_table(ts, ts->count-1);
+        table_t* current_table = get_table(ts, -1);
         iloc_program_t* p = create_iloc_program();
 
         concat_iloc_program(p, $2->code);
@@ -706,6 +710,7 @@ retorno:
 
             iloc_code_t* ret = create_iloc_code1op(JUMP_I, LABEL, current_table->end_label);
             ret->is_ret = 1;
+            ret->has_call = current_table->has_call;
             push_iloc_code(p, ret);
         } else {
             iloc_code_t* retval = create_iloc_code3op(STORE_AI, TEMPORARY, $2->tmp, TEMPORARY, ILOC_RFP, IMMEDIATE, 12);
@@ -728,6 +733,7 @@ retorno:
 
             iloc_code_t* ret = create_iloc_code1op(JUMP, TEMPORARY, end_retorno);
             ret->is_ret = 1;
+            ret->has_call = current_table->has_call;
             push_iloc_code(p, ret);
         }
         cmd_ret->code = p;
@@ -1461,7 +1467,6 @@ expr_terminais:
         // global usa rbss, local usa rfp
         if (s->global) {
             code_loadAI = create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RBSS, IMMEDIATE, s->disp, TEMPORARY, r);
-            code_loadAI->is_global_var = 1;
             code_loadAI->asm_label = s->value->tk_value.s;
         } else {
             code_loadAI = create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RFP, IMMEDIATE, s->disp, TEMPORARY, r);

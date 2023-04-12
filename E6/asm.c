@@ -246,12 +246,12 @@ void generateAsm(table_t* data, iloc_program_t* program) {
 				if (code->is_start_function) {
 					printf("\tpushq\t%%rbp\n");
 					printf("\tmovq\t%%rsp, %%rbp\n");
-					// if (code->is_move_sp)
-					// 	printf("\tsubq\t%s, %%rsp\n", map_arg_type_asm(code->arg_types[1], code->args[1]));
+					if (code->is_move_sp && code->has_call)
+						printf("\tsubq\t%s, %%rsp\n", map_arg_type_asm(code->arg_types[1], code->args[1]));
 				}
 				else if (code->is_move_sp) {
-					// falta só descobrir como mover o rsp sem dar segmentation fault
-					// printf("\tsubq\t%s, %%rsp\n", map_arg_type_asm(code->arg_types[1], code->args[1]));
+					if (code->has_call)
+						printf("\tsubq\t%s, %%rsp\n", map_arg_type_asm(code->arg_types[1], code->args[1]));
 				}
 				else if (code->is_retval) {
 					printf("\tmovl\t%s, %%eax\n", map_arg_type_asm(code->arg_types[0], code->args[0]));
@@ -263,7 +263,10 @@ void generateAsm(table_t* data, iloc_program_t* program) {
 					printf("\tcall\t%s\n", code->asm_label);
 				}
 				else if (code->is_ret) {
-					printf("\tpopq\t%%rbp\n");
+					if (code->has_call)
+						printf("\tleave\n");
+					else
+						printf("\tpopq\t%%rbp\n");
 					printf("\tret\n");
 				} 
 				else {
