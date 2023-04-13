@@ -1,0 +1,13 @@
+digraph {
+1 [label="l0: loadI 1024 => rfp\nloadI 1024 => rsp\nloadI 23 => rbss\ni2i rfp => rsp\njumpI -> l1",shape=box];
+2 [label="l1: addI rsp, 12 => rsp\nloadI 100 => r0\nstoreAI r0 => rfp, 0\nloadI 200 => r1\nstoreAI r1 => rfp, 4\nloadI 300 => r2\nstoreAI r2 => rfp, 8\nloadAI rfp, 0 => r3\nloadI 0 => r5\ncmp_NE r3, r5 -> r6\ncbr r6 -> l3, l4",shape=box];
+3 [label="l3: nop\nloadI 1 => r4\nstoreAI r4 => rfp, 4\njumpI -> l4",shape=box];
+4 [label="l4: nop",shape=box];
+5 [label="l2: nop\njumpI -> l0",shape=box];
+1->2
+2->3
+2->4
+3->4
+4->5
+5->1
+}
