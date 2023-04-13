@@ -101,7 +101,7 @@ programa:
         clear_strlist(strlist);
         free(strlist);
 
-        //push_iloc_code($2->code, create_iloc_code(HALT));
+        push_iloc_code($2->code, create_iloc_code(HALT));
 
         //symbol_t* main = get_symbol_stack(0, table_stack, "main")->symbol;
         //iloc_program_t* program = create_iloc_program();

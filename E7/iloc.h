@@ -97,6 +97,7 @@ int new_reg();
 int rfp_displacement(int disp);
 int rbss_displacement(int disp);
 
+char* iloc_code_to_string(iloc_code_t* code);
 void print_program(iloc_program_t* program);
 
 #endif //_ILOC_H_

@@ -206,3 +206,34 @@ cfg_t* generate_cfg(iloc_program_t* program) {
   }
   return cfg;
 }
+
+void print_cfg(cfg_t* cfg) {
+  if (cfg != NULL) {
+    for (int i=0; i < cfg->count_nodes; i++) {
+      cfg_node_t* node = cfg->nodes[i];
+      printf("=== Bloco Básico %d ===\n", node->id);
+      iloc_code_t* code = node->start;
+      while (code != node->end) {
+        char* str = iloc_code_to_string(code);
+        printf("%s\n", str);
+        free(str);
+        code = code->next;
+      }
+      char* str = iloc_code_to_string(code);
+      printf("%s\n", str);
+      free(str);
+      printf("----------------------\n");
+    }
+    printf("=== Arestas ===\n");
+    for (int i=0; i < cfg->count_edges; i++) {
+      cfg_edge_t* edge = cfg->edges[i];
+      printf(" %d --> %d\n", edge->src, edge->dest);
+    }
+  }
+}
+
+void print_cfg_dot(cfg_t* cfg) {
+  if (cfg != NULL) {
+    // print do grafo em formato .DOT
+  }
+}

@@ -29,5 +29,7 @@ void cfg_add_edge(cfg_t* cfg, int src, int dest);
 void destroy_cfg(cfg_t* cfg);
 
 cfg_t* generate_cfg(iloc_program_t* program);
+void print_cfg(cfg_t* cfg);
+void print_cfg_dot(cfg_t* cfg);
 
 #endif //_CFG_H_
