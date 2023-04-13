@@ -1,13 +1,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "cfg.h"
 
 cfg_t* create_cfg() {
   cfg_t* cfg = malloc(sizeof(cfg_t));
   if (cfg != NULL) {
     cfg->count_nodes = 0;
-    cfg->nodes = NULL;
-    cfg->edges = NULL;
+    cfg->nodes = malloc(0);
+    cfg->edges = malloc(0);
   }
   return cfg;
 }
@@ -19,6 +20,7 @@ int cfg_add_node(cfg_t* cfg, iloc_code_t* start, iloc_code_t* end) {
     if (node != NULL) {
       node->start = start;
       node->end = end;
+      node->id = cfg->count_nodes;
 
       id = cfg->count_nodes;
       cfg->count_nodes++;
@@ -49,6 +51,8 @@ void destroy_cfg(cfg_t* cfg) {
       free(cfg->nodes[n]);
     for (int e = 0; e < cfg->count_edges; e++)
       free(cfg->edges[e]);
+    free(cfg->nodes);
+    free(cfg->edges);
     free(cfg);
   }
 }
@@ -142,11 +146,12 @@ int get_label_basic_block(cfg_t* cfg, int label) {
 }
 
 cfg_t* generate_cfg(iloc_program_t* program) {
+  cfg_t* cfg = NULL;
   if (program != NULL) {
     // mark leader statements
     mark_leaders(program);
     // create graph
-    cfg_t* cfg = create_cfg();
+    cfg = create_cfg();
     iloc_code_t* leader = program->head;
     while (leader != NULL) {
       // add to graph
@@ -199,4 +204,5 @@ cfg_t* generate_cfg(iloc_program_t* program) {
       }
     }
   }
+  return cfg;
 }

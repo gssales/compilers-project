@@ -7,6 +7,7 @@
 #include "tabela.h"
 #include "iloc.h"
 #include "arvore.h"
+#include "cfg.h"
 #include "asm.h"
 //#include "parser.tab.h"
 extern int yyparse(void);
@@ -32,12 +33,12 @@ int main (int argc, char **argv)
   node_t* t = (node_t*)arvore;
   // print_program(t->code);
 
-  stack_t* s = (stack_t*)table_stack;
-  // print_table(get_table(s, 0));
+  cfg_t* cfg = generate_cfg(t->code);
+  // generateAsm(get_table(s, 0), t->code);
 
-  generateAsm(get_table(s, 0), t->code);
-
-  //exporta(arvore);
+  destroy_cfg(cfg);
+  destroy_stack(table_stack);
+  destroy_iloc_program(t->code);
   libera(arvore);
   arvore = NULL;
   yylex_destroy();
