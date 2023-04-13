@@ -235,5 +235,28 @@ void print_cfg(cfg_t* cfg) {
 void print_cfg_dot(cfg_t* cfg) {
   if (cfg != NULL) {
     // print do grafo em formato .DOT
+    printf("digraph {\n");
+
+    for (int i=0; i < cfg->count_nodes; i++) {
+      cfg_node_t* node = cfg->nodes[i];
+      printf("%d [label=\"", node->id);
+      iloc_code_t* code = node->start;
+      while (code != node->end) {
+        char* str = iloc_code_to_string(code);
+        printf("%s\n", str);
+        free(str);
+        code = code->next;
+      }
+      char* str = iloc_code_to_string(code);
+      printf("%s\n", str);
+      free(str);
+      printf("\",shape=box];\n");
+    }
+    for (int i=0; i < cfg->count_edges; i++) {
+      cfg_edge_t* edge = cfg->edges[i];
+      printf("%d -> %d\n", edge->src, edge->dest);
+    }
+    
+    printf("}");
   }
 }

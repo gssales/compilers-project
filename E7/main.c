@@ -31,10 +31,10 @@ int main (int argc, char **argv)
   int ret = yyparse();
 
   node_t* t = (node_t*)arvore;
-  print_program(t->code);
+  //print_program(t->code);
 
   cfg_t* cfg = generate_cfg(t->code);
-  print_cfg(cfg);
+  //print_cfg(cfg);
   print_cfg_dot(cfg);
 
   destroy_cfg(cfg);
