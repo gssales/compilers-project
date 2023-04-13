@@ -225,13 +225,16 @@ funcao:
         int result = push_symbol_into_table(table_stack, $2->tk_value.s, s);
         if (!is_inserted(result)) destroy_symbol(s);
 
+        table_t* new_table;
         if (strcmp($2->tk_value.s, "main") == 0) {
-            table_t* new_table = create_symbol_table(0, 1, 0);
+            new_table = create_symbol_table(0, 1, 0);
             new_table->end_label = new_label();
-            push_table(table_stack, new_table);
         }
-        else
-            push_table(table_stack, create_symbol_table(0, 0, 16));
+        else {
+            new_table = create_symbol_table(0, 0, 16);
+        }
+        new_table->function_label = rot;
+        push_table(table_stack, new_table);
 
 
     } func_params ')' command_block_no_new_scope  {
@@ -653,6 +656,7 @@ chamada_func:
         p->tail->is_call_function = 1;
         p->tail->asm_label = s->value->tk_value.s;
         push_iloc_code(p, create_iloc_code3op(LOAD_AI, TEMPORARY, ILOC_RSP, IMMEDIATE, 12, TEMPORARY, tmp));
+        p->tail->function_call_label = s->label;
         p->tail->is_get_retval = 1;
 
         $$->code = p;
@@ -734,6 +738,7 @@ retorno:
             iloc_code_t* ret = create_iloc_code1op(JUMP, TEMPORARY, end_retorno);
             ret->is_ret = 1;
             ret->has_call = current_table->has_call;
+            ret->function_ret_label = current_table->function_label;
             push_iloc_code(p, ret);
         }
         cmd_ret->code = p;

@@ -84,6 +84,8 @@ iloc_code_t* create_iloc_code(iloc_op_t op) {
     code->args[2] = 0;
     code->previous = NULL;
     code->next = NULL;
+
+    code->function_call_label = -1;
   }
   return code;
 }

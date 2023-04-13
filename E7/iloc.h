@@ -68,6 +68,8 @@ typedef struct _iloc_code {
   int has_call;
 
   int cfg_leader;
+  int function_call_label;
+  int function_ret_label;
 } iloc_code_t;
 
 iloc_code_t* create_iloc_code(iloc_op_t op);
