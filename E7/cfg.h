@@ -28,4 +28,6 @@ int cfg_add_node(cfg_t* cfg, iloc_code_t* start, iloc_code_t* end);
 void cfg_add_edge(cfg_t* cfg, int src, int dest);
 void destroy_cfg(cfg_t* cfg);
 
+cfg_t* generate_cfg(iloc_program_t* program);
+
 #endif //_CFG_H_
