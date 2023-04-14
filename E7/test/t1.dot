@@ -1,0 +1,13 @@
+digraph {
+0 [label="l1: addI rsp, 4 => rsp
+loadI 1 => r0
+storeAI r0 => rfp, 0
+loadI 0 => r1
+storeAI r1 => rfp, 0
+jumpI -> l2
+",shape=box];
+1 [label="l2: nop
+halt
+",shape=box];
+0 -> 1
+}

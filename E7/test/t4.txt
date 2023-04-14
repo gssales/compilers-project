@@ -1,0 +1,18 @@
+int foo(int w) {
+  int z <= 10;
+  if (w > 2) then {
+    z = z / w;
+  }
+  else {
+    z = z / 2;
+  };
+  return z;
+}
+
+int main() {
+  int a <= 30;
+  int b <= 5;
+  a = a + foo(b);
+  foo(a);
+  return a;
+}
