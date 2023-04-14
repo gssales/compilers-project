@@ -101,15 +101,15 @@ programa:
         clear_strlist(strlist);
         free(strlist);
 
+        symbol_t* main = get_symbol_stack(0, table_stack, "main")->symbol;
+        unshift_iloc_code($2->code, create_iloc_code1op(JUMP_I, LABEL, main->label));
         push_iloc_code($2->code, create_iloc_code(HALT));
 
-        //symbol_t* main = get_symbol_stack(0, table_stack, "main")->symbol;
         //iloc_program_t* program = create_iloc_program();
         //push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RFP));
         //push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, 1024, TEMPORARY, ILOC_RSP));
         //push_iloc_code(program, create_iloc_code2op(LOAD_I, IMMEDIATE, $2->code->count + 6, TEMPORARY, ILOC_RBSS));
         //push_iloc_code(program, create_iloc_code2op(I2I, TEMPORARY, ILOC_RFP, TEMPORARY, ILOC_RSP));
-        //push_iloc_code(program, create_iloc_code1op(JUMP_I, LABEL, main->label));
         //concat_iloc_program(program, $2->code);
         //push_iloc_code(program, create_iloc_code(HALT));
         //print_program(program);

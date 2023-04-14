@@ -7,6 +7,7 @@ cfg_t* create_cfg() {
   cfg_t* cfg = malloc(sizeof(cfg_t));
   if (cfg != NULL) {
     cfg->count_nodes = 0;
+    cfg->count_edges = 0;
     cfg->nodes = malloc(0);
     cfg->edges = malloc(0);
   }
